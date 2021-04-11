@@ -57,7 +57,7 @@ namespace CMSlib.Tables
             }
             return builder.ToString();
         }
-        public void AddRow(object[] sectionItems) => rows.Add(new(sectionItems));
+        public void AddRow(params object[] sectionItems) => rows.Add(new(sectionItems));
         public record TableRow(params object[] SectionItems);
     }
 }
