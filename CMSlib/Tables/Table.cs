@@ -13,13 +13,11 @@ namespace CMSlib.Tables
         public Table(params TableSection[] sections)
         {
             this.sections = new();
-            this.rows = new();
             this.sections.AddRange(sections);
         }
         public Table()
         {
             this.sections = new();
-            this.rows = new();
         }
         public void AddSection(TableSection section) => sections.Add(section);
         public void ClearRows() => rows.Clear();
@@ -59,7 +57,7 @@ namespace CMSlib.Tables
             }
             return builder.ToString();
         }
-        public void AddRow(params object[] sectionItems) => rows.Add(new(sectionItems));
+        public void AddRow(object[] sectionItems) => rows.Add(new(sectionItems));
         public record TableRow(params object[] SectionItems);
     }
 }

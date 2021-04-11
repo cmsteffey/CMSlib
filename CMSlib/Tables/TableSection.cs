@@ -13,7 +13,6 @@ namespace CMSlib.Tables
         internal List<(TableColumn column, ValueGetter getter)> Columns;
         public TableSection(Type type, params TableColumn[] columns)
         {
-            Columns = new();
             for(int i = 0; i < columns.Length; i++)
             {
                 columns[i].Parent = this;
