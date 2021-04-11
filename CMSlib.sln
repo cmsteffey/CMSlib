@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30717.126
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CMSlib", "CMSlib\CMSlib.csproj", "{24E0EF45-F3B0-4706-BB5F-D755700E09E0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibTest", "LibTest\LibTest.csproj", "{14B19E80-3D82-4D24-A7BA-5B41572CC9B4}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{24E0EF45-F3B0-4706-BB5F-D755700E09E0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{24E0EF45-F3B0-4706-BB5F-D755700E09E0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{24E0EF45-F3B0-4706-BB5F-D755700E09E0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{24E0EF45-F3B0-4706-BB5F-D755700E09E0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{14B19E80-3D82-4D24-A7BA-5B41572CC9B4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{14B19E80-3D82-4D24-A7BA-5B41572CC9B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{14B19E80-3D82-4D24-A7BA-5B41572CC9B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{14B19E80-3D82-4D24-A7BA-5B41572CC9B4}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {ED40F1B8-C451-4BE3-95BD-31DAA984059A}
+	EndGlobalSection
+EndGlobal
