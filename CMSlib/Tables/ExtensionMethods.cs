@@ -19,8 +19,9 @@ namespace CMSlib.Tables
         /// <param name="leftPipe">Set to true to append | to the left side of the column</param>
         /// <param name="rightPipe">Set to true to append | to the right side of the column</param>
         /// <returns></returns>
-        public static string TableColumn(this string str, int innerWidth, ColumnAdjust adjust = ColumnAdjust.Left, bool ellipse = true, bool leftPipe = false, bool rightPipe = false)
+        public static string TableColumn(this object obj, int innerWidth, ColumnAdjust adjust = ColumnAdjust.Left, bool ellipse = true, bool leftPipe = false, bool rightPipe = false)
         {
+            string str = obj.ToString();
             if (str.Length > innerWidth)
             {
                 return ellipse ? (leftPipe ? "|" : string.Empty) + str.Ellipse(innerWidth) + (rightPipe ? "|" : string.Empty)

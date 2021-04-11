@@ -9,25 +9,30 @@ namespace CMSlib.Tables
 {
     public class TableSection
     {
-        private List<ValueGetter> getters;
-        public TableSection(Type type, params string[] memberNames)
+        internal Type type;
+        internal List<(TableColumn column, ValueGetter getter)> Columns;
+        public TableSection(Type type, params TableColumn[] columns)
         {
-            foreach(string name in memberNames)
+            Columns = new();
+            for(int i = 0; i < columns.Length; i++)
             {
-                if (name is null) getters.Add(new());
-                else if(type.GetField(name) is FieldInfo fieldInfo)
+                columns[i].Parent = this;
+            }
+            this.type = type;
+            foreach(TableColumn col in columns)
+            {
+                if (col.MemberName is null) Columns.Add((col, new()));
+                else if(type.GetField(col.MemberName) is FieldInfo fieldInfo)
                 {
-                    getters.Add(new(fieldInfo.GetValue));
-                    
+                    Columns.Add((col, new(fieldInfo.GetValue)));
                 }
-                else if(type.GetProperty(name) is PropertyInfo propInfo)
+                else if(type.GetProperty(col.MemberName) is PropertyInfo propInfo)
                 {
-                    getters.Add(new(propInfo.GetGetMethod().Invoke));
-                    
+                    Columns.Add((col, new(propInfo.GetGetMethod().Invoke)));
                 }
-                else if(type.GetMethod(name, Array.Empty<Type>()) is MethodInfo methodInfo)
+                else if(type.GetMethod(col.MemberName, Array.Empty<Type>()) is MethodInfo methodInfo)
                 {
-                    getters.Add(new(methodInfo.Invoke));
+                    Columns.Add((col, new(methodInfo.Invoke)));
                 }
                 else
                 {
@@ -36,7 +41,11 @@ namespace CMSlib.Tables
             }
         }
     }
-    public record TableColumn(ValueGetter Getter, int InnerWidth, bool Ellipse = true, bool LeftPipe = false, bool RightPipe = false)
+    
+    public record TableColumn(string MemberName, int InnerWidth, string ColumnTitle = null, bool Ellipse = true, bool LeftPipe = false, bool RightPipe = false, ExtensionMethods.ColumnAdjust Adjust = ExtensionMethods.ColumnAdjust.Left)
+    {
+        public TableSection Parent { get; internal set; }
+    }
     public class ValueGetter {
         public Func<object, object> fieldGetter = null;
         public Func<object, object[], object> otherGetter = null;
