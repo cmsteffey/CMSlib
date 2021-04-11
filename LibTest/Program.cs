@@ -1,10 +1,43 @@
-﻿using System;
-using CMSlib.Extensions;
-using System.Threading;
-using System.Linq;
-using System.Text.Json;
-using System.Threading.Tasks;
-using System.Net.Http;
+﻿using CMSlib.Tables;
+
+namespace LibTest
+{
+    public record Person(string FirstName, string LastName, int Age);
+    public record Pet(string Name, int Age)
+    {
+        public override string ToString()
+        {
+            return Age.ToString();
+        }
+        public string GetName() => Name;
+    }
+    public class Program
+    {
+        public static void Main(string[] args)
+        {
+            Person one = new Person("Jim", "Howard", 52);
+            Table table = new Table(
+                new TableSection(
+                    typeof(Person),
+                        new TableColumn("FirstName", 10, "First Name", LeftPipe: true, RightPipe: true),
+                        new TableColumn("LastName", 10, null, RightPipe: true),
+                        new TableColumn("Age", 5, RightPipe:true)
+                ),
+                new TableSection(
+                    typeof(Pet),
+                        new TableColumn("GetName", 10, "Pet Name", LeftPipe: true, RightPipe: true),
+                        new TableColumn(null, 10, "Pet Age", RightPipe:true)
+                )
+            );
+            table.AddRow(new object[] { one, new Pet("Pat", 3) });
+            
+            System.Console.WriteLine(table);
+            
+
+        }
+    }
+}
+/*
 namespace LibTest
 {
     class Program
@@ -78,3 +111,4 @@ namespace LibTest
 
     
 }
+*/
