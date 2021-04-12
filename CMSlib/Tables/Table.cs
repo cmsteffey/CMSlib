@@ -35,7 +35,7 @@ namespace CMSlib.Tables
                 }
             }
             builder.Append('\n');
-            List<(TableColumn column, ValueGetter getter    )> columns = new();
+            List<(TableColumn column, ValueGetter getter)> columns = new();
             foreach(TableSection tableSection in sections)
             {
                 columns.AddRange(tableSection.Columns);
@@ -50,8 +50,9 @@ namespace CMSlib.Tables
                     {
                         for(int j = 0; j < sections[i].Columns.Count; j++)
                         {
-                            sections[i].Columns[j].column.Deconstruct(out _, out int innerWidth, out _, out bool ellipse, out bool leftPipe, out bool rightPipe, out ExtensionMethods.ColumnAdjust adjust);
-                            builder.Append(sections[i].Columns[j].getter.Invoke(row.SectionItems[i]).TableColumn(innerWidth, adjust, ellipse, leftPipe, rightPipe));
+                            sections[i].Columns[j].column.Deconstruct(out _, out int innerWidth, out _, out bool ellipse, out bool leftPipe, out bool rightPipe, out ExtensionMethods.ColumnAdjust adjust, out CustomStringFormatter formatter);
+                            object item = sections[i].Columns[j].getter.Invoke(row.SectionItems[i]);
+                            builder.Append((formatter?.Invoke(item) ?? item).TableColumn(innerWidth, adjust, ellipse, leftPipe, rightPipe));
                         }
                     }
                 }
