@@ -106,8 +106,8 @@ namespace CMSlib.ConsoleModule
                             Console.Write("\b \b".Multiply(width));
                         }
                     }
-
-                    Console.CursorVisible = true;
+                    lock(this.parent.writeLock)
+                        Console.Write(AnsiEscape.EnableCursorVisibility);
 
                     switch (key.Key)
                     {
@@ -209,14 +209,14 @@ namespace CMSlib.ConsoleModule
 
         public void AddText(string text)
         {
-            IEnumerable<string> lines = text.PadToVisibleDivisible(width).SplitOnNonEscapeLength(width);
-            int count = lines.Count();
+            
             lock (AddTextLock)
             {
+                int before = this.text.Count;
                 this.text.AddRange(text.Split('\n').SelectMany(x=>x.PadToVisibleDivisible(width).SplitOnNonEscapeLength(width)));
                 if (scrolledLines != 0)
                 {
-                    scrolledLines += count;
+                    scrolledLines += this.text.Count - before;
                     unread = true;
                 }
                 
