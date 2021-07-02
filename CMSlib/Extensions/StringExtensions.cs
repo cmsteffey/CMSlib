@@ -75,7 +75,9 @@ namespace CMSlib.Extensions
 
         public static bool IsVisible(this string str)
         {
-            return Regex.Replace(str, "\u001B(.)[\\d;]*(.)", "").Any();
+            return Regex.Replace(str, "\u001B(.)[\\d;]*(.)", "", RegexOptions.Compiled
+                ).Any();
+            
         }
         public static string[] SplitOnLength(this string str, int length)
         {
