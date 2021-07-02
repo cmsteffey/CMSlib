@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace CMSlib.Extensions
 {
-    public static class ArrayExtensions
+    public static class CollectionExtensions
     {
         public static string ToReadableString<T>(this T[] ts)
         {
@@ -35,6 +35,26 @@ namespace CMSlib.Extensions
             }
             return strings;
         }
-        
+
+        public static IEnumerable<T> Flatten<T>(this IEnumerable<IEnumerable<T>> enumerable)
+        {
+            foreach (var children in enumerable)
+            {
+                foreach (var child in children)
+                {
+                    yield return child;
+                }
+            }
+        }
+
+        public static IEnumerable<ulong> IncrementingEnumerable(ulong start)
+        {
+            for (ulong i = start; i < ulong.MaxValue; i++)
+            {
+                yield return i;
+            }
+
+            yield return ulong.MaxValue;
+        }
     }
 }

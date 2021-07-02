@@ -13,6 +13,8 @@ namespace CMSlib.Tables
         internal List<(TableColumn column, ValueGetter getter)> Columns;
         public TableSection(Type type, params TableColumn[] columns)
         {
+
+            Columns = new();
             for(int i = 0; i < columns.Length; i++)
             {
                 columns[i].Parent = this;
@@ -41,7 +43,9 @@ namespace CMSlib.Tables
         }
     }
     
-    public record TableColumn(string MemberName, int InnerWidth, string ColumnTitle = null, bool Ellipse = true, bool LeftPipe = false, bool RightPipe = false, ExtensionMethods.ColumnAdjust Adjust = ExtensionMethods.ColumnAdjust.Left)
+
+    public record TableColumn(string MemberName, int InnerWidth, string ColumnTitle = null, bool Ellipse = true, bool LeftPipe = false, bool RightPipe = false, ExtensionMethods.ColumnAdjust Adjust = ExtensionMethods.ColumnAdjust.Left, CustomStringFormatter CustomFormatter = null)
+
     {
         public TableSection Parent { get; internal set; }
     }
@@ -56,5 +60,7 @@ namespace CMSlib.Tables
             return fieldGetter?.Invoke(item) ?? otherGetter?.Invoke(item, null) ?? item;
         }
     }
+
+    public delegate string CustomStringFormatter(object item);
 
 }

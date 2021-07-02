@@ -10,7 +10,7 @@ namespace CMSlib.Extensions
     {
         public static BinaryInt ToBinary(this int i)
         {
-            return new BinaryInt(i);
+            return new(i);
         }
         public static int ToPower(this int num, int power)
         {
@@ -27,6 +27,19 @@ namespace CMSlib.Extensions
             int returns = 0;
             for (int i = 1; num / i > 0; i *= 10.PlusPlusThisToo(ref returns));
             return returns;
+        }
+
+        public static IEnumerable<int> GetDigits(this int num){
+            if(num == 0){
+                yield return 0;
+                yield break;
+            }
+            int i = (int) Math.Pow(10, (int) Math.Ceiling(Math.Log10(num + 1)) - 1);
+            for(; i > 0; i/=10){
+                yield return num / i;
+                num = num % i;
+            }
+        
         }
         private static int PlusPlusThisToo(this int num, ref int toPlusPlus)
         {
