@@ -21,6 +21,7 @@ namespace CMSlib.Tables
             this.sections = new();
             this.rows = new();
         }
+        public void AddSection(TableSection section) => sections.Add(section);
         public void ClearRows() => rows.Clear();
 
         public override string ToString()
@@ -34,6 +35,7 @@ namespace CMSlib.Tables
                 }
             }
             builder.Append('\n');
+
             List<(TableColumn column, ValueGetter getter)> columns = new();
             foreach(TableSection tableSection in sections)
             {
