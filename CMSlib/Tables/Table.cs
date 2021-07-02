@@ -21,7 +21,6 @@ namespace CMSlib.Tables
             this.sections = new();
             this.rows = new();
         }
-        public void AddSection(TableSection section) => sections.Add(section);
         public void ClearRows() => rows.Clear();
 
         public override string ToString()
