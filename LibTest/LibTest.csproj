@@ -6,12 +6,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="CMSlib">
-      <HintPath>..\CMSlib\bin\Release\net5.0\CMSlib.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\CMSlib\CMSlib.csproj" />
   </ItemGroup>
 
