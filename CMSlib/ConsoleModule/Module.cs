@@ -90,6 +90,7 @@ namespace CMSlib.ConsoleModule
                             Console.CursorVisible = false;
                             this.inputString.Clear();
                             this.inputString.Append(new string('%', width));
+                            lrCursorPos = width;
                             this.parent.RefreshModule(parent.dictKeys[0]);
                         }
 
@@ -103,6 +104,7 @@ namespace CMSlib.ConsoleModule
                         lock (this.parent.writeLock)
                         {
                             this.inputString.Clear();
+                            lrCursorPos = 0;
                             Console.Write("\b \b".Multiply(width));
                         }
                     }
@@ -183,9 +185,8 @@ namespace CMSlib.ConsoleModule
                                 {
                                     inputString.Append(key.KeyChar);
                                     Console.Write(key.KeyChar);
+                                    lrCursorPos++;
                                 }
-
-                                lrCursorPos++;
                             }
 
                             break;
