@@ -244,9 +244,34 @@ namespace CMSlib.ConsoleModule
                     modules[dictKeys[newSelected]].selected = true;
                     modules[dictKeys[newSelected]].WriteOutput();
                 }
-
                 selected = newSelected;
+            }
+        }
+        /// <summary>
+        /// Selects the previous module - enables scrolling for that module.
+        /// </summary>
+        public void SelectPrev()
+        {
+            int newSelected;
+            lock (dictSync)
+            {
+                
+                int pastSelected = selected;
+                newSelected = selected % (dictKeys.Count + 1) - 1;
+                
 
+                if (pastSelected >= 0)
+                {
+                    modules[dictKeys[pastSelected]].selected = false;
+                    modules[dictKeys[pastSelected]].WriteOutput();
+                }
+
+                if (newSelected >= 0)
+                {
+                    modules[dictKeys[newSelected]].selected = true;
+                    modules[dictKeys[newSelected]].WriteOutput();
+                }
+                selected = newSelected;
             }
         }
         /// <summary>

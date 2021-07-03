@@ -137,9 +137,11 @@ namespace CMSlib.ConsoleModule
                         case ConsoleKey.DownArrow:
                             this.parent.SelectedModule?.ScrollDown(1);
                             break;
+                        case ConsoleKey.Tab when key.Modifiers.HasFlag(ConsoleModifiers.Shift):
+                            this.parent.SelectPrev();
+                            break;
                         case ConsoleKey.Tab:
                             this.parent.SelectNext();
-
                             break;
                         case ConsoleKey.C when key.Modifiers.HasFlag(ConsoleModifiers.Control):
                             ModuleManager.QuitApp();
