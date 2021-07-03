@@ -34,6 +34,9 @@ namespace CMSlib.ConsoleModule
             _inputClear ??= "\b \b".Multiply(width);
             return _inputClear;
         } }
+        /// <summary>
+        /// This string is shown at the top of the module. Setting it to null, or not setting it at all, uses the module title as the displayed title.
+        /// </summary>
         public string DisplayName { get; set; } = null;
         internal bool selected = false;
 
@@ -122,11 +125,17 @@ namespace CMSlib.ConsoleModule
                             break;
                         case ConsoleKey.LeftArrow:
                             break;
-                        case ConsoleKey.PageUp:
+                        case ConsoleKey.PageUp when key.Modifiers.HasFlag(ConsoleModifiers.Shift):
                             this.parent.SelectedModule?.ScrollUp((height - (isInput ? 2 : 0)));
                             break;
-                        case ConsoleKey.PageDown:
+                        case ConsoleKey.PageDown when key.Modifiers.HasFlag(ConsoleModifiers.Shift):
                             this.parent.SelectedModule?.ScrollDown((height - (isInput ? 2 : 0)));
+                            break;
+                        case ConsoleKey.UpArrow:
+                            this.parent.SelectedModule?.ScrollUp(1);
+                            break;
+                        case ConsoleKey.DownArrow:
+                            this.parent.SelectedModule?.ScrollDown(1);
                             break;
                         case ConsoleKey.Tab:
                             this.parent.SelectNext();
@@ -206,15 +215,25 @@ namespace CMSlib.ConsoleModule
         internal event AsyncEventHandler<KeyEnteredEventArgs> KeyEntered;
 
         public delegate Task AsyncEventHandler<in T>(object sender, T eventArgs);
-
+        /// <summary>
+        /// Clears all lines from this module, as well as optionally refreshing.
+        /// </summary>
+        /// <param name="refresh">Whether to refresh after clearing out the text</param>
         public void Clear(bool refresh = true)
         {
-            lock(AddTextLock)
+            lock (AddTextLock)
+            {
+                scrolledLines = 0;
                 text.Clear();
+            }
+
             if(refresh)
                 WriteOutput();
         }
-
+        /// <summary>
+        /// Adds line(s) of text to this module. This supports \n, and \n will properly add text to the next line.
+        /// </summary>
+        /// <param name="text">The text to add</param>
         public void AddText(string text)
         {
             
@@ -235,7 +254,10 @@ namespace CMSlib.ConsoleModule
         {
             AddText(obj.ToString());
         }
-
+        /// <summary>
+        /// Gets the string representation of this Module.
+        /// </summary>
+        /// <returns>The string representation of this module.</returns>
         public override string ToString()
         {
             //todo hEIGHT
@@ -314,12 +336,14 @@ namespace CMSlib.ConsoleModule
                 output.Append(borderCharacter).Append(inputString).Append(' ', width - inputString.Length).Append(borderCharacter.Value, width + 3);
             return output.ToString();
         }
-
+    
         public IEnumerable<string> ToOutputLines()
         {
             return ToString().SplitOnNonEscapeLength(width + 2);
         }
-
+        /// <summary>
+        /// Refreshes this module, showing the latest output.
+        /// </summary>
         public void WriteOutput()
         {
             lock (this.parent.writeLock)
@@ -351,7 +375,15 @@ namespace CMSlib.ConsoleModule
         
         public bool IsEnabled(LogLevel logLevel) =>
             logLevel >= minLevel;
-
+        /// <summary>
+        /// Logs a message to this module.
+        /// </summary>
+        /// <param name="logLevel">The level to log this at. If this log level is not at least the minimum, this message won't show.</param>
+        /// <param name="eventId">The event id of the event being logged.</param>
+        /// <param name="state">The state to log.</param>
+        /// <param name="exception">The exception to log.</param>
+        /// <param name="formatter">The formatter to format the log message.</param>
+        /// <typeparam name="TState">The type of the state</typeparam>
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {
             if (!IsEnabled(logLevel))
@@ -398,12 +430,20 @@ namespace CMSlib.ConsoleModule
             }
             
         }
-
+        /// <summary>
+        /// NOT IMPL'D
+        /// </summary>
+        /// <param name="state"></param>
+        /// <typeparam name="TState"></typeparam>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
         public IDisposable BeginScope<TState>(TState state)
         {
             throw new NotImplementedException();
         }
-
+        /// <summary>
+        /// Quits the app, properly returning to the main buffer and clearing all possible cursor/format options.
+        /// </summary>
         public static void QuitApp()
         {
             Console.Write(AnsiEscape.MainScreenBuffer);
@@ -415,22 +455,29 @@ namespace CMSlib.ConsoleModule
         private void ScrollUp(int amt)
         {
             if (this.text.Count == 0) return;
-            int before = scrolledLines;
-            scrolledLines = Math.Clamp(scrolledLines + amt, 0, this.text.Count - 1);
-            if(before != scrolledLines) WriteOutput();
+            lock (AddTextLock)
+            {
+                int before = scrolledLines;
+                scrolledLines = Math.Clamp(scrolledLines + amt, 0, this.text.Count - 1);
+                if (before != scrolledLines) WriteOutput();
+            }
         }
 
         private void ScrollDown(int amt)
         {
             if (this.text.Count == 0) return;
-            int before = scrolledLines;
-            scrolledLines = Math.Clamp(scrolledLines - amt, 0, this.text.Count - 1);
-            if (scrolledLines == 0) unread = false;
-            if(before != scrolledLines) WriteOutput();
+            lock(AddTextLock){
+                int before = scrolledLines;
+                scrolledLines = Math.Clamp(scrolledLines - amt, 0, this.text.Count - 1);
+                if (scrolledLines == 0) unread = false;
+                if(before != scrolledLines) WriteOutput();
+            }
         }
     }
 
-    
+    /// <summary>
+    /// Configures the Windows console to enable Ansi. Uses native WINAPI functions, don't call this without ensuring you're on a windows OS first.
+    /// </summary>
     public class WinConsoleConfiguerer
     {
         [DllImport("kernel32.dll", SetLastError = true)]
