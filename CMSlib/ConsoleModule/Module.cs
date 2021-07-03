@@ -148,13 +148,14 @@ namespace CMSlib.ConsoleModule
                                 scrolledLines = 0;
                                 unread = false;
                             }
-                            this.WriteOutput();
-
+                            
                             if (handler != null)
                             {
                                 var e = new LineEnteredEventArgs(line);
                                 await handler(this, e);
                             }
+                            this.WriteOutput();
+
 
                             continue;
                         case ConsoleKey.Backspace when inputString.Length == 0:
