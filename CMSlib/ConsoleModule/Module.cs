@@ -123,10 +123,10 @@ namespace CMSlib.ConsoleModule
                         case ConsoleKey.LeftArrow:
                             break;
                         case ConsoleKey.PageUp:
-                            this.parent.SelectedModule?.ScrollUp();
+                            this.parent.SelectedModule?.ScrollUp((height - (isInput ? 2 : 0)));
                             break;
                         case ConsoleKey.PageDown:
-                            this.parent.SelectedModule?.ScrollDown();
+                            this.parent.SelectedModule?.ScrollDown((height - (isInput ? 2 : 0)));
                             break;
                         case ConsoleKey.Tab:
                             this.parent.SelectNext();
@@ -412,19 +412,19 @@ namespace CMSlib.ConsoleModule
             Environment.Exit(0);
         }
 
-        private void ScrollUp()
+        private void ScrollUp(int amt)
         {
             if (this.text.Count == 0) return;
             int before = scrolledLines;
-            scrolledLines = Math.Clamp(scrolledLines + (height - (isInput ? 2 : 0)),0,this.text.Count - 1);
+            scrolledLines = Math.Clamp(scrolledLines + amt, 0, this.text.Count - 1);
             if(before != scrolledLines) WriteOutput();
         }
 
-        private void ScrollDown()
+        private void ScrollDown(int amt)
         {
             if (this.text.Count == 0) return;
             int before = scrolledLines;
-            scrolledLines = Math.Max(scrolledLines - (height - (isInput ? 2 : 0)), 0);
+            scrolledLines = Math.Clamp(scrolledLines - amt, 0, this.text.Count - 1);
             if (scrolledLines == 0) unread = false;
             if(before != scrolledLines) WriteOutput();
         }
