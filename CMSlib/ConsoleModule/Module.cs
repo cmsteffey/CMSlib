@@ -29,6 +29,11 @@ namespace CMSlib.ConsoleModule
         private bool unread = false;
         private int lrCursorPos = 0;
         private string title;
+        private string _inputClear;
+        private string InputClear { get {
+            _inputClear ??= "\b \b".Multiply(width);
+            return _inputClear;
+        } }
         public string DisplayName { get; set; } = null;
         internal bool selected = false;
 
@@ -105,7 +110,7 @@ namespace CMSlib.ConsoleModule
                         {
                             this.inputString.Clear();
                             lrCursorPos = 0;
-                            Console.Write("\b \b".Multiply(width));
+                            Console.Write(InputClear);
                         }
                     }
                     lock(this.parent.writeLock)
@@ -131,19 +136,19 @@ namespace CMSlib.ConsoleModule
                             QuitApp();
                             break;
                         case ConsoleKey.Enter:
-                            var handler = LineEntered;
-                            string line = inputString.ToString();
-                            inputString.Clear();
-                            lrCursorPos = 0;
-                            scrolledLines = 0;
-                            unread = false;
-                            this.WriteOutput();
+
+                            string line;
+                            AsyncEventHandler<LineEnteredEventArgs> handler;
                             lock (this.parent.writeLock)
                             {
-                                Console.SetCursorPosition(this.x + 1, this.y + this.height);
-                                Console.Write(new string(' ', this.width));
-                                Console.SetCursorPosition(this.x + 1, this.y + this.height);
+                                handler = LineEntered;
+                                line = inputString.ToString();
+                                inputString.Clear();
+                                lrCursorPos = 0;
+                                scrolledLines = 0;
+                                unread = false;
                             }
+                            this.WriteOutput();
 
                             if (handler != null)
                             {
@@ -188,6 +193,7 @@ namespace CMSlib.ConsoleModule
                                     lrCursorPos++;
                                 }
                             }
+                            
 
                             break;
                     }
@@ -333,7 +339,7 @@ namespace CMSlib.ConsoleModule
                 }
 
                 Console.Write(AnsiEscape.EnableCursorVisibility);
-                int inputCursorY = Math.Min(Console.WindowHeight - 3, this.parent.InputModule.height + this.parent.InputModule.y);
+                int inputCursorY = Math.Min(Console.WindowHeight - 2, this.parent.InputModule.height + this.parent.InputModule.y);
                 int inputCursorX = this.parent.InputModule.x + 1 + this.parent.InputModule.lrCursorPos;
                 if (inputCursorY < 0 || inputCursorX < 0)
                     return;
