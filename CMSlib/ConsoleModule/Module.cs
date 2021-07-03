@@ -337,7 +337,7 @@ namespace CMSlib.ConsoleModule
             return output.ToString();
         }
     
-        public IEnumerable<string> ToOutputLines()
+        private IEnumerable<string> ToOutputLines()
         {
             return ToString().SplitOnNonEscapeLength(width + 2);
         }
