@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using CMSlib.Extensions;
 using Microsoft.Extensions.Logging;
 
@@ -37,7 +38,7 @@ namespace CMSlib.ConsoleModule
         {
             get { lock(dictSync) return dictKeys.Count > 0 ? dictKeys[0] : null; }
         }
-
+        
         private readonly object dictSync = new();
         /// <summary>
         /// Refreshes all modules in this manager, ensuring that the latest output is displayed in all of them.
@@ -165,24 +166,17 @@ namespace CMSlib.ConsoleModule
                 throw new KeyNotFoundException($"There is no module with the title of {title}");
             return modules[title];
         }
+
         /// <summary>
         /// Event fired when a line is entered, by pressing enter when an input module is focused
         /// </summary>
-        public event Module.AsyncEventHandler<LineEnteredEventArgs> LineEntered
-        {
-            add { if(InputModule is not null) InputModule.LineEntered += value; }
-            remove { if(InputModule is not null) InputModule.LineEntered -= value; }
-        }
+        public event Module.AsyncEventHandler<LineEnteredEventArgs> LineEntered;
         //todo Abstract to key when any module is inputmodule
         /// <summary>
         /// Event fired when a key is pressed
         /// </summary>
-        public event Module.AsyncEventHandler<KeyEnteredEventArgs> KeyEntered
-        {
-            add { if(InputModule is not null) InputModule.KeyEntered += value; }
-            remove { if(InputModule is not null) InputModule.KeyEntered -= value; }
-        } 
-        
+        public event Module.AsyncEventHandler<KeyEnteredEventArgs> KeyEntered;
+
         /// <summary>
         /// Tries to get the next queued module to be used as a logger, and if the queue is empty return the input module.
         /// </summary>
@@ -283,6 +277,98 @@ namespace CMSlib.ConsoleModule
             Console.Write(AnsiEscape.SoftReset);
             Console.Write(AnsiEscape.EnableCursorBlink);
             Environment.Exit(0);
+        }
+
+        public async Task HandleKeyAsync(ConsoleKeyInfo key)
+        {
+            if (key.Modifiers.HasFlag(ConsoleModifiers.Alt))
+                            return;
+            
+                        switch (key.Key)
+                        {
+                            case ConsoleKey.RightArrow:
+                                break;
+                            case ConsoleKey.LeftArrow:
+                                break;
+                            case ConsoleKey.PageUp when key.Modifiers.HasFlag(ConsoleModifiers.Shift):
+                                this.SelectedModule?.ScrollUp((SelectedModule.height - (SelectedModule.isInput ? 2 : 0)));
+                                break;
+                            case ConsoleKey.PageDown when key.Modifiers.HasFlag(ConsoleModifiers.Shift):
+                                this.SelectedModule?.ScrollDown((SelectedModule.height - (SelectedModule.isInput ? 2 : 0)));
+                                break;
+                            case ConsoleKey.UpArrow:
+                                this.SelectedModule?.ScrollUp(1);
+                                break;
+                            case ConsoleKey.DownArrow:
+                                this.SelectedModule?.ScrollDown(1);
+                                break;
+                            case ConsoleKey.Tab when key.Modifiers.HasFlag(ConsoleModifiers.Shift):
+                                this.SelectPrev();
+                                break;
+                            case ConsoleKey.Tab:
+                                this.SelectNext();
+                                break;
+                            case ConsoleKey.C when key.Modifiers.HasFlag(ConsoleModifiers.Control):
+                                ModuleManager.QuitApp();
+                                break;
+                            case ConsoleKey.Enter:
+                                if (InputModule is null) return;
+                                string line;
+                                Module.AsyncEventHandler<LineEnteredEventArgs> handler;
+                                lock (this.writeLock)
+                                {
+                                    handler = LineEntered;
+                                    line = InputModule.inputString.ToString();
+                                    InputModule.inputString.Clear();
+                                    InputModule.lrCursorPos = 0;
+                                    InputModule.scrolledLines = 0;
+                                    InputModule.unread = false;
+                                }
+                                if (handler != null)
+                                {
+                                    var e = new LineEnteredEventArgs(line);
+                                    await handler(this, e);
+                                }
+                                this.InputModule.WriteOutput();
+                                return;
+                            case ConsoleKey.Backspace when (InputModule.inputString.Length == 0) ?? false:
+                                return;
+                            case ConsoleKey.Backspace when key.Modifiers.HasFlag(ConsoleModifiers.Control):
+                                bool? isPrevSpace = inputString[^1] == ' ';
+                                int i;
+                                for (i = inputString.Length - 2; i >= 0; i--)
+                                {
+            
+                                    if (isPrevSpace.Value && inputString[i] != ' ')
+                                        break;
+                                    if (inputString[i] == ' ' && !isPrevSpace.Value)
+                                        isPrevSpace = true;
+                                }
+            
+                                //TODO fix this
+                                break;
+                            case ConsoleKey.Backspace:
+                                lock (this.writeLock)
+                                {
+                                    inputString.Remove(inputString.Length - 1, 1);
+                                    lrCursorPos--;
+                                    Console.Write("\b \b");
+                                }
+            
+                                return;
+                            default:
+                                if (key.KeyChar == '\u0000') return;
+                                if (inputString.Length < width)
+                                {
+                                    lock (this.writeLock)
+                                    {
+                                        inputString.Append(key.KeyChar);
+                                        Console.Write(key.KeyChar);
+                                        lrCursorPos++;
+                                    }
+                                }
+                                break;
+                        }
         }
     }
     /// <summary>
