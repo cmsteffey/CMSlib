@@ -249,6 +249,16 @@ namespace CMSlib.ConsoleModule
 
             }
         }
+        /// <summary>
+        /// Quits the app, properly returning to the main buffer and clearing all possible cursor/format options.
+        /// </summary>
+        public static void QuitApp()
+        {
+            Console.Write(AnsiEscape.MainScreenBuffer);
+            Console.Write(AnsiEscape.SoftReset);
+            Console.Write(AnsiEscape.EnableCursorBlink);
+            Environment.Exit(0);
+        }
     }
     /// <summary>
     /// EventArgs for the LineEntered Event

@@ -71,7 +71,7 @@ namespace CMSlib.ConsoleModule
             this.AddText(text);
             if (!isInput) return;
             Console.TreatControlCAsInput = true;
-            Console.CancelKeyPress += (_, _) => { QuitApp(); };
+            Console.CancelKeyPress += (_, _) => { ModuleManager.QuitApp(); };
             if (Environment.OSVersion.Platform.ToString().ToLower().Contains("win"))
                 new WinConsoleConfiguerer().SetupConsole();
             Console.Write(AnsiEscape.AlternateScreenBuffer);
@@ -142,7 +142,7 @@ namespace CMSlib.ConsoleModule
 
                             break;
                         case ConsoleKey.C when key.Modifiers.HasFlag(ConsoleModifiers.Control):
-                            QuitApp();
+                            ModuleManager.QuitApp();
                             break;
                         case ConsoleKey.Enter:
 
@@ -441,16 +441,7 @@ namespace CMSlib.ConsoleModule
         {
             throw new NotImplementedException();
         }
-        /// <summary>
-        /// Quits the app, properly returning to the main buffer and clearing all possible cursor/format options.
-        /// </summary>
-        public static void QuitApp()
-        {
-            Console.Write(AnsiEscape.MainScreenBuffer);
-            Console.Write(AnsiEscape.SoftReset);
-            Console.Write(AnsiEscape.EnableCursorBlink);
-            Environment.Exit(0);
-        }
+        
 
         private void ScrollUp(int amt)
         {
