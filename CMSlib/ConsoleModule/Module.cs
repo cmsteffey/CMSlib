@@ -145,7 +145,7 @@ namespace CMSlib.ConsoleModule
             
             if (selected)
                 output.Append(AnsiEscape.SgrUnderline);
-            output.Append(actingTitle.ToUpper().Ellipse(Width));
+            output.Append(actingTitle.Ellipse(Width));
             
             if (selected)
                 output.Append(AnsiEscape.SgrNoUnderline);
