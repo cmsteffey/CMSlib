@@ -70,15 +70,6 @@ namespace CMSlib.ConsoleModule
                     title
                 );
             this.AddText(text);
-            if (!isInput) return;
-            Console.TreatControlCAsInput = true;
-            Console.CancelKeyPress += (_, _) => { ModuleManager.QuitApp(); };
-            if (Environment.OSVersion.Platform.ToString().ToLower().Contains("win"))
-                new WinConsoleConfiguerer().SetupConsole();
-            Console.Write(AnsiEscape.AlternateScreenBuffer);
-            Console.Write(AnsiEscape.DisableCursorBlink);
-
-            
         }
         
 
@@ -236,13 +227,13 @@ namespace CMSlib.ConsoleModule
 
                 if (this.parent.InputModule is null) return;
                 
-                Console.Write(AnsiEscape.EnableCursorVisibility);
                 int inputCursorY = Math.Min(Console.WindowHeight - 2, this.parent.InputModule.height + this.parent.InputModule.y);
                 int inputCursorX = this.parent.InputModule.x + 1 + this.parent.InputModule.lrCursorPos;
                 if (inputCursorY < 0 || inputCursorX < 0)
                     return;
                 Console.SetCursorPosition(inputCursorX,
                     inputCursorY);
+                Console.Write(AnsiEscape.EnableCursorVisibility);
             }
         }
         

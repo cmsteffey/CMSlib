@@ -18,6 +18,12 @@ namespace CMSlib.ConsoleModule
 
         public ModuleManager()
         {
+            Console.TreatControlCAsInput = true;
+            Console.CancelKeyPress += (_, _) => { ModuleManager.QuitApp(); };
+            if (Environment.OSVersion.Platform.ToString().ToLower().Contains("win"))
+                new WinConsoleConfiguerer().SetupConsole();
+            Console.Write(AnsiEscape.AlternateScreenBuffer);
+            Console.Write(AnsiEscape.DisableCursorBlink);
             _ = Task.Run(async () =>
             {
                 while (true)
@@ -146,7 +152,7 @@ namespace CMSlib.ConsoleModule
         /// <param name="minimumLogLevel">The minimum log level that is outputted when this module is used as an ILogger</param>
         /// <param name="immediateOutput">Whether to immediately call RefreshModule on this module after construction</param>
         /// <returns>Whether the module was successfully created</returns>
-        public bool AddModule(string title, int x, int y, int width, int height, string startingText = "", char? borderChar = null, LogLevel minimumLogLevel = LogLevel.Information, bool immediateOutput = true)
+        public bool AddModule(string title, int x, int y, int width, int height, string startingText = "", char? borderChar = null, LogLevel minimumLogLevel = LogLevel.Information, bool immediateOutput = true, bool isInput = true)
         {
             if (modules.ContainsKey(title))
             {
@@ -154,7 +160,7 @@ namespace CMSlib.ConsoleModule
             }
             lock (dictSync)
             {
-                Module toAdd = new(this, title, x, y, width-2, height-2, startingText, modules.Count == 0, borderChar, minimumLogLevel);
+                Module toAdd = new(this, title, x, y, width-2, height-2, startingText, isInput, borderChar, minimumLogLevel);
                 modules.Add(title, toAdd);
                 dictKeys.Add(title);
                 if (dictKeys.Count - 1 == selected)
@@ -246,7 +252,7 @@ namespace CMSlib.ConsoleModule
                 
                 pastSelected = selected;
                 selected++;
-                newSelected = ++selected % (dictKeys.Count + 1) - 1;
+                newSelected = (++selected).Modulus(dictKeys.Count + 1) - 1;
                 selected = newSelected;
                 refreshPast = pastSelected >= 0;
                 if (refreshPast)
@@ -278,7 +284,7 @@ namespace CMSlib.ConsoleModule
             {
                 
                 pastSelected = selected;
-                newSelected = selected % (dictKeys.Count + 1) - 1;
+                newSelected = selected.Modulus(dictKeys.Count + 1) - 1;
 
                 selected = newSelected;
                 refreshPast = pastSelected >= 0;

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -46,10 +47,17 @@ namespace CMSlib.Extensions
             toPlusPlus++;
             return num;
         }
-        public static Task GetAwaiter(this int num)
+        public static TaskAwaiter GetAwaiter(this int num)
         {
-            return Task.Delay(num);
+            return Task.Delay(num).GetAwaiter();
         }
+
+        public static int Modulus(this int oprnd, int num)
+        {
+            int result = oprnd % num;
+            return result < 0 ? result + num : result;
+        }
+        
         public static void KeyPress(this byte num)
         {
             keybd_event(num, 0, 0x0001, (IntPtr)0);
