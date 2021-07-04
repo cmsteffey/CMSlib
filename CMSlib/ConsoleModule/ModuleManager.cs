@@ -338,6 +338,12 @@ namespace CMSlib.ConsoleModule
                     break;
                 case ConsoleKey.LeftArrow:
                     break;
+                case ConsoleKey.End when key.Modifiers.HasFlag(ConsoleModifiers.Control):
+                    this.SelectedModule?.ScrollTo(0);
+                    break;
+                case ConsoleKey.Home when key.Modifiers.HasFlag(ConsoleModifiers.Control):
+                    this.SelectedModule?.ScrollTo(int.MaxValue);
+                    break;
                 case ConsoleKey.PageUp:
                     this.SelectedModule?.ScrollUp((SelectedModule.Height - (SelectedModule.isInput ? 2 : 0)));
                     break;

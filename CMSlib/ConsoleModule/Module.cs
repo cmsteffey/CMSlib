@@ -328,6 +328,16 @@ namespace CMSlib.ConsoleModule
                 if(before != scrolledLines) WriteOutput();
             }
         }
+        internal void ScrollTo(int line)
+        {
+            if (this.text.Count == 0) return;
+            lock (AddTextLock)
+            {
+                int before = scrolledLines;
+                scrolledLines = Math.Clamp(line, 0, this.text.Count - 1);
+                if (before != scrolledLines) WriteOutput();
+            }
+        }
     }
 
     /// <summary>
