@@ -263,7 +263,7 @@ namespace CMSlib.ConsoleModule
             if(refreshPast)
                 modules[dictKeys[pastSelected]].WriteOutput();
             if(refreshNew)
-                modules[dictKeys[pastSelected]].WriteOutput();
+                modules[dictKeys[newSelected]].WriteOutput();
         }
         /// <summary>
         /// Selects the previous module - enables scrolling for that module.
@@ -296,7 +296,7 @@ namespace CMSlib.ConsoleModule
             if(refreshPast)
                 modules[dictKeys[pastSelected]].WriteOutput();
             if(refreshNew)
-                modules[dictKeys[pastSelected]].WriteOutput();
+                modules[dictKeys[newSelected]].WriteOutput();
         }
         /// <summary>
         /// Quits the app, properly returning to the main buffer and clearing all possible cursor/format options.
