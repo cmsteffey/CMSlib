@@ -332,10 +332,10 @@ namespace CMSlib.ConsoleModule
                 case ConsoleKey.PageDown:
                     this.SelectedModule?.ScrollDown((SelectedModule.height - (SelectedModule.isInput ? 2 : 0)));
                     break;
-                case ConsoleKey.UpArrow when key.Modifiers.HasFlag(ConsoleModifiers.Shift):
+                case ConsoleKey.UpArrow when key.Modifiers.HasFlag(ConsoleModifiers.Control):
                     this.SelectedModule?.ScrollUp(1);
                     break;
-                case ConsoleKey.DownArrow when key.Modifiers.HasFlag(ConsoleModifiers.Shift):
+                case ConsoleKey.DownArrow when key.Modifiers.HasFlag(ConsoleModifiers.Control):
                     this.SelectedModule?.ScrollDown(1);
                     break;
                 case ConsoleKey.Tab when key.Modifiers.HasFlag(ConsoleModifiers.Shift):
