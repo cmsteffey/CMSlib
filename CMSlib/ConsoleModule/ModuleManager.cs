@@ -30,8 +30,10 @@ namespace CMSlib.ConsoleModule
                 {
                     Module inputModule = InputModule;
                     var key = Console.ReadKey(true);
-                    if (inputModule is Module module)
-                        await KeyEntered?.Invoke(module, new(key));
+                    Module.AsyncEventHandler<KeyEnteredEventArgs> handler = KeyEntered;
+                    
+                    if (inputModule is Module module && handler is not null)
+                        await handler(module, new(key));
                     await HandleKeyAsync(key);
                 }
             });
@@ -205,7 +207,6 @@ namespace CMSlib.ConsoleModule
         /// The sender is the Module that had the line inputted into it
         /// </summary>
         public event Module.AsyncEventHandler<LineEnteredEventArgs> LineEntered;
-        //todo Abstract to key when any module is inputmodule
         /// <summary>
         /// Event fired when a key is pressed
         /// </summary>
