@@ -12,10 +12,15 @@ namespace CMSlib.ConsoleModule
 {
     public class Module : ILogger
     {
+        public int X { get; }
+        public int Y { get; }
+        public int Width { get; }
+        public int Height { get; }
+        public string Title { get; }
+
         internal StringBuilder inputString = new();
         private List<string> text = new();
         private readonly char? borderCharacter;
-        internal readonly int x, y, width, height;
         internal readonly bool isInput;
         private ModuleManager parent;
         private object AddTextLock = new();
@@ -24,11 +29,10 @@ namespace CMSlib.ConsoleModule
         internal int scrolledLines = 0;
         internal bool unread = false;
         internal int lrCursorPos = 0;
-        internal string title;
         private string _inputClear;
         
         private string InputClear { get {
-            _inputClear ??= "\b \b".Multiply(width);
+            _inputClear ??= "\b \b".Multiply(Width);
             return _inputClear;
         } }
         /// <summary>
@@ -48,13 +52,13 @@ namespace CMSlib.ConsoleModule
             (
                     this.parent,
                     this.borderCharacter,
-                    this.x,
-                    this.y,
-                    this.height,
-                    this.width,
+                    this.X,
+                    this.Y,
+                    this.Height,
+                    this.Width,
                     this.isInput,
                     this.minLevel,
-                    this.title) =
+                    this.Title) =
                 (parent,
                     borderCharacter,
                     x,
@@ -98,7 +102,7 @@ namespace CMSlib.ConsoleModule
             lock (AddTextLock)
             {
                 int before = this.text.Count;
-                this.text.AddRange(text.Replace("\t", "        ").Replace("\r\n", "\n").Split('\n').SelectMany(x=>x.PadToVisibleDivisible(width).SplitOnNonEscapeLength(width)));
+                this.text.AddRange(text.Replace("\t", "        ").Replace("\r\n", "\n").Split('\n').SelectMany(x=>x.PadToVisibleDivisible(Width).SplitOnNonEscapeLength(Width)));
                 if (scrolledLines != 0)
                 {
                     scrolledLines += this.text.Count - before;
@@ -119,9 +123,9 @@ namespace CMSlib.ConsoleModule
         public override string ToString()
         {
             //todo hEIGHT
-            int actingHeight = Math.Min(height, (Console.WindowHeight - 2) - y);
-            string actingTitle = DisplayName ?? title;
-            StringBuilder output = borderCharacter is not null ? new((width + 2) * (actingHeight + 2) + AnsiEscape.AsciiMode.Length + AnsiEscape.SgrUnderline.Length * 2) : new();
+            int actingHeight = Math.Min(Height, (Console.WindowHeight - 2) - Y);
+            string actingTitle = DisplayName ?? Title;
+            StringBuilder output = borderCharacter is not null ? new((Width + 2) * (actingHeight + 2) + AnsiEscape.AsciiMode.Length + AnsiEscape.SgrUnderline.Length * 2) : new();
             int inputDifferential = isInput ? 2 : 0;
             int lineCount = Math.Clamp(text.Count - scrolledLines, 0, actingHeight - inputDifferential);
             int spaceCount =
@@ -141,18 +145,18 @@ namespace CMSlib.ConsoleModule
             
             if (selected)
                 output.Append(AnsiEscape.SgrUnderline);
-            output.Append(actingTitle.ToUpper().Ellipse(width));
+            output.Append(actingTitle.ToUpper().Ellipse(Width));
             
             if (selected)
                 output.Append(AnsiEscape.SgrNoUnderline);
             if (borderCharacter is null)
                 output.Append(AnsiEscape.LineDrawingMode);
-            output.Append(borderCharacter??AnsiEscape.HorizontalLine, width - actingTitle.Ellipse(width).Length);
+            output.Append(borderCharacter??AnsiEscape.HorizontalLine, Width - actingTitle.Ellipse(Width).Length);
             output.Append(borderCharacter ?? AnsiEscape.UpperRightCorner);
             for (int i = 0; i < spaceCount; i++)
             {
                 output.Append(borderCharacter?.ToString()??(unread && i > actingHeight - (4 + inputDifferential) ? AnsiEscape.AsciiMode + AnsiEscape.SgrRedForeGround + AnsiEscape.SgrBrightBold + "V" + AnsiEscape.SgrClear: AnsiEscape.VerticalLine.ToString()));
-                output.Append(' ', width);
+                output.Append(' ', Width);
                 output.Append(borderCharacter?.ToString()??AnsiEscape.LineDrawingMode + AnsiEscape.VerticalLine);
             }
             int index = Math.Clamp(text.Count - (actingHeight - inputDifferential) - scrolledLines, 0, text.Count == 0 ? 0 : text.Count - 1);
@@ -165,7 +169,7 @@ namespace CMSlib.ConsoleModule
                 output.Append(borderCharacter?.ToString()??(unread && i + Math.Max(spaceCount, 0) > actingHeight - (4 + inputDifferential) ? AnsiEscape.SgrRedForeGround + AnsiEscape.SgrBrightBold + "V" + AnsiEscape.SgrClear: AnsiEscape.VerticalLine.ToString()));
                 if (borderCharacter is null) output.Append(AnsiEscape.AsciiMode);
                 output.Append(toPrint[i]);
-                bool dot = borderCharacter is null && i + Math.Max(spaceCount, 0) > height - (2 + inputDifferential) && scrolledLines != 0;
+                bool dot = borderCharacter is null && i + Math.Max(spaceCount, 0) > Height - (2 + inputDifferential) && scrolledLines != 0;
                 if (dot)
                 {
                     output.Append(AnsiEscape.SgrGreenForeGround + AnsiEscape.SgrBrightBold + "." + AnsiEscape.SgrClear);
@@ -174,30 +178,30 @@ namespace CMSlib.ConsoleModule
                 output.Append(borderCharacter?.ToString()??(dot?"":AnsiEscape.VerticalLine.ToString()));
             }
             if(borderCharacter is null)
-                output.Append(isInput ? AnsiEscape.VerticalWithRight : AnsiEscape.LowerLeftCorner).Append(AnsiEscape.HorizontalLine, width).Append(isInput ? AnsiEscape.VerticalWithLeft : AnsiEscape.LowerRightCorner);
+                output.Append(isInput ? AnsiEscape.VerticalWithRight : AnsiEscape.LowerLeftCorner).Append(AnsiEscape.HorizontalLine, Width).Append(isInput ? AnsiEscape.VerticalWithLeft : AnsiEscape.LowerRightCorner);
             else
-                output.Append(borderCharacter.Value, width + 2);
+                output.Append(borderCharacter.Value, Width + 2);
             if (!isInput) return output.ToString();
             if(borderCharacter is null) 
                 output
                     .Append(AnsiEscape.VerticalLine)
                     .Append(AnsiEscape.AsciiMode)
                     .Append(inputString)
-                    .Append(' ', width - inputString.Length)
+                    .Append(' ', Width - inputString.Length)
                     .Append(AnsiEscape.LineDrawingMode)
                     .Append(AnsiEscape.VerticalLine)
                     .Append(AnsiEscape.LowerLeftCorner)
-                    .Append(AnsiEscape.HorizontalLine, width)
+                    .Append(AnsiEscape.HorizontalLine, Width)
                     .Append(AnsiEscape.LowerRightCorner)
                     .Append(AnsiEscape.AsciiMode);
             else
-                output.Append(borderCharacter).Append(inputString).Append(' ', width - inputString.Length).Append(borderCharacter.Value, width + 3);
+                output.Append(borderCharacter).Append(inputString).Append(' ', Width - inputString.Length).Append(borderCharacter.Value, Width + 3);
             return output.ToString();
         }
     
         private IEnumerable<string> ToOutputLines()
         {
-            return ToString().SplitOnNonEscapeLength(width + 2);
+            return ToString().SplitOnNonEscapeLength(Width + 2);
         }
         /// <summary>
         /// Refreshes this module, showing the latest output.
@@ -208,23 +212,23 @@ namespace CMSlib.ConsoleModule
             {
                 Console.Write(AnsiEscape.DisableCursorVisibility);
                 var outputLines = this.ToOutputLines();
-                int i = y - 1;
-                if(this.x > Console.BufferWidth || this.y > Console.BufferHeight)
+                int i = Y - 1;
+                if(this.X > Console.BufferWidth || this.Y > Console.BufferHeight)
                     return;
-                Console.SetCursorPosition(x, y);
+                Console.SetCursorPosition(X, Y);
                 foreach (var line in outputLines)
                 {
                     if(++i >= Console.WindowHeight)
                         break;
                     if (line.IsVisible())
-                        Console.SetCursorPosition(x, i);
+                        Console.SetCursorPosition(X, i);
                     Console.Write(line);
                 }
 
                 if (this.parent.InputModule is null) return;
                 
-                int inputCursorY = Math.Min(Console.WindowHeight - 2, this.parent.InputModule.height + this.parent.InputModule.y);
-                int inputCursorX = this.parent.InputModule.x + 1 + this.parent.InputModule.lrCursorPos;
+                int inputCursorY = Math.Min(Console.WindowHeight - 2, this.parent.InputModule.Height + this.parent.InputModule.Y);
+                int inputCursorX = this.parent.InputModule.X + 1 + this.parent.InputModule.lrCursorPos;
                 if (inputCursorY < 0 || inputCursorX < 0)
                     return;
                 Console.SetCursorPosition(inputCursorX,
@@ -269,7 +273,7 @@ namespace CMSlib.ConsoleModule
                 };
             output.Append($"{colorScheme}");
             output.Append(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
-            output.Append($"|{eventId.Id.ToString().TableColumn(5, ExtensionMethods.ColumnAdjust.Right)}:{shortName}|{eventId.Name.GuaranteeLength(width - 30)}{AnsiEscape.SgrClear}");
+            output.Append($"|{eventId.Id.ToString().TableColumn(5, ExtensionMethods.ColumnAdjust.Right)}:{shortName}|{eventId.Name.GuaranteeLength(Width - 30)}{AnsiEscape.SgrClear}");
             lock (AddTextLock)
             {
                 this.AddText(output

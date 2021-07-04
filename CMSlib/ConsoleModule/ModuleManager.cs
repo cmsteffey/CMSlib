@@ -61,7 +61,7 @@ namespace CMSlib.ConsoleModule
         /// </summary>
         public string? InputModuleTitle
         {
-            get => InputModule?.title;
+            get => InputModule?.Title;
         }
         
         private readonly object dictSync = new();
@@ -336,10 +336,10 @@ namespace CMSlib.ConsoleModule
                 case ConsoleKey.LeftArrow:
                     break;
                 case ConsoleKey.PageUp:
-                    this.SelectedModule?.ScrollUp((SelectedModule.height - (SelectedModule.isInput ? 2 : 0)));
+                    this.SelectedModule?.ScrollUp((SelectedModule.Height - (SelectedModule.isInput ? 2 : 0)));
                     break;
                 case ConsoleKey.PageDown:
-                    this.SelectedModule?.ScrollDown((SelectedModule.height - (SelectedModule.isInput ? 2 : 0)));
+                    this.SelectedModule?.ScrollDown((SelectedModule.Height - (SelectedModule.isInput ? 2 : 0)));
                     break;
                 case ConsoleKey.UpArrow when key.Modifiers.HasFlag(ConsoleModifiers.Control):
                     this.SelectedModule?.ScrollUp(1);
@@ -408,7 +408,7 @@ namespace CMSlib.ConsoleModule
                 default:
                     if (InputModule is null) return;
                     if (key.KeyChar == '\u0000') return;
-                    if (InputModule.inputString.Length < InputModule.width)
+                    if (InputModule.inputString.Length < InputModule.Width)
                     {
                         lock (this.writeLock)
                         {
