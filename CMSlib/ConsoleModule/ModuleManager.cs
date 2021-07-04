@@ -192,17 +192,20 @@ namespace CMSlib.ConsoleModule
 
         public ILogger CreateLogger(string categoryName)
         {
-            if (loggerQueue.TryDequeue(out Module next))
+            lock (dictSync)
             {
-                return next;
-            }
-            else if(modules.Count > 0)
-            {
-                return this.InputModule;
-            }
-            else
-            {
-                throw new Exception("No modules created, and no modules queued.");
+                if (loggerQueue.TryDequeue(out Module next))
+                {
+                    return next;
+                }
+                else if (modules.Count > 0)
+                {
+                    return this.modules.First().Value;
+                }
+                else
+                {
+                    throw new Exception("No modules created, and no modules queued.");
+                }
             }
         }
 
