@@ -41,7 +41,13 @@ namespace CMSlib.ConsoleModule
         public string DisplayName { get; set; } = null;
         internal bool selected = false;
 
+        /// <summary>
+        /// Event fired when a line is entered into this module
+        /// </summary>
         public event AsyncEventHandler<LineEnteredEventArgs> LineEntered;
+        /// <summary>
+        /// Event fired when a key is pressed while this module is focused
+        /// </summary>
         public event AsyncEventHandler<KeyEnteredEventArgs> KeyEntered;
 
         internal Module()

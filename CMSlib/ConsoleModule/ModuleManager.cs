@@ -208,11 +208,11 @@ namespace CMSlib.ConsoleModule
         }
 
         /// <summary>
-        /// Event fired when a line is entered while this module is Selected.
+        /// Event fired when a line is entered in any module.
         /// </summary>
         public event Module.AsyncEventHandler<LineEnteredEventArgs> LineEntered;
         /// <summary>
-        /// Event fired when a key is pressed whlie this module is Selected.
+        /// Event fired when a key is pressed.
         /// </summary>
         public event Module.AsyncEventHandler<KeyEnteredEventArgs> KeyEntered;
 
