@@ -28,7 +28,10 @@ namespace CMSlib.ConsoleModule
             {
                 while (true)
                 {
+                    Module inputModule = InputModule;
                     var key = Console.ReadKey(true);
+                    if (inputModule is Module module)
+                        await KeyEntered?.Invoke(module, new(key));
                     await HandleKeyAsync(key);
                 }
             });
