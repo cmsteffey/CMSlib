@@ -58,7 +58,7 @@ namespace CMSlib.ConsoleModule
             get
             {
                 lock (dictSync)
-                    return selected == -1 ? null : modules[dictKeys[selected]].isInput ? modules[dictKeys[selected]] : null;
+                    return selected < 0 || selected >= modules.Count ? null : modules[dictKeys[selected]].isInput ? modules[dictKeys[selected]] : null;
             }
         }
         /// <summary>
