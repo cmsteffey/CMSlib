@@ -102,7 +102,7 @@ namespace CMSlib.ConsoleModule
             lock (AddTextLock)
             {
                 int before = this.text.Count;
-                this.text.AddRange(text.Replace("\t", "        ").Split('\n').SelectMany(x=>x.PadToVisibleDivisible(width).SplitOnNonEscapeLength(width)));
+                this.text.AddRange(text.Replace("\t", "        ").Replace("\r\n", "\n").Split('\n').SelectMany(x=>x.PadToVisibleDivisible(width).SplitOnNonEscapeLength(width)));
                 if (scrolledLines != 0)
                 {
                     scrolledLines += this.text.Count - before;
