@@ -105,6 +105,10 @@ namespace CMSlib.ConsoleModule
             {
                 dictKeys.Remove(title);
                 success = modules.Remove(title);
+                if (selected >= dictKeys.Count)
+                {
+                    selected = -1;
+                }
             }
             return success;
         }
