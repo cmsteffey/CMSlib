@@ -100,6 +100,7 @@ namespace CMSlib.ConsoleModule
         /// <returns>Whether this operation was successful. It will not succeed if this manager does not have a module with the supplied title.</returns>
         public bool RemoveModule(string title)
         {
+            //TODO shift selected back down once module is removed
             bool success;
             lock (dictSync)
             {
