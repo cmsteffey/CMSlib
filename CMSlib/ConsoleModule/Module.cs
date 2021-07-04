@@ -28,7 +28,7 @@ namespace CMSlib.ConsoleModule
         internal int scrolledLines = 0;
         internal bool unread = false;
         internal int lrCursorPos = 0;
-        private string title;
+        internal string title;
         private string _inputClear;
         
         private string InputClear { get {

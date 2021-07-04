@@ -19,7 +19,7 @@ namespace CMSlib.ConsoleModule
         public ModuleManager()
         {
             Console.TreatControlCAsInput = true;
-            Console.CancelKeyPress += (_, _) => { ModuleManager.QuitApp(); };
+            Console.CancelKeyPress += (_, _) => { QuitApp(); };
             if (Environment.OSVersion.Platform.ToString().ToLower().Contains("win"))
                 new WinConsoleConfiguerer().SetupConsole();
             Console.Write(AnsiEscape.AlternateScreenBuffer);
@@ -61,7 +61,7 @@ namespace CMSlib.ConsoleModule
         /// </summary>
         public string? InputModuleTitle
         {
-            get { lock(dictSync) return dictKeys.Count > 0 ? dictKeys[0] : null; }
+            get => InputModule?.title;
         }
         
         private readonly object dictSync = new();
@@ -194,6 +194,7 @@ namespace CMSlib.ConsoleModule
 
         /// <summary>
         /// Event fired when a line is entered, by pressing enter when an input module is focused
+        /// The sender is the Module that had the line inputted into it
         /// </summary>
         public event Module.AsyncEventHandler<LineEnteredEventArgs> LineEntered;
         //todo Abstract to key when any module is inputmodule
@@ -249,7 +250,6 @@ namespace CMSlib.ConsoleModule
             bool refreshPast;
             lock (dictSync)
             {
-                
                 pastSelected = selected;
                 selected++;
                 newSelected = (++selected).Modulus(dictKeys.Count + 1) - 1;
@@ -259,7 +259,7 @@ namespace CMSlib.ConsoleModule
                 {
                     modules[dictKeys[pastSelected]].selected = false;
                 }
-
+                
                 refreshNew = newSelected >= 0;
                 if (refreshNew)
                 {
@@ -317,6 +317,7 @@ namespace CMSlib.ConsoleModule
 
         public async Task HandleKeyAsync(ConsoleKeyInfo key)
         {
+            
             if (key.Modifiers.HasFlag(ConsoleModifiers.Alt))
                             return;
             
