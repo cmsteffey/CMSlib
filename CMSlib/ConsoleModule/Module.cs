@@ -1,14 +1,10 @@
 ﻿using System;
 using CMSlib.Extensions;
 using System.Collections.Generic;
-using System.IO.Pipes;
 using System.Linq;
-using System.Net.Http.Headers;
 using System.Runtime.InteropServices;
-using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 using CMSlib.Tables;
 using Microsoft.Extensions.Logging;
 
@@ -19,17 +15,18 @@ namespace CMSlib.ConsoleModule
         internal StringBuilder inputString = new();
         private List<string> text = new();
         private readonly char? borderCharacter;
-        internal int x, y, width, height;
-        private bool isInput;
+        internal readonly int x, y, width, height;
+        internal readonly bool isInput;
         private ModuleManager parent;
         private object AddTextLock = new();
         private object ScrollLock = new();
         private LogLevel minLevel;
-        private int scrolledLines = 0;
-        private bool unread = false;
-        private int lrCursorPos = 0;
-        private string title;
+        internal int scrolledLines = 0;
+        internal bool unread = false;
+        internal int lrCursorPos = 0;
+        internal string title;
         private string _inputClear;
+        
         private string InputClear { get {
             _inputClear ??= "\b \b".Multiply(width);
             return _inputClear;
@@ -69,149 +66,8 @@ namespace CMSlib.ConsoleModule
                     title
                 );
             this.AddText(text);
-            if (!isInput) return;
-            Console.TreatControlCAsInput = true;
-            Console.CancelKeyPress += (_, _) => { ModuleManager.QuitApp(); };
-            if (Environment.OSVersion.Platform.ToString().ToLower().Contains("win"))
-                new WinConsoleConfiguerer().SetupConsole();
-            Console.Write(AnsiEscape.AlternateScreenBuffer);
-            Console.Write(AnsiEscape.DisableCursorBlink);
-
-            _ = Task.Run(async () =>
-            {
-                bool closed = false;
-                bool highlightMode = false;
-                while (true)
-                {
-                    var key = Console.ReadKey(true);
-                    var keyHandler = this.KeyEntered;
-                    if (keyHandler is not null)
-                        await keyHandler(this, new(key));
-                    if (key.Modifiers.HasFlag(ConsoleModifiers.Alt))
-                        continue;
-
-                    if (key.Key == ConsoleKey.Escape)
-                    {
-                        closed = true;
-                        lock (this.parent.writeLock)
-                        {
-                            Console.CursorVisible = false;
-                            this.inputString.Clear();
-                            this.inputString.Append(new string('%', width));
-                            lrCursorPos = width;
-                            this.parent.RefreshModule(parent.dictKeys[0]);
-                        }
-
-                        continue;
-                    }
-
-                    if (closed)
-                    {
-                        closed = false;
-
-                        lock (this.parent.writeLock)
-                        {
-                            this.inputString.Clear();
-                            lrCursorPos = 0;
-                            Console.Write(InputClear);
-                        }
-                    }
-                    lock(this.parent.writeLock)
-                        Console.Write(AnsiEscape.EnableCursorVisibility);
-
-                    switch (key.Key)
-                    {
-                        case ConsoleKey.RightArrow:
-                            break;
-                        case ConsoleKey.LeftArrow:
-                            break;
-                        case ConsoleKey.PageUp when key.Modifiers.HasFlag(ConsoleModifiers.Shift):
-                            this.parent.SelectedModule?.ScrollUp((height - (isInput ? 2 : 0)));
-                            break;
-                        case ConsoleKey.PageDown when key.Modifiers.HasFlag(ConsoleModifiers.Shift):
-                            this.parent.SelectedModule?.ScrollDown((height - (isInput ? 2 : 0)));
-                            break;
-                        case ConsoleKey.UpArrow:
-                            this.parent.SelectedModule?.ScrollUp(1);
-                            break;
-                        case ConsoleKey.DownArrow:
-                            this.parent.SelectedModule?.ScrollDown(1);
-                            break;
-                        case ConsoleKey.Tab when key.Modifiers.HasFlag(ConsoleModifiers.Shift):
-                            this.parent.SelectPrev();
-                            break;
-                        case ConsoleKey.Tab:
-                            this.parent.SelectNext();
-                            break;
-                        case ConsoleKey.C when key.Modifiers.HasFlag(ConsoleModifiers.Control):
-                            ModuleManager.QuitApp();
-                            break;
-                        case ConsoleKey.Enter:
-
-                            string line;
-                            AsyncEventHandler<LineEnteredEventArgs> handler;
-                            lock (this.parent.writeLock)
-                            {
-                                handler = LineEntered;
-                                line = inputString.ToString();
-                                inputString.Clear();
-                                lrCursorPos = 0;
-                                scrolledLines = 0;
-                                unread = false;
-                            }
-                            
-                            if (handler != null)
-                            {
-                                var e = new LineEnteredEventArgs(line);
-                                await handler(this, e);
-                            }
-                            this.WriteOutput();
-
-
-                            continue;
-                        case ConsoleKey.Backspace when inputString.Length == 0:
-                            continue;
-                        case ConsoleKey.Backspace when key.Modifiers.HasFlag(ConsoleModifiers.Control):
-                            bool? isPrevSpace = inputString[^1] == ' ';
-                            int i;
-                            for (i = inputString.Length - 2; i >= 0; i--)
-                            {
-
-                                if (isPrevSpace.Value && inputString[i] != ' ')
-                                    break;
-                                if (inputString[i] == ' ' && !isPrevSpace.Value)
-                                    isPrevSpace = true;
-                            }
-
-                            //TODO fix this
-                            break;
-                        case ConsoleKey.Backspace:
-                            lock (this.parent.writeLock)
-                            {
-                                inputString.Remove(inputString.Length - 1, 1);
-                                lrCursorPos--;
-                                Console.Write("\b \b");
-                            }
-
-                            continue;
-                        default:
-                            if (key.KeyChar == '\u0000') continue;
-                            if (inputString.Length < width)
-                            {
-                                lock (this.parent.writeLock)
-                                {
-                                    inputString.Append(key.KeyChar);
-                                    Console.Write(key.KeyChar);
-                                    lrCursorPos++;
-                                }
-                            }
-                            
-
-                            break;
-                    }
-                }
-            });
         }
+        
 
         internal event AsyncEventHandler<LineEnteredEventArgs> LineEntered;
         internal event AsyncEventHandler<KeyEnteredEventArgs> KeyEntered;
@@ -242,7 +98,7 @@ namespace CMSlib.ConsoleModule
             lock (AddTextLock)
             {
                 int before = this.text.Count;
-                this.text.AddRange(text.Split('\n').SelectMany(x=>x.PadToVisibleDivisible(width).SplitOnNonEscapeLength(width)));
+                this.text.AddRange(text.Replace("\t", "        ").Replace("\r\n", "\n").Split('\n').SelectMany(x=>x.PadToVisibleDivisible(width).SplitOnNonEscapeLength(width)));
                 if (scrolledLines != 0)
                 {
                     scrolledLines += this.text.Count - before;
@@ -365,13 +221,15 @@ namespace CMSlib.ConsoleModule
                     Console.Write(line);
                 }
 
-                Console.Write(AnsiEscape.EnableCursorVisibility);
+                if (this.parent.InputModule is null) return;
+                
                 int inputCursorY = Math.Min(Console.WindowHeight - 2, this.parent.InputModule.height + this.parent.InputModule.y);
                 int inputCursorX = this.parent.InputModule.x + 1 + this.parent.InputModule.lrCursorPos;
                 if (inputCursorY < 0 || inputCursorX < 0)
                     return;
                 Console.SetCursorPosition(inputCursorX,
                     inputCursorY);
+                Console.Write(AnsiEscape.EnableCursorVisibility);
             }
         }
         
@@ -445,7 +303,7 @@ namespace CMSlib.ConsoleModule
         }
         
 
-        private void ScrollUp(int amt)
+        internal void ScrollUp(int amt)
         {
             if (this.text.Count == 0) return;
             lock (AddTextLock)
@@ -456,7 +314,7 @@ namespace CMSlib.ConsoleModule
             }
         }
 
-        private void ScrollDown(int amt)
+        internal void ScrollDown(int amt)
         {
             if (this.text.Count == 0) return;
             lock(AddTextLock){

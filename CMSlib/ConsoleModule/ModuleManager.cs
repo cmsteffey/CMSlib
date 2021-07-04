@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using CMSlib.Extensions;
 using Microsoft.Extensions.Logging;
 
@@ -14,9 +15,30 @@ namespace CMSlib.ConsoleModule
         internal readonly List<string> dictKeys = new();
         internal int selected = 0;
         internal object writeLock = new();
+
+        public ModuleManager()
+        {
+            Console.TreatControlCAsInput = true;
+            Console.CancelKeyPress += (_, _) => { QuitApp(); };
+            if (Environment.OSVersion.Platform.ToString().ToLower().Contains("win"))
+                new WinConsoleConfiguerer().SetupConsole();
+            Console.Write(AnsiEscape.AlternateScreenBuffer);
+            Console.Write(AnsiEscape.DisableCursorBlink);
+            _ = Task.Run(async () =>
+            {
+                while (true)
+                {
+                    var key = Console.ReadKey(true);
+                    await HandleKeyAsync(key);
+                }
+            });
+        }
+        
+        
         /// <summary>
         /// The currently selected module. Returns null if there is no module currently selected;
         /// </summary>
+        
         public Module? SelectedModule
         {
             get { lock(dictSync)return selected == -1 ? null : modules[dictKeys[selected]]; }
@@ -28,16 +50,20 @@ namespace CMSlib.ConsoleModule
         /// </summary>
         public Module? InputModule
         {
-            get { lock(dictSync) return modules.Count > 0 ? modules[dictKeys[0]] : null; }
+            get
+            {
+                lock (dictSync)
+                    return selected == -1 ? null : modules[dictKeys[selected]].isInput ? modules[dictKeys[selected]] : null;
+            }
         }
         /// <summary>
         /// The title of the current input module
         /// </summary>
-        public string InputModuleTitle
+        public string? InputModuleTitle
         {
-            get { lock(dictSync) return dictKeys.Count > 0 ? dictKeys[0] : null; }
+            get => InputModule?.title;
         }
-
+        
         private readonly object dictSync = new();
         /// <summary>
         /// Refreshes all modules in this manager, ensuring that the latest output is displayed in all of them.
@@ -74,11 +100,16 @@ namespace CMSlib.ConsoleModule
         /// <returns>Whether this operation was successful. It will not succeed if this manager does not have a module with the supplied title.</returns>
         public bool RemoveModule(string title)
         {
+            //TODO shift selected back down once module is removed
             bool success;
             lock (dictSync)
             {
                 dictKeys.Remove(title);
                 success = modules.Remove(title);
+                if (selected >= dictKeys.Count)
+                {
+                    selected = -1;
+                }
             }
             return success;
         }
@@ -126,7 +157,7 @@ namespace CMSlib.ConsoleModule
         /// <param name="minimumLogLevel">The minimum log level that is outputted when this module is used as an ILogger</param>
         /// <param name="immediateOutput">Whether to immediately call RefreshModule on this module after construction</param>
         /// <returns>Whether the module was successfully created</returns>
-        public bool AddModule(string title, int x, int y, int width, int height, string startingText = "", char? borderChar = null, LogLevel minimumLogLevel = LogLevel.Information, bool immediateOutput = true)
+        public bool AddModule(string title, int x, int y, int width, int height, string startingText = "", char? borderChar = null, LogLevel minimumLogLevel = LogLevel.Information, bool immediateOutput = true, bool isInput = true)
         {
             if (modules.ContainsKey(title))
             {
@@ -134,7 +165,7 @@ namespace CMSlib.ConsoleModule
             }
             lock (dictSync)
             {
-                Module toAdd = new(this, title, x, y, width-2, height-2, startingText, modules.Count == 0, borderChar, minimumLogLevel);
+                Module toAdd = new(this, title, x, y, width-2, height-2, startingText, isInput, borderChar, minimumLogLevel);
                 modules.Add(title, toAdd);
                 dictKeys.Add(title);
                 if (dictKeys.Count - 1 == selected)
@@ -165,24 +196,18 @@ namespace CMSlib.ConsoleModule
                 throw new KeyNotFoundException($"There is no module with the title of {title}");
             return modules[title];
         }
+
         /// <summary>
         /// Event fired when a line is entered, by pressing enter when an input module is focused
+        /// The sender is the Module that had the line inputted into it
         /// </summary>
-        public event Module.AsyncEventHandler<LineEnteredEventArgs> LineEntered
-        {
-            add { if(InputModule is not null) InputModule.LineEntered += value; }
-            remove { if(InputModule is not null) InputModule.LineEntered -= value; }
-        }
+        public event Module.AsyncEventHandler<LineEnteredEventArgs> LineEntered;
         //todo Abstract to key when any module is inputmodule
         /// <summary>
         /// Event fired when a key is pressed
         /// </summary>
-        public event Module.AsyncEventHandler<KeyEnteredEventArgs> KeyEntered
-        {
-            add { if(InputModule is not null) InputModule.KeyEntered += value; }
-            remove { if(InputModule is not null) InputModule.KeyEntered -= value; }
-        } 
-        
+        public event Module.AsyncEventHandler<KeyEnteredEventArgs> KeyEntered;
+
         /// <summary>
         /// Tries to get the next queued module to be used as a logger, and if the queue is empty return the input module.
         /// </summary>
@@ -228,27 +253,31 @@ namespace CMSlib.ConsoleModule
         public void SelectNext()
         {
             int newSelected;
+            int pastSelected;
+            bool refreshNew;
+            bool refreshPast;
             lock (dictSync)
             {
-                
-                int pastSelected = selected;
+                pastSelected = selected;
                 selected++;
-                newSelected = ++selected % (dictKeys.Count + 1) - 1;
-                
-
-                if (pastSelected >= 0)
+                newSelected = (++selected).Modulus(dictKeys.Count + 1) - 1;
+                selected = newSelected;
+                refreshPast = pastSelected >= 0;
+                if (refreshPast)
                 {
                     modules[dictKeys[pastSelected]].selected = false;
-                    modules[dictKeys[pastSelected]].WriteOutput();
                 }
-
-                if (newSelected >= 0)
+                
+                refreshNew = newSelected >= 0;
+                if (refreshNew)
                 {
                     modules[dictKeys[newSelected]].selected = true;
-                    modules[dictKeys[newSelected]].WriteOutput();
                 }
-                selected = newSelected;
             }
+            if(refreshPast)
+                modules[dictKeys[pastSelected]].WriteOutput();
+            if(refreshNew)
+                modules[dictKeys[newSelected]].WriteOutput();
         }
         /// <summary>
         /// Selects the previous module - enables scrolling for that module.
@@ -256,26 +285,32 @@ namespace CMSlib.ConsoleModule
         public void SelectPrev()
         {
             int newSelected;
+            int pastSelected;
+            bool refreshNew;
+            bool refreshPast;
             lock (dictSync)
             {
                 
-                int pastSelected = selected;
-                newSelected = selected % (dictKeys.Count + 1) - 1;
-                
+                pastSelected = selected;
+                newSelected = selected.Modulus(dictKeys.Count + 1) - 1;
 
-                if (pastSelected >= 0)
+                selected = newSelected;
+                refreshPast = pastSelected >= 0;
+                if (refreshPast)
                 {
                     modules[dictKeys[pastSelected]].selected = false;
-                    modules[dictKeys[pastSelected]].WriteOutput();
                 }
 
-                if (newSelected >= 0)
+                refreshNew = newSelected >= 0;
+                if (refreshNew)
                 {
                     modules[dictKeys[newSelected]].selected = true;
-                    modules[dictKeys[newSelected]].WriteOutput();
                 }
-                selected = newSelected;
             }
+            if(refreshPast)
+                modules[dictKeys[pastSelected]].WriteOutput();
+            if(refreshNew)
+                modules[dictKeys[newSelected]].WriteOutput();
         }
         /// <summary>
         /// Quits the app, properly returning to the main buffer and clearing all possible cursor/format options.
@@ -286,6 +321,104 @@ namespace CMSlib.ConsoleModule
             Console.Write(AnsiEscape.SoftReset);
             Console.Write(AnsiEscape.EnableCursorBlink);
             Environment.Exit(0);
+        }
+
+        public async Task HandleKeyAsync(ConsoleKeyInfo key)
+        {
+            
+            if (key.Modifiers.HasFlag(ConsoleModifiers.Alt))
+                            return;
+            
+            switch (key.Key)
+            {
+                case ConsoleKey.RightArrow:
+                    break;
+                case ConsoleKey.LeftArrow:
+                    break;
+                case ConsoleKey.PageUp:
+                    this.SelectedModule?.ScrollUp((SelectedModule.height - (SelectedModule.isInput ? 2 : 0)));
+                    break;
+                case ConsoleKey.PageDown:
+                    this.SelectedModule?.ScrollDown((SelectedModule.height - (SelectedModule.isInput ? 2 : 0)));
+                    break;
+                case ConsoleKey.UpArrow when key.Modifiers.HasFlag(ConsoleModifiers.Control):
+                    this.SelectedModule?.ScrollUp(1);
+                    break;
+                case ConsoleKey.DownArrow when key.Modifiers.HasFlag(ConsoleModifiers.Control):
+                    this.SelectedModule?.ScrollDown(1);
+                    break;
+                case ConsoleKey.Tab when key.Modifiers.HasFlag(ConsoleModifiers.Shift):
+                    this.SelectPrev();
+                    break;
+                case ConsoleKey.Tab:
+                    this.SelectNext();
+                    break;
+                case ConsoleKey.C when key.Modifiers.HasFlag(ConsoleModifiers.Control):
+                    ModuleManager.QuitApp();
+                    break;
+                case ConsoleKey.Enter:
+                    if (InputModule is null) return;
+                    string line;
+                    Module.AsyncEventHandler<LineEnteredEventArgs> handler;
+                    lock (this.writeLock)
+                    {
+                        handler = LineEntered;
+                        line = InputModule.inputString.ToString();
+                        InputModule.inputString.Clear();
+                        InputModule.lrCursorPos = 0;
+                        InputModule.scrolledLines = 0;
+                        InputModule.unread = false;
+                    }
+                    if (handler != null)
+                    {
+                        var e = new LineEnteredEventArgs(line);
+                        await handler(InputModule, e);
+                    }
+                    this.InputModule.WriteOutput();
+                    return;
+                case ConsoleKey.Backspace when InputModule?.inputString.Length.Equals(0) ?? false:
+                    return;
+                case ConsoleKey.Backspace when key.Modifiers.HasFlag(ConsoleModifiers.Control):
+                    goto NotImpl;
+                    if (InputModule is null) return;
+                    bool? isPrevSpace = InputModule.inputString[^1] == ' ';
+                    int i;
+                    for (i = InputModule.inputString.Length - 2; i >= 0; i--)
+                    {
+            
+                        if (isPrevSpace.Value && InputModule.inputString[i] != ' ')
+                            break;
+                        if (InputModule.inputString[i] == ' ' && !isPrevSpace.Value)
+                            isPrevSpace = true;
+                    }
+            
+                    //TODO fix this
+                    NotImpl:
+                    break;
+                case ConsoleKey.Backspace:
+                    if (InputModule is null) return;
+                    lock (this.writeLock)
+                    {
+                        InputModule.inputString.Remove(InputModule.inputString.Length - 1, 1);
+                        InputModule.lrCursorPos--;
+                        Console.Write("\b \b");
+                    }
+            
+                    return;
+                default:
+                    if (InputModule is null) return;
+                    if (key.KeyChar == '\u0000') return;
+                    if (InputModule.inputString.Length < InputModule.width)
+                    {
+                        lock (this.writeLock)
+                        {
+                            InputModule.inputString.Append(key.KeyChar);
+                            Console.Write(key.KeyChar);
+                            InputModule.lrCursorPos++;
+                        }
+                    }
+                    break;
+            }
         }
     }
     /// <summary>
