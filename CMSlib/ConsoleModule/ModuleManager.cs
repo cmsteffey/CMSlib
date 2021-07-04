@@ -31,9 +31,14 @@ namespace CMSlib.ConsoleModule
                     Module inputModule = InputModule;
                     var key = Console.ReadKey(true);
                     Module.AsyncEventHandler<KeyEnteredEventArgs> handler = KeyEntered;
-                    
-                    if (inputModule is Module module && handler is not null)
-                        await handler(module, new(key));
+
+                    if (inputModule is not null)
+                    {
+                        if(handler is not null)
+                            await handler(inputModule, new(key));
+                        inputModule?.FireKeyEntered(new(key));
+                    }
+
                     await HandleKeyAsync(key);
                 }
             });
@@ -203,12 +208,11 @@ namespace CMSlib.ConsoleModule
         }
 
         /// <summary>
-        /// Event fired when a line is entered, by pressing enter when an input module is focused
-        /// The sender is the Module that had the line inputted into it
+        /// Event fired when a line is entered while this module is Selected.
         /// </summary>
         public event Module.AsyncEventHandler<LineEnteredEventArgs> LineEntered;
         /// <summary>
-        /// Event fired when a key is pressed
+        /// Event fired when a key is pressed whlie this module is Selected.
         /// </summary>
         public event Module.AsyncEventHandler<KeyEnteredEventArgs> KeyEntered;
 
@@ -384,6 +388,7 @@ namespace CMSlib.ConsoleModule
                         var e = new LineEnteredEventArgs(line);
                         await handler(InputModule, e);
                     }
+                    InputModule.FireLineEntered(new LineEnteredEventArgs(line));
                     this.InputModule.WriteOutput();
                     return;
                 case ConsoleKey.Backspace when InputModule?.inputString.Length.Equals(0) ?? false:

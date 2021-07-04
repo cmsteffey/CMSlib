@@ -41,6 +41,9 @@ namespace CMSlib.ConsoleModule
         public string DisplayName { get; set; } = null;
         internal bool selected = false;
 
+        public event AsyncEventHandler<LineEnteredEventArgs> LineEntered;
+        public event AsyncEventHandler<KeyEnteredEventArgs> KeyEntered;
+
         internal Module()
         {
             throw new NotSupportedException("Use the parameterized constructor");
@@ -72,9 +75,6 @@ namespace CMSlib.ConsoleModule
             this.AddText(text);
         }
         
-
-        internal event AsyncEventHandler<LineEnteredEventArgs> LineEntered;
-        internal event AsyncEventHandler<KeyEnteredEventArgs> KeyEntered;
 
         public delegate Task AsyncEventHandler<in T>(object sender, T eventArgs);
         /// <summary>
@@ -336,6 +336,23 @@ namespace CMSlib.ConsoleModule
                 int before = scrolledLines;
                 scrolledLines = Math.Clamp(line, 0, this.text.Count - 1);
                 if (before != scrolledLines) WriteOutput();
+            }
+        }
+
+        internal void FireLineEntered(LineEnteredEventArgs args)
+        {
+            var handler = LineEntered;
+            if (handler is not null)
+            {
+                handler(this, args);
+            }
+        }
+        internal void FireKeyEntered(KeyEnteredEventArgs args)
+        {
+            var handler = KeyEntered;
+            if (handler is not null)
+            {
+                handler(this, args);
             }
         }
     }
