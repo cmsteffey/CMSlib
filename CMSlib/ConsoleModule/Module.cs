@@ -78,19 +78,7 @@ namespace CMSlib.ConsoleModule
             Console.Write(AnsiEscape.AlternateScreenBuffer);
             Console.Write(AnsiEscape.DisableCursorBlink);
 
-            _ = Task.Run(async () =>
-            {
-                bool closed = false;
-                bool highlightMode = false;
-                while (true)
-                {
-                    var key = Console.ReadKey(true);
-                    var keyHandler = this.KeyEntered;
-                    if (keyHandler is not null)
-                        await keyHandler(this, new(key));
-                    
-                }
-            });
+            
         }
         
 
@@ -246,6 +234,8 @@ namespace CMSlib.ConsoleModule
                     Console.Write(line);
                 }
 
+                if (this.parent.InputModule is null) return;
+                
                 Console.Write(AnsiEscape.EnableCursorVisibility);
                 int inputCursorY = Math.Min(Console.WindowHeight - 2, this.parent.InputModule.height + this.parent.InputModule.y);
                 int inputCursorX = this.parent.InputModule.x + 1 + this.parent.InputModule.lrCursorPos;

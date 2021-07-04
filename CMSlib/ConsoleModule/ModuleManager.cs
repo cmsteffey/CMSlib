@@ -15,9 +15,24 @@ namespace CMSlib.ConsoleModule
         internal readonly List<string> dictKeys = new();
         internal int selected = 0;
         internal object writeLock = new();
+
+        public ModuleManager()
+        {
+            _ = Task.Run(async () =>
+            {
+                while (true)
+                {
+                    var key = Console.ReadKey(true);
+                    await HandleKeyAsync(key);
+                }
+            });
+        }
+        
+        
         /// <summary>
         /// The currently selected module. Returns null if there is no module currently selected;
         /// </summary>
+        
         public Module? SelectedModule
         {
             get { lock(dictSync)return selected == -1 ? null : modules[dictKeys[selected]]; }
@@ -29,12 +44,16 @@ namespace CMSlib.ConsoleModule
         /// </summary>
         public Module? InputModule
         {
-            get { lock(dictSync) return modules.Count > 0 ? modules[dictKeys[0]] : null; }
+            get
+            {
+                lock (dictSync)
+                    return selected == -1 ? null : modules[dictKeys[selected]].isInput ? modules[dictKeys[selected]] : null;
+            }
         }
         /// <summary>
         /// The title of the current input module
         /// </summary>
-        public string InputModuleTitle
+        public string? InputModuleTitle
         {
             get { lock(dictSync) return dictKeys.Count > 0 ? dictKeys[0] : null; }
         }
@@ -219,27 +238,32 @@ namespace CMSlib.ConsoleModule
         public void SelectNext()
         {
             int newSelected;
+            int pastSelected;
+            bool refreshNew;
+            bool refreshPast;
             lock (dictSync)
             {
                 
-                int pastSelected = selected;
+                pastSelected = selected;
                 selected++;
                 newSelected = ++selected % (dictKeys.Count + 1) - 1;
-                
-
-                if (pastSelected >= 0)
+                selected = newSelected;
+                refreshPast = pastSelected >= 0;
+                if (refreshPast)
                 {
                     modules[dictKeys[pastSelected]].selected = false;
-                    modules[dictKeys[pastSelected]].WriteOutput();
                 }
 
-                if (newSelected >= 0)
+                refreshNew = newSelected >= 0;
+                if (refreshNew)
                 {
                     modules[dictKeys[newSelected]].selected = true;
-                    modules[dictKeys[newSelected]].WriteOutput();
                 }
-                selected = newSelected;
             }
+            if(refreshPast)
+                modules[dictKeys[pastSelected]].WriteOutput();
+            if(refreshNew)
+                modules[dictKeys[pastSelected]].WriteOutput();
         }
         /// <summary>
         /// Selects the previous module - enables scrolling for that module.
@@ -247,26 +271,32 @@ namespace CMSlib.ConsoleModule
         public void SelectPrev()
         {
             int newSelected;
+            int pastSelected;
+            bool refreshNew;
+            bool refreshPast;
             lock (dictSync)
             {
                 
-                int pastSelected = selected;
+                pastSelected = selected;
                 newSelected = selected % (dictKeys.Count + 1) - 1;
-                
 
-                if (pastSelected >= 0)
+                selected = newSelected;
+                refreshPast = pastSelected >= 0;
+                if (refreshPast)
                 {
                     modules[dictKeys[pastSelected]].selected = false;
-                    modules[dictKeys[pastSelected]].WriteOutput();
                 }
 
-                if (newSelected >= 0)
+                refreshNew = newSelected >= 0;
+                if (refreshNew)
                 {
                     modules[dictKeys[newSelected]].selected = true;
-                    modules[dictKeys[newSelected]].WriteOutput();
                 }
-                selected = newSelected;
             }
+            if(refreshPast)
+                modules[dictKeys[pastSelected]].WriteOutput();
+            if(refreshNew)
+                modules[dictKeys[pastSelected]].WriteOutput();
         }
         /// <summary>
         /// Quits the app, properly returning to the main buffer and clearing all possible cursor/format options.
@@ -284,91 +314,96 @@ namespace CMSlib.ConsoleModule
             if (key.Modifiers.HasFlag(ConsoleModifiers.Alt))
                             return;
             
-                        switch (key.Key)
+            switch (key.Key)
+            {
+                case ConsoleKey.RightArrow:
+                    break;
+                case ConsoleKey.LeftArrow:
+                    break;
+                case ConsoleKey.PageUp:
+                    this.SelectedModule?.ScrollUp((SelectedModule.height - (SelectedModule.isInput ? 2 : 0)));
+                    break;
+                case ConsoleKey.PageDown:
+                    this.SelectedModule?.ScrollDown((SelectedModule.height - (SelectedModule.isInput ? 2 : 0)));
+                    break;
+                case ConsoleKey.UpArrow when key.Modifiers.HasFlag(ConsoleModifiers.Shift):
+                    this.SelectedModule?.ScrollUp(1);
+                    break;
+                case ConsoleKey.DownArrow when key.Modifiers.HasFlag(ConsoleModifiers.Shift):
+                    this.SelectedModule?.ScrollDown(1);
+                    break;
+                case ConsoleKey.Tab when key.Modifiers.HasFlag(ConsoleModifiers.Shift):
+                    this.SelectPrev();
+                    break;
+                case ConsoleKey.Tab:
+                    this.SelectNext();
+                    break;
+                case ConsoleKey.C when key.Modifiers.HasFlag(ConsoleModifiers.Control):
+                    ModuleManager.QuitApp();
+                    break;
+                case ConsoleKey.Enter:
+                    if (InputModule is null) return;
+                    string line;
+                    Module.AsyncEventHandler<LineEnteredEventArgs> handler;
+                    lock (this.writeLock)
+                    {
+                        handler = LineEntered;
+                        line = InputModule.inputString.ToString();
+                        InputModule.inputString.Clear();
+                        InputModule.lrCursorPos = 0;
+                        InputModule.scrolledLines = 0;
+                        InputModule.unread = false;
+                    }
+                    if (handler != null)
+                    {
+                        var e = new LineEnteredEventArgs(line);
+                        await handler(InputModule, e);
+                    }
+                    this.InputModule.WriteOutput();
+                    return;
+                case ConsoleKey.Backspace when InputModule?.inputString.Length.Equals(0) ?? false:
+                    return;
+                case ConsoleKey.Backspace when key.Modifiers.HasFlag(ConsoleModifiers.Control):
+                    goto NotImpl;
+                    if (InputModule is null) return;
+                    bool? isPrevSpace = InputModule.inputString[^1] == ' ';
+                    int i;
+                    for (i = InputModule.inputString.Length - 2; i >= 0; i--)
+                    {
+            
+                        if (isPrevSpace.Value && InputModule.inputString[i] != ' ')
+                            break;
+                        if (InputModule.inputString[i] == ' ' && !isPrevSpace.Value)
+                            isPrevSpace = true;
+                    }
+            
+                    //TODO fix this
+                    NotImpl:
+                    break;
+                case ConsoleKey.Backspace:
+                    if (InputModule is null) return;
+                    lock (this.writeLock)
+                    {
+                        InputModule.inputString.Remove(InputModule.inputString.Length - 1, 1);
+                        InputModule.lrCursorPos--;
+                        Console.Write("\b \b");
+                    }
+            
+                    return;
+                default:
+                    if (InputModule is null) return;
+                    if (key.KeyChar == '\u0000') return;
+                    if (InputModule.inputString.Length < InputModule.width)
+                    {
+                        lock (this.writeLock)
                         {
-                            case ConsoleKey.RightArrow:
-                                break;
-                            case ConsoleKey.LeftArrow:
-                                break;
-                            case ConsoleKey.PageUp when key.Modifiers.HasFlag(ConsoleModifiers.Shift):
-                                this.SelectedModule?.ScrollUp((SelectedModule.height - (SelectedModule.isInput ? 2 : 0)));
-                                break;
-                            case ConsoleKey.PageDown when key.Modifiers.HasFlag(ConsoleModifiers.Shift):
-                                this.SelectedModule?.ScrollDown((SelectedModule.height - (SelectedModule.isInput ? 2 : 0)));
-                                break;
-                            case ConsoleKey.UpArrow:
-                                this.SelectedModule?.ScrollUp(1);
-                                break;
-                            case ConsoleKey.DownArrow:
-                                this.SelectedModule?.ScrollDown(1);
-                                break;
-                            case ConsoleKey.Tab when key.Modifiers.HasFlag(ConsoleModifiers.Shift):
-                                this.SelectPrev();
-                                break;
-                            case ConsoleKey.Tab:
-                                this.SelectNext();
-                                break;
-                            case ConsoleKey.C when key.Modifiers.HasFlag(ConsoleModifiers.Control):
-                                ModuleManager.QuitApp();
-                                break;
-                            case ConsoleKey.Enter:
-                                if (InputModule is null) return;
-                                string line;
-                                Module.AsyncEventHandler<LineEnteredEventArgs> handler;
-                                lock (this.writeLock)
-                                {
-                                    handler = LineEntered;
-                                    line = InputModule.inputString.ToString();
-                                    InputModule.inputString.Clear();
-                                    InputModule.lrCursorPos = 0;
-                                    InputModule.scrolledLines = 0;
-                                    InputModule.unread = false;
-                                }
-                                if (handler != null)
-                                {
-                                    var e = new LineEnteredEventArgs(line);
-                                    await handler(this, e);
-                                }
-                                this.InputModule.WriteOutput();
-                                return;
-                            case ConsoleKey.Backspace when (InputModule.inputString.Length == 0) ?? false:
-                                return;
-                            case ConsoleKey.Backspace when key.Modifiers.HasFlag(ConsoleModifiers.Control):
-                                bool? isPrevSpace = inputString[^1] == ' ';
-                                int i;
-                                for (i = inputString.Length - 2; i >= 0; i--)
-                                {
-            
-                                    if (isPrevSpace.Value && inputString[i] != ' ')
-                                        break;
-                                    if (inputString[i] == ' ' && !isPrevSpace.Value)
-                                        isPrevSpace = true;
-                                }
-            
-                                //TODO fix this
-                                break;
-                            case ConsoleKey.Backspace:
-                                lock (this.writeLock)
-                                {
-                                    inputString.Remove(inputString.Length - 1, 1);
-                                    lrCursorPos--;
-                                    Console.Write("\b \b");
-                                }
-            
-                                return;
-                            default:
-                                if (key.KeyChar == '\u0000') return;
-                                if (inputString.Length < width)
-                                {
-                                    lock (this.writeLock)
-                                    {
-                                        inputString.Append(key.KeyChar);
-                                        Console.Write(key.KeyChar);
-                                        lrCursorPos++;
-                                    }
-                                }
-                                break;
+                            InputModule.inputString.Append(key.KeyChar);
+                            Console.Write(key.KeyChar);
+                            InputModule.lrCursorPos++;
                         }
+                    }
+                    break;
+            }
         }
     }
     /// <summary>
