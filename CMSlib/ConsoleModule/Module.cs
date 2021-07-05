@@ -90,10 +90,11 @@ namespace CMSlib.ConsoleModule
         /// Reads and returns the next line entered into this module. DO NOT call this method inside a LineEntered event handler.
         /// </summary>
         /// <returns>LineEnteredEventArgs which hold the line and a reference to this module</returns>
-        public async Task<LineEnteredEventArgs> ReadLineAsync()
+        public async Task<LineEnteredEventArgs> ReadLineAsync(CancellationToken cancellationToken = default)
         {
             LineEnteredEventArgs result = null;
             CancellationTokenSource waitCancel = new();
+            CancellationTokenSource combined = CancellationTokenSource.CreateLinkedTokenSource(waitCancel.Token, cancellationToken);
             AsyncEventHandler<LineEnteredEventArgs> waiter = (_, args) =>
             {
                 result = args;
@@ -103,7 +104,7 @@ namespace CMSlib.ConsoleModule
             try
             {
                 ReadLineLineEntered += waiter;
-                await Task.Delay(-1, waitCancel.Token);
+                await Task.Delay(-1, combined.Token);
             }
             catch (TaskCanceledException e)
             {
