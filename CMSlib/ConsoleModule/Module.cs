@@ -25,7 +25,6 @@ namespace CMSlib.ConsoleModule
         internal readonly bool isInput;
         private ModuleManager parent;
         private object AddTextLock = new();
-        private object ScrollLock = new();
         private LogLevel minLevel;
         internal int scrolledLines = 0;
         internal bool unread = false;
