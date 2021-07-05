@@ -11,10 +11,16 @@ namespace CMSlib.ConsoleModule
 {
     public class ModuleManager : ILoggerFactory
     {
+        
+        
         private readonly Dictionary<string, Module> modules = new();
         internal readonly List<string> dictKeys = new();
         internal int selected = 0;
         internal object writeLock = new();
+
+        private const string Ctrl = "Control";
+        private const string Alt = "Alt";
+        private const string Shift = "Shift";
 
         public ModuleManager()
         {
@@ -28,8 +34,8 @@ namespace CMSlib.ConsoleModule
             {
                 while (true)
                 {
-                    Module inputModule = InputModule;
                     var key = Console.ReadKey(true);
+                    Module inputModule = InputModule;
                     Module.AsyncEventHandler<KeyEnteredEventArgs> handler = KeyEntered;
 
                     if (inputModule is not null)
@@ -39,7 +45,15 @@ namespace CMSlib.ConsoleModule
                         inputModule?.FireKeyEntered(new(key));
                     }
 
-                    await HandleKeyAsync(key);
+                    try
+                    {
+                        await HandleKeyAsync(key);
+                    }
+                    catch (Exception e)
+                    {
+                        inputModule?.AddText(e.ToString());
+                        inputModule?.WriteOutput();
+                    }
                 }
             });
         }
@@ -333,9 +347,9 @@ namespace CMSlib.ConsoleModule
 
         public async Task HandleKeyAsync(ConsoleKeyInfo key)
         {
-            
-            if (key.Modifiers.HasFlag(ConsoleModifiers.Alt))
-                            return;
+            Dictionary<string, bool> mods = key.Modifiers.ToStringDictionary<ConsoleModifiers>();
+            if (mods[Alt])
+                return;
             
             switch (key.Key)
             {
@@ -343,10 +357,10 @@ namespace CMSlib.ConsoleModule
                     break;
                 case ConsoleKey.LeftArrow:
                     break;
-                case ConsoleKey.End when key.Modifiers.HasFlag(ConsoleModifiers.Control):
+                case ConsoleKey.End when mods[Ctrl]:
                     this.SelectedModule?.ScrollTo(0);
                     break;
-                case ConsoleKey.Home when key.Modifiers.HasFlag(ConsoleModifiers.Control):
+                case ConsoleKey.Home when mods[Ctrl]:
                     this.SelectedModule?.ScrollTo(int.MaxValue);
                     break;
                 case ConsoleKey.PageUp:
@@ -355,22 +369,22 @@ namespace CMSlib.ConsoleModule
                 case ConsoleKey.PageDown:
                     this.SelectedModule?.ScrollDown((SelectedModule.Height - (SelectedModule.isInput ? 2 : 0)));
                     break;
-                case ConsoleKey.UpArrow when key.Modifiers.HasFlag(ConsoleModifiers.Control):
+                case ConsoleKey.UpArrow when mods[Ctrl]:
                     this.SelectedModule?.ScrollUp(1);
                     break;
-                case ConsoleKey.DownArrow when key.Modifiers.HasFlag(ConsoleModifiers.Control):
+                case ConsoleKey.DownArrow when mods[Ctrl]:
                     this.SelectedModule?.ScrollDown(1);
                     break;
-                case ConsoleKey.Tab when key.Modifiers.HasFlag(ConsoleModifiers.Shift):
+                case ConsoleKey.Tab when mods[Shift]:
                     this.SelectPrev();
                     break;
                 case ConsoleKey.Tab:
                     this.SelectNext();
                     break;
-                case ConsoleKey.C when key.Modifiers.HasFlag(ConsoleModifiers.Control):
+                case ConsoleKey.C when mods[Ctrl]:
                     ModuleManager.QuitApp();
                     break;
-                case ConsoleKey.Enter when key.Modifiers.HasFlag(ConsoleModifiers.Shift):
+                case ConsoleKey.Enter when mods[Shift]:
                     if (InputModule is null) return;
                     await EnterLineAsync(false);
                     break;
@@ -380,7 +394,7 @@ namespace CMSlib.ConsoleModule
                     return;
                 case ConsoleKey.Backspace when InputModule?.inputString.Length.Equals(0) ?? false:
                     return;
-                case ConsoleKey.Backspace when key.Modifiers.HasFlag(ConsoleModifiers.Control):
+                case ConsoleKey.Backspace when mods[Ctrl]:
                     goto NotImpl;
                     if (InputModule is null) return;
                     bool? isPrevSpace = InputModule.inputString[^1] == ' ';
