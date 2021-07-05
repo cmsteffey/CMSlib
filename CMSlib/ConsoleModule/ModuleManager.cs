@@ -243,7 +243,7 @@ namespace CMSlib.ConsoleModule
         /// <returns></returns>
         /// <exception cref="Exception">Thrown when there are no modules created yet, and none in the queue.</exception>
 
-        public ILogger CreateLogger(string categoryName)
+        ILogger ILoggerFactory.CreateLogger(string categoryName)
         {
             lock (dictSync)
             {
@@ -262,7 +262,7 @@ namespace CMSlib.ConsoleModule
             }
         }
 
-        public void AddProvider(ILoggerProvider provider)
+        void ILoggerFactory.AddProvider(ILoggerProvider provider)
         {
             throw new NotImplementedException();
         }

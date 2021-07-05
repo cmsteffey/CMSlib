@@ -288,7 +288,7 @@ namespace CMSlib.ConsoleModule
         /// <param name="exception">The exception to log.</param>
         /// <param name="formatter">The formatter to format the log message.</param>
         /// <typeparam name="TState">The type of the state</typeparam>
-        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+        void ILogger.Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {
             if (!IsEnabled(logLevel))
                 return;
