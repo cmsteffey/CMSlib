@@ -370,26 +370,13 @@ namespace CMSlib.ConsoleModule
                 case ConsoleKey.C when key.Modifiers.HasFlag(ConsoleModifiers.Control):
                     ModuleManager.QuitApp();
                     break;
+                case ConsoleKey.Enter when key.Modifiers.HasFlag(ConsoleModifiers.Shift):
+                    if (InputModule is null) return;
+                    await EnterLineAsync(false);
+                    break;
                 case ConsoleKey.Enter:
                     if (InputModule is null) return;
-                    string line;
-                    Module.AsyncEventHandler<LineEnteredEventArgs> handler;
-                    lock (this.writeLock)
-                    {
-                        handler = LineEntered;
-                        line = InputModule.inputString.ToString();
-                        InputModule.inputString.Clear();
-                        InputModule.lrCursorPos = 0;
-                        InputModule.scrolledLines = 0;
-                        InputModule.unread = false;
-                    }
-                    if (handler != null)
-                    {
-                        var e = new LineEnteredEventArgs(line);
-                        await handler(InputModule, e);
-                    }
-                    InputModule.FireLineEntered(new LineEnteredEventArgs(line));
-                    this.InputModule.WriteOutput();
+                    await EnterLineAsync(true);
                     return;
                 case ConsoleKey.Backspace when InputModule?.inputString.Length.Equals(0) ?? false:
                     return;
@@ -434,6 +421,33 @@ namespace CMSlib.ConsoleModule
                     }
                     break;
             }
+        }
+
+        public async Task EnterLineAsync(bool scrollToBottom)
+        {
+            Module inputModule = InputModule;
+            if (inputModule is null) return;
+            string line;
+            Module.AsyncEventHandler<LineEnteredEventArgs> handler;
+            lock (this.writeLock)
+            {
+                handler = LineEntered;
+                line = inputModule.inputString.ToString();
+                inputModule.inputString.Clear();
+                inputModule.lrCursorPos = 0;
+                if (scrollToBottom)
+                {
+                    inputModule.scrolledLines = 0;
+                    inputModule.unread = false;
+                }
+            }
+            if (handler != null)
+            {
+                var e = new LineEnteredEventArgs(line);
+                await handler(InputModule, e);
+            }
+            inputModule.FireLineEntered(new LineEnteredEventArgs(line));
+            inputModule.WriteOutput();
         }
     }
     /// <summary>
