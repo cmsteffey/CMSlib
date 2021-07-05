@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging;
 
 namespace CMSlib.ConsoleModule
 {
-    public class Module : ILogger
+    public class Module : IModule
     {
         public int X { get; }
         public int Y { get; }
@@ -31,8 +31,8 @@ namespace CMSlib.ConsoleModule
         internal bool unread = false;
         internal int lrCursorPos = 0;
         private string _inputClear;
-        
-        private string InputClear { get {
+
+        public string InputClear { get {
             _inputClear ??= "\b \b".Multiply(Width);
             return _inputClear;
         } }
@@ -51,7 +51,7 @@ namespace CMSlib.ConsoleModule
         /// </summary>
         public event AsyncEventHandler<KeyEnteredEventArgs> KeyEntered;
 
-        internal event AsyncEventHandler<LineEnteredEventArgs> ReadLineLineEntered;
+        public event AsyncEventHandler<LineEnteredEventArgs> ReadLineLineEntered;
 
         internal Module()
         {
@@ -232,8 +232,8 @@ namespace CMSlib.ConsoleModule
                 output.Append(borderCharacter).Append(inputString).Append(' ', Width - inputString.Length).Append(borderCharacter.Value, Width + 3);
             return output.ToString();
         }
-    
-        private IEnumerable<string> ToOutputLines()
+
+        public IEnumerable<string> ToOutputLines()
         {
             return ToString().SplitOnNonEscapeLength(Width + 2);
         }
@@ -272,7 +272,7 @@ namespace CMSlib.ConsoleModule
             }
         }
 
-        internal Module ToInputModule()
+        public Module ToInputModule()
         {
             return isInput ? this : null;
         }
@@ -345,9 +345,9 @@ namespace CMSlib.ConsoleModule
         {
             throw new NotImplementedException();
         }
-        
 
-        internal void ScrollUp(int amt)
+
+        public void ScrollUp(int amt)
         {
             if (this.text.Count == 0) return;
             lock (AddTextLock)
@@ -358,7 +358,7 @@ namespace CMSlib.ConsoleModule
             }
         }
 
-        internal void ScrollDown(int amt)
+        public void ScrollDown(int amt)
         {
             if (this.text.Count == 0) return;
             lock(AddTextLock){
@@ -368,7 +368,8 @@ namespace CMSlib.ConsoleModule
                 if(before != scrolledLines) WriteOutput();
             }
         }
-        internal void ScrollTo(int line)
+
+        public void ScrollTo(int line)
         {
             if (this.text.Count == 0) return;
             lock (AddTextLock)
@@ -379,7 +380,7 @@ namespace CMSlib.ConsoleModule
             }
         }
 
-        internal async Task FireLineEnteredAsync(LineEnteredEventArgs args)
+        public async Task FireLineEnteredAsync(LineEnteredEventArgs args)
         {
             var handler = LineEntered;
             if (handler is not null)
@@ -387,7 +388,8 @@ namespace CMSlib.ConsoleModule
                 await handler(this, args);
             }
         }
-        internal async Task FireKeyEnteredAsync(KeyEnteredEventArgs args)
+
+        public async Task FireKeyEnteredAsync(KeyEnteredEventArgs args)
         {
             var handler = KeyEntered;
             if (handler is not null)
@@ -396,7 +398,7 @@ namespace CMSlib.ConsoleModule
             }
         }
 
-        internal async Task FireReadLineLineEntered(LineEnteredEventArgs args)
+        public async Task FireReadLineLineEntered(LineEnteredEventArgs args)
         {
             var handler = ReadLineLineEntered;
             if (handler is not null)
