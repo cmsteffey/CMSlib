@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using CMSlib.Tables;
 using Microsoft.Extensions.Logging;
@@ -83,6 +84,27 @@ namespace CMSlib.ConsoleModule
         
 
         public delegate Task AsyncEventHandler<in T>(object sender, T eventArgs);
+        public async Task<LineEnteredEventArgs> ReadLineAsync()
+        {
+            LineEnteredEventArgs result = null;
+            CancellationTokenSource waitCancel = new();
+            AsyncEventHandler<LineEnteredEventArgs> waiter = (_, args) =>
+            {
+                result = args;
+                waitCancel.Cancel();
+                return Task.CompletedTask;
+            };
+            try
+            {
+                LineEntered += waiter;
+                await Task.Delay(-1, waitCancel.Token);
+            }
+            catch (TaskCanceledException e)
+            {
+                LineEntered -= waiter;
+            }
+            return result;
+        }
         /// <summary>
         /// Clears all lines from this module, as well as optionally refreshing.
         /// </summary>
