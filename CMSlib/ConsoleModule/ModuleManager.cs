@@ -48,7 +48,7 @@ namespace CMSlib.ConsoleModule
                         };
                         if(handler is not null)
                             await handler(inputModule, e);
-                        inputModule?.FireKeyEntered(e);
+                        await inputModule.FireKeyEnteredAsync(e);
                     }
 
                     try
@@ -453,7 +453,8 @@ namespace CMSlib.ConsoleModule
             };
             if (handler != null)
                 await handler(inputModule, e);
-            inputModule.FireLineEntered(e);
+            await inputModule.FireLineEnteredAsync(e);
+            await inputModule.FireReadLineLineEntered(e);
             inputModule.WriteOutput();
         }
     }

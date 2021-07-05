@@ -51,6 +51,8 @@ namespace CMSlib.ConsoleModule
         /// </summary>
         public event AsyncEventHandler<KeyEnteredEventArgs> KeyEntered;
 
+        internal event AsyncEventHandler<LineEnteredEventArgs> ReadLineLineEntered;
+
         internal Module()
         {
             throw new NotSupportedException("Use the parameterized constructor");
@@ -96,12 +98,12 @@ namespace CMSlib.ConsoleModule
             };
             try
             {
-                LineEntered += waiter;
+                ReadLineLineEntered += waiter;
                 await Task.Delay(-1, waitCancel.Token);
             }
             catch (TaskCanceledException e)
             {
-                LineEntered -= waiter;
+                ReadLineLineEntered -= waiter;
             }
             return result;
         }
@@ -373,20 +375,29 @@ namespace CMSlib.ConsoleModule
             }
         }
 
-        internal void FireLineEntered(LineEnteredEventArgs args)
+        internal async Task FireLineEnteredAsync(LineEnteredEventArgs args)
         {
             var handler = LineEntered;
             if (handler is not null)
             {
-                handler(this, args);
+                await handler(this, args);
             }
         }
-        internal void FireKeyEntered(KeyEnteredEventArgs args)
+        internal async Task FireKeyEnteredAsync(KeyEnteredEventArgs args)
         {
             var handler = KeyEntered;
             if (handler is not null)
             {
-                handler(this, args);
+                await handler(this, args);
+            }
+        }
+
+        internal async Task FireReadLineLineEntered(LineEnteredEventArgs args)
+        {
+            var handler = ReadLineLineEntered;
+            if (handler is not null)
+            {
+                await handler(this, args);
             }
         }
     }
