@@ -86,6 +86,10 @@ namespace CMSlib.ConsoleModule
         
 
         public delegate Task AsyncEventHandler<in T>(object sender, T eventArgs);
+        /// <summary>
+        /// Reads and returns the next line entered into this module. DO NOT call this method inside a LineEntered event handler.
+        /// </summary>
+        /// <returns>LineEnteredEventArgs which hold the line and a reference to this module</returns>
         public async Task<LineEnteredEventArgs> ReadLineAsync()
         {
             LineEnteredEventArgs result = null;
