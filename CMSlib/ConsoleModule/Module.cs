@@ -19,17 +19,18 @@ namespace CMSlib.ConsoleModule
         public int Height { get; }
         public string Title { get; }
 
-        internal StringBuilder inputString = new();
-        private List<string> text = new();
-        private readonly char? borderCharacter;
+        internal readonly StringBuilder inputString = new();
         internal readonly bool isInput;
-        private ModuleManager parent;
-        private object AddTextLock = new();
-        private LogLevel minLevel;
-        internal int scrolledLines = 0;
-        internal bool unread = false;
-        internal int lrCursorPos = 0;
-        private string _inputClear;
+        private  readonly List<string> text = new();
+        private  readonly char? borderCharacter;
+        private  readonly ModuleManager parent;
+        private  readonly object AddTextLock = new();
+        private  readonly LogLevel minLevel;
+        
+        internal int      scrolledLines = 0;
+        internal bool     unread = false;
+        internal int      lrCursorPos = 0;
+        private  string   _inputClear;
 
         public string InputClear { get {
             _inputClear ??= "\b \b".Multiply(Width);
