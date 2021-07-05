@@ -109,9 +109,10 @@ namespace CMSlib.ConsoleModule
             }
             catch (TaskCanceledException e)
             {
+                
+                ReadLineLineEntered -= waiter;
                 if (cancellationToken.IsCancellationRequested)
                     throw e;
-                ReadLineLineEntered -= waiter;
             }
             return result;
         }
