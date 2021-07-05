@@ -65,7 +65,7 @@ namespace CMSlib.ConsoleModule
         void WriteOutput();
 
         Module ToInputModule();
-        bool IsEnabled(LogLevel logLevel);
+        bool ILogger.IsEnabled(LogLevel logLevel);
 
         /// <summary>
         /// NOT IMPL'D
@@ -74,7 +74,7 @@ namespace CMSlib.ConsoleModule
         /// <typeparam name="TState"></typeparam>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        IDisposable BeginScope<TState>(TState state);
+        IDisposable ILogger.BeginScope<TState>(TState state);
 
         void ScrollUp(int amt);
         void ScrollDown(int amt);
