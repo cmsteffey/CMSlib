@@ -35,7 +35,8 @@ namespace CMSlib.ConsoleModule
                 while (true)
                 {
                     var key = Console.ReadKey(true);
-                    Module inputModule = InputModule;
+                    Module selectedModule = SelectedModule;
+                    Module inputModule = selectedModule?.ToInputModule();
                     Module.AsyncEventHandler<KeyEnteredEventArgs> handler = KeyEntered;
 
                     if (inputModule is not null)
@@ -47,7 +48,7 @@ namespace CMSlib.ConsoleModule
 
                     try
                     {
-                        await HandleKeyAsync(key);
+                        await HandleKeyAsync(key, selectedModule);
                     }
                     catch (Exception e)
                     {
@@ -345,13 +346,12 @@ namespace CMSlib.ConsoleModule
             Environment.Exit(0);
         }
 
-        public async Task HandleKeyAsync(ConsoleKeyInfo key)
+        public async Task HandleKeyAsync(ConsoleKeyInfo key, Module selectedModule)
         {
             Dictionary<string, bool> mods = key.Modifiers.ToStringDictionary<ConsoleModifiers>();
             if (mods[Alt])
                 return;
-            Module inputModule = InputModule;
-            
+            Module inputModule = selectedModule?.ToInputModule();
             switch (key.Key)
             {
                 case ConsoleKey.RightArrow:
@@ -359,24 +359,22 @@ namespace CMSlib.ConsoleModule
                 case ConsoleKey.LeftArrow:
                     break;
                 case ConsoleKey.End when mods[Ctrl]:
-                    this.SelectedModule?.ScrollTo(0);
+                    selectedModule?.ScrollTo(0);
                     break;
                 case ConsoleKey.Home when mods[Ctrl]:
-                    this.SelectedModule?.ScrollTo(int.MaxValue);
+                    selectedModule?.ScrollTo(int.MaxValue);
                     break;
                 case ConsoleKey.PageUp:
-                    Module pgUpSelected = SelectedModule;
-                    pgUpSelected?.ScrollUp((pgUpSelected.Height - (pgUpSelected.isInput ? 2 : 0)));
+                    selectedModule?.ScrollUp((selectedModule.Height - (selectedModule.isInput ? 2 : 0)));
                     break;
                 case ConsoleKey.PageDown:
-                    Module pgDownSelected = SelectedModule;
-                    pgDownSelected?.ScrollDown((pgDownSelected.Height - (pgDownSelected.isInput ? 2 : 0)));
+                    selectedModule?.ScrollDown((selectedModule.Height - (selectedModule.isInput ? 2 : 0)));
                     break;
                 case ConsoleKey.UpArrow when mods[Ctrl]:
-                    this.SelectedModule?.ScrollUp(1);
+                    selectedModule?.ScrollUp(1);
                     break;
                 case ConsoleKey.DownArrow when mods[Ctrl]:
-                    this.SelectedModule?.ScrollDown(1);
+                    selectedModule?.ScrollDown(1);
                     break;
                 case ConsoleKey.Tab when mods[Shift]:
                     this.SelectPrev();

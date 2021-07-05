@@ -243,6 +243,11 @@ namespace CMSlib.ConsoleModule
                 Console.Write(AnsiEscape.EnableCursorVisibility);
             }
         }
+
+        internal Module ToInputModule()
+        {
+            return isInput ? this : null;
+        }
         
         public bool IsEnabled(LogLevel logLevel) =>
             logLevel >= minLevel;
