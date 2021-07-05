@@ -51,7 +51,7 @@ namespace CMSlib.ConsoleModule
         /// </summary>
         public event AsyncEventHandler<KeyEnteredEventArgs> KeyEntered;
 
-        public event AsyncEventHandler<LineEnteredEventArgs> ReadLineLineEntered;
+        private event AsyncEventHandler<LineEnteredEventArgs> ReadLineLineEntered;
 
         internal Module()
         {
@@ -388,7 +388,7 @@ namespace CMSlib.ConsoleModule
             }
         }
 
-        public async Task FireLineEnteredAsync(LineEnteredEventArgs args)
+        internal async Task FireLineEnteredAsync(LineEnteredEventArgs args)
         {
             var handler = LineEntered;
             if (handler is not null)
@@ -397,7 +397,7 @@ namespace CMSlib.ConsoleModule
             }
         }
 
-        public async Task FireKeyEnteredAsync(KeyEnteredEventArgs args)
+        internal async Task FireKeyEnteredAsync(KeyEnteredEventArgs args)
         {
             var handler = KeyEntered;
             if (handler is not null)
@@ -406,7 +406,7 @@ namespace CMSlib.ConsoleModule
             }
         }
 
-        public async Task FireReadLineLineEntered(LineEnteredEventArgs args)
+        internal async Task FireReadLineLineEntered(LineEnteredEventArgs args)
         {
             var handler = ReadLineLineEntered;
             if (handler is not null)
