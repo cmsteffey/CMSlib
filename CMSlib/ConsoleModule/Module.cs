@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging;
 
 namespace CMSlib.ConsoleModule
 {
-    public class Module : IModule
+    public class Module : ILogger
     {
         public int X { get; }
         public int Y { get; }
@@ -233,7 +233,7 @@ namespace CMSlib.ConsoleModule
             return output.ToString();
         }
 
-        public IEnumerable<string> ToOutputLines()
+        private IEnumerable<string> ToOutputLines()
         {
             return ToString().SplitOnNonEscapeLength(Width + 2);
         }
@@ -272,12 +272,15 @@ namespace CMSlib.ConsoleModule
             }
         }
 
-        public Module ToInputModule()
+        internal Module ToInputModule()
         {
             return isInput ? this : null;
         }
-        
-        public bool IsEnabled(LogLevel logLevel) =>
+
+        bool ILogger.IsEnabled(LogLevel logLevel) =>
+            ShouldLog(logLevel);
+
+        private bool ShouldLog(LogLevel logLevel) =>
             logLevel >= minLevel;
         /// <summary>
         /// Logs a message to this module.
@@ -290,7 +293,7 @@ namespace CMSlib.ConsoleModule
         /// <typeparam name="TState">The type of the state</typeparam>
         void ILogger.Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {
-            if (!IsEnabled(logLevel))
+            if (!this.ShouldLog(logLevel))
                 return;
             DateTime time = DateTime.Now;
             bool willWrite = (!unread && (scrolledLines != 0)) || scrolledLines == 0;
