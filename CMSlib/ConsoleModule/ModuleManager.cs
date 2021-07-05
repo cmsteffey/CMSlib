@@ -41,9 +41,14 @@ namespace CMSlib.ConsoleModule
 
                     if (inputModule is not null)
                     {
+                        KeyEnteredEventArgs e = new()
+                        {
+                            Module = inputModule,
+                            KeyInfo = key
+                        };
                         if(handler is not null)
-                            await handler(inputModule, new(key));
-                        inputModule?.FireKeyEntered(new(key));
+                            await handler(inputModule, e);
+                        inputModule?.FireKeyEntered(e);
                     }
 
                     try
@@ -441,12 +446,14 @@ namespace CMSlib.ConsoleModule
                     inputModule.unread = false;
                 }
             }
-            if (handler != null)
+            var e = new LineEnteredEventArgs()
             {
-                var e = new LineEnteredEventArgs(line);
+                Module = inputModule,
+                Line = line
+            };
+            if (handler != null)
                 await handler(inputModule, e);
-            }
-            inputModule.FireLineEntered(new LineEnteredEventArgs(line));
+            inputModule.FireLineEntered(e);
             inputModule.WriteOutput();
         }
     }
@@ -458,12 +465,9 @@ namespace CMSlib.ConsoleModule
         /// <summary>
         /// The line that was inputted.
         /// </summary>
-        public string Line { get; }
+        public string Line { get; internal init; }
         
-        internal LineEnteredEventArgs(string line)
-        {
-            this.Line = line;
-        }
+        public Module Module { get; internal init; }
     }
     /// <summary>
     /// EventArgs for the KeyEntered Event
@@ -473,11 +477,8 @@ namespace CMSlib.ConsoleModule
         /// <summary>
         /// Info about the key pressed.
         /// </summary>
-        public ConsoleKeyInfo KeyInfo { get; }
+        public ConsoleKeyInfo KeyInfo { get; internal init; }
         
-        internal KeyEnteredEventArgs(ConsoleKeyInfo key)
-        {
-            KeyInfo = key;
-        }
+        public Module Module { get; internal init; }
     }
 }
