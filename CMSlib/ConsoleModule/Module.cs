@@ -90,6 +90,7 @@ namespace CMSlib.ConsoleModule
         /// Reads and returns the next line entered into this module. DO NOT call this method inside a LineEntered event handler.
         /// </summary>
         /// <returns>LineEnteredEventArgs which hold the line and a reference to this module</returns>
+        /// <exception cref="TaskCanceledException">Thrown when the cancellation token provided is cancelled</exception>
         public async Task<LineEnteredEventArgs> ReadLineAsync(CancellationToken cancellationToken = default)
         {
             LineEnteredEventArgs result = null;
