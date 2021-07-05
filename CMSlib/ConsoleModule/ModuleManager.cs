@@ -350,6 +350,7 @@ namespace CMSlib.ConsoleModule
             Dictionary<string, bool> mods = key.Modifiers.ToStringDictionary<ConsoleModifiers>();
             if (mods[Alt])
                 return;
+            Module inputModule = InputModule;
             
             switch (key.Key)
             {
@@ -364,10 +365,12 @@ namespace CMSlib.ConsoleModule
                     this.SelectedModule?.ScrollTo(int.MaxValue);
                     break;
                 case ConsoleKey.PageUp:
-                    this.SelectedModule?.ScrollUp((SelectedModule.Height - (SelectedModule.isInput ? 2 : 0)));
+                    Module pgUpSelected = SelectedModule;
+                    pgUpSelected?.ScrollUp((pgUpSelected.Height - (pgUpSelected.isInput ? 2 : 0)));
                     break;
                 case ConsoleKey.PageDown:
-                    this.SelectedModule?.ScrollDown((SelectedModule.Height - (SelectedModule.isInput ? 2 : 0)));
+                    Module pgDownSelected = SelectedModule;
+                    pgDownSelected?.ScrollDown((pgDownSelected.Height - (pgDownSelected.isInput ? 2 : 0)));
                     break;
                 case ConsoleKey.UpArrow when mods[Ctrl]:
                     this.SelectedModule?.ScrollUp(1);
@@ -385,61 +388,46 @@ namespace CMSlib.ConsoleModule
                     ModuleManager.QuitApp();
                     break;
                 case ConsoleKey.Enter when mods[Shift]:
-                    if (InputModule is null) return;
-                    await EnterLineAsync(false);
+                    await EnterLineAsync(inputModule, false);
                     break;
                 case ConsoleKey.Enter:
-                    if (InputModule is null) return;
-                    await EnterLineAsync(true);
+                    await EnterLineAsync(inputModule, true);
                     return;
-                case ConsoleKey.Backspace when InputModule?.inputString.Length.Equals(0) ?? false:
+                case ConsoleKey.Backspace when inputModule?.inputString.Length.Equals(0) ?? false:
                     return;
                 case ConsoleKey.Backspace when mods[Ctrl]:
                     goto NotImpl;
-                    if (InputModule is null) return;
-                    bool? isPrevSpace = InputModule.inputString[^1] == ' ';
-                    int i;
-                    for (i = InputModule.inputString.Length - 2; i >= 0; i--)
-                    {
-            
-                        if (isPrevSpace.Value && InputModule.inputString[i] != ' ')
-                            break;
-                        if (InputModule.inputString[i] == ' ' && !isPrevSpace.Value)
-                            isPrevSpace = true;
-                    }
-            
                     //TODO fix this
                     NotImpl:
                     break;
                 case ConsoleKey.Backspace:
-                    if (InputModule is null) return;
+                    if (inputModule is null) return;
                     lock (this.writeLock)
                     {
-                        InputModule.inputString.Remove(InputModule.inputString.Length - 1, 1);
-                        InputModule.lrCursorPos--;
+                        inputModule.inputString.Remove(inputModule.inputString.Length - 1, 1);
+                        inputModule.lrCursorPos--;
                         Console.Write("\b \b");
                     }
             
                     return;
                 default:
-                    if (InputModule is null) return;
+                    if (inputModule is null) return;
                     if (key.KeyChar == '\u0000') return;
-                    if (InputModule.inputString.Length < InputModule.Width)
+                    if (inputModule.inputString.Length < inputModule.Width)
                     {
                         lock (this.writeLock)
                         {
-                            InputModule.inputString.Append(key.KeyChar);
+                            inputModule.inputString.Append(key.KeyChar);
                             Console.Write(key.KeyChar);
-                            InputModule.lrCursorPos++;
+                            inputModule.lrCursorPos++;
                         }
                     }
                     break;
             }
         }
 
-        public async Task EnterLineAsync(bool scrollToBottom)
+        public async Task EnterLineAsync(Module inputModule, bool scrollToBottom)
         {
-            Module inputModule = InputModule;
             if (inputModule is null) return;
             string line;
             Module.AsyncEventHandler<LineEnteredEventArgs> handler;
@@ -458,7 +446,7 @@ namespace CMSlib.ConsoleModule
             if (handler != null)
             {
                 var e = new LineEnteredEventArgs(line);
-                await handler(InputModule, e);
+                await handler(inputModule, e);
             }
             inputModule.FireLineEntered(new LineEnteredEventArgs(line));
             inputModule.WriteOutput();

@@ -231,10 +231,11 @@ namespace CMSlib.ConsoleModule
                     Console.Write(line);
                 }
 
-                if (this.parent.InputModule is null) return;
+                Module inputModule = this.parent.InputModule;
+                if (inputModule is null) return;
                 
-                int inputCursorY = Math.Min(Console.WindowHeight - 2, this.parent.InputModule.Height + this.parent.InputModule.Y);
-                int inputCursorX = this.parent.InputModule.X + 1 + this.parent.InputModule.lrCursorPos;
+                int inputCursorY = Math.Min(Console.WindowHeight - 2, inputModule.Height + inputModule.Y);
+                int inputCursorX = inputModule.X + 1 + inputModule.lrCursorPos;
                 if (inputCursorY < 0 || inputCursorX < 0)
                     return;
                 Console.SetCursorPosition(inputCursorX,
