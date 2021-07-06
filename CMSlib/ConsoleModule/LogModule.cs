@@ -58,11 +58,10 @@ namespace CMSlib.ConsoleModule
         /// <returns>The string representation of this module.</returns>
         public override string ToString()
         {
-            //todo hEIGHT
             int actingHeight = Math.Min(Height, (Console.WindowHeight - 2) - Y);
             string actingTitle = DisplayName ?? Title;
             StringBuilder output = borderCharacter is not null ? new((Width + 2) * (actingHeight + 2) + AnsiEscape.AsciiMode.Length + AnsiEscape.SgrUnderline.Length * 2) : new();
-            int inputDifferential = 2;
+            int inputDifferential = 0;
             int lineCount = Math.Clamp(text.Count - scrolledLines, 0, actingHeight - inputDifferential);
             int spaceCount =
                 Math.Min(actingHeight - text.Count - inputDifferential + scrolledLines,
