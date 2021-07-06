@@ -40,8 +40,8 @@ namespace CMSlib.ConsoleModule
             this.Title = title;
             this.X = x;
             this.Y = y;
-            this.Width = width - 2;
-            this.Height = height - 2;
+            this.Width = width;
+            this.Height = height;
             //to account for the fact that width represents internal width
         }
 

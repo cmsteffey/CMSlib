@@ -20,7 +20,7 @@ namespace CMSlib.ConsoleModule
         
 
         public StandardInputModule(string title, int x, int y, int width, int height,
-            char? borderCharacter = null, LogLevel minimumLogLevel = LogLevel.Information) : base(title, x, y, width, height, minimumLogLevel)
+            char? borderCharacter = null, LogLevel minimumLogLevel = LogLevel.Information) : base(title, x, y, width - 2, height - 2, minimumLogLevel)
         {
             this.borderCharacter = borderCharacter;
         }
