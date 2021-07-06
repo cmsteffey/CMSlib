@@ -183,6 +183,8 @@ namespace CMSlib.ConsoleModule
                         break;
                     if (line.IsVisible())
                         Console.SetCursorPosition(X, i);
+                    else
+                        --i;
                     Console.Write(line);
                 }
 
@@ -208,8 +210,8 @@ namespace CMSlib.ConsoleModule
     {
         internal static string Render(string Title, char? borderCharacter, int X, int Y, int Width, int Height, int scrolledLines, List<string> text, bool selected, string DisplayName, bool isInput, bool unread, StringBuilder inputString)
         {
-            int internalHeight = Math.Min(Height - 2, Console.WindowHeight - 4 - Y);
-            int internalWidth = Math.Min(Width - 2, Console.WindowWidth - 4 - X);
+            int internalHeight = Math.Min(Height - 2, Console.WindowHeight - Y);
+            int internalWidth = Width - 2;
             string actingTitle = DisplayName ?? Title;
             StringBuilder output = borderCharacter is not null ? new((internalWidth + 2) * (internalHeight + 2) + AnsiEscape.AsciiMode.Length + AnsiEscape.SgrUnderline.Length * 2) : new();
             int inputDifferential = isInput ? 2 : 0;
@@ -273,7 +275,6 @@ namespace CMSlib.ConsoleModule
                     .Append(AnsiEscape.VerticalLine)
                     .Append(AnsiEscape.AsciiMode)
                     .Append(inputString.ToString().GuaranteeLength(internalWidth))
-                    .Append(' ', internalWidth - inputString.Length)
                     .Append(AnsiEscape.LineDrawingMode)
                     .Append(AnsiEscape.VerticalLine)
                     .Append(AnsiEscape.LowerLeftCorner)

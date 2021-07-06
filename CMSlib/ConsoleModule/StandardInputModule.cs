@@ -79,6 +79,8 @@ namespace CMSlib.ConsoleModule
             {
                 int before = scrolledLines;
                 scrolledLines = Math.Clamp(scrolledLines + amt, 0, this.text.Count - 1);
+                if (before != 0 && scrolledLines == 0)
+                    unread = false;
                 if (before != scrolledLines) WriteOutput();
             }
         }
@@ -90,6 +92,8 @@ namespace CMSlib.ConsoleModule
             {
                 int before = scrolledLines;
                 scrolledLines = Math.Clamp(line, 0, this.text.Count - 1);
+                if (before != 0 && scrolledLines == 0)
+                    unread = false;
                 if (before != scrolledLines) WriteOutput();
             }
         }
