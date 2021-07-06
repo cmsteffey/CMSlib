@@ -2,9 +2,9 @@
 using CMSlib.ConsoleModule;
 
 ModuleManager manager = new();
-StandardInputModule input = new("INPUT", 0, 0, Console.WindowWidth / 2 - 2, Console.WindowHeight - 2);
-StandardInputModule output = new("OUTPUT", Console.WindowWidth / 2, 0, Console.WindowWidth / 2 - 2, Console.WindowHeight / 2 - 2);
-LogModule logging = new("LOGGING", Console.WindowWidth / 2, Console.WindowHeight / 2, Console.WindowWidth / 2 - 2, Console.WindowHeight / 2 - 2);
+StandardInputModule input = new("INPUT", 0, 0, Console.WindowWidth / 2, Console.WindowHeight);
+StandardInputModule output = new("OUTPUT", Console.WindowWidth / 2, 0, Console.WindowWidth / 2, Console.WindowHeight / 2);
+LogModule logging = new("LOGGING", Console.WindowWidth / 2, Console.WindowHeight / 2, Console.WindowWidth / 2, Console.WindowHeight / 2);
 manager.Add(input);
 manager.Add(output);
 manager.Add(logging);
