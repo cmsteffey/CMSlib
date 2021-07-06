@@ -376,10 +376,10 @@ namespace CMSlib.ConsoleModule
                     selectedModule?.ScrollTo(int.MaxValue);
                     break;
                 case ConsoleKey.PageUp:
-                    selectedModule?.ScrollUp(selectedModule.Height);
+                    selectedModule?.PageUp();
                     break;
                 case ConsoleKey.PageDown:
-                    selectedModule?.ScrollDown(selectedModule.Height);
+                    selectedModule?.PageDown();
                     break;
                 case ConsoleKey.UpArrow when mods[Ctrl]:
                     selectedModule?.ScrollUp(1);

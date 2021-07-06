@@ -68,79 +68,8 @@ namespace CMSlib.ConsoleModule
         /// <returns>The string representation of this module.</returns>
         public override string ToString()
         {
-            int actingHeight = Math.Min(Height, (Console.WindowHeight - 2) - Y);
-            string actingTitle = DisplayName ?? Title;
-            StringBuilder output = borderCharacter is not null ? new((Width + 2) * (actingHeight + 2) + AnsiEscape.AsciiMode.Length + AnsiEscape.SgrUnderline.Length * 2) : new();
-            int inputDifferential = 2;
-            int lineCount = Math.Clamp(text.Count - scrolledLines, 0, actingHeight - inputDifferential);
-            int spaceCount =
-                Math.Min(actingHeight - text.Count - inputDifferential + scrolledLines,
-                    actingHeight - inputDifferential);
-            if (lineCount <= 0 && spaceCount <= 0)
-            {
-                return string.Empty;
-            }
-            if (borderCharacter is null)
-                output.Append(AnsiEscape.LineDrawingMode);
-            else
-                output.Append(AnsiEscape.AsciiMode);
-            output.Append(borderCharacter??AnsiEscape.UpperLeftCorner);
-            if (borderCharacter is null)
-                output.Append(AnsiEscape.AsciiMode);
-            
-            if (selected)
-                output.Append(AnsiEscape.SgrUnderline);
-            output.Append(actingTitle.Ellipse(Width));
-            
-            if (selected)
-                output.Append(AnsiEscape.SgrNoUnderline);
-            if (borderCharacter is null)
-                output.Append(AnsiEscape.LineDrawingMode);
-            output.Append(borderCharacter??AnsiEscape.HorizontalLine, Width - actingTitle.Ellipse(Width).Length);
-            output.Append(borderCharacter ?? AnsiEscape.UpperRightCorner);
-            for (int i = 0; i < spaceCount; i++)
-            {
-                output.Append(borderCharacter?.ToString()??(unread && i > actingHeight - (4 + inputDifferential) ? AnsiEscape.AsciiMode + AnsiEscape.SgrRedForeGround + AnsiEscape.SgrBrightBold + "V" + AnsiEscape.SgrClear: AnsiEscape.VerticalLine.ToString()));
-                output.Append(' ', Width);
-                output.Append(borderCharacter?.ToString()??AnsiEscape.LineDrawingMode + AnsiEscape.VerticalLine);
-            }
-            int index = Math.Clamp(text.Count - (actingHeight - inputDifferential) - scrolledLines, 0, text.Count == 0 ? 0 : text.Count - 1);
-            
-            List<string> toPrint = text.GetRange(index, lineCount);
-            
-            
-            for(int i = 0; i < toPrint.Count; i++)
-            {
-                output.Append(borderCharacter?.ToString()??(unread && i + Math.Max(spaceCount, 0) > actingHeight - (4 + inputDifferential) ? AnsiEscape.SgrRedForeGround + AnsiEscape.SgrBrightBold + "V" + AnsiEscape.SgrClear: AnsiEscape.VerticalLine.ToString()));
-                if (borderCharacter is null) output.Append(AnsiEscape.AsciiMode);
-                output.Append(toPrint[i]);
-                bool dot = borderCharacter is null && i + Math.Max(spaceCount, 0) > Height - (2 + inputDifferential) && scrolledLines != 0;
-                if (dot)
-                {
-                    output.Append(AnsiEscape.SgrGreenForeGround + AnsiEscape.SgrBrightBold + "." + AnsiEscape.SgrClear);
-                }
-                if (borderCharacter is null) output.Append(AnsiEscape.LineDrawingMode);
-                output.Append(borderCharacter?.ToString()??(dot?"":AnsiEscape.VerticalLine.ToString()));
-            }
-            if(borderCharacter is null)
-                output.Append(AnsiEscape.VerticalWithRight).Append(AnsiEscape.HorizontalLine, Width).Append(AnsiEscape.VerticalWithLeft);
-            else
-                output.Append(borderCharacter.Value, Width + 2);
-            if(borderCharacter is null) 
-                output
-                    .Append(AnsiEscape.VerticalLine)
-                    .Append(AnsiEscape.AsciiMode)
-                    .Append(inputString)
-                    .Append(' ', Width - inputString.Length)
-                    .Append(AnsiEscape.LineDrawingMode)
-                    .Append(AnsiEscape.VerticalLine)
-                    .Append(AnsiEscape.LowerLeftCorner)
-                    .Append(AnsiEscape.HorizontalLine, Width)
-                    .Append(AnsiEscape.LowerRightCorner)
-                    .Append(AnsiEscape.AsciiMode);
-            else
-                output.Append(borderCharacter).Append(inputString).Append(' ', Width - inputString.Length).Append(borderCharacter.Value, Width + 3);
-            return output.ToString();
+            return BoxRenderer.Render(Title, borderCharacter, X, Y, Width, Height, scrolledLines, text, selected, DisplayName,
+                true, unread, inputString);
         }
 
         public override void ScrollUp(int amt)
@@ -164,7 +93,15 @@ namespace CMSlib.ConsoleModule
                 if (before != scrolledLines) WriteOutput();
             }
         }
+        public override void PageDown()
+        {
+            ScrollDown(Height - 2);
+        }
 
+        public override void PageUp()
+        {
+            ScrollUp(Height - 2);
+        }
         
     }
 
