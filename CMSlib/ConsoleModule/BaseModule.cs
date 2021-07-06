@@ -5,7 +5,6 @@ using System.Text;
 using CMSlib.Tables;
 using ExtensionMethods = CMSlib.Tables.ExtensionMethods;
 using CMSlib.Extensions;
-using System.Threading;
 using System.Threading.Tasks;
 namespace CMSlib.ConsoleModule
 {

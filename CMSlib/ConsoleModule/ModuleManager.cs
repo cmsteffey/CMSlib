@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Threading;
 using System.Threading.Tasks;
 using CMSlib.Extensions;
 using Microsoft.Extensions.Logging;
@@ -351,6 +349,7 @@ namespace CMSlib.ConsoleModule
         /// </summary>
         public static void QuitApp()
         {
+            
             Console.Write(AnsiEscape.MainScreenBuffer);
             Console.Write(AnsiEscape.SoftReset);
             Console.Write(AnsiEscape.EnableCursorBlink);
