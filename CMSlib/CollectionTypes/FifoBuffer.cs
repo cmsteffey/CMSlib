@@ -19,6 +19,7 @@ namespace CMSlib.CollectionTypes
             _internalBuffer.Add(item);
             
         }
+        
 
         public IEnumerator<T> GetEnumerator()
         {
@@ -30,7 +31,7 @@ namespace CMSlib.CollectionTypes
             return GetEnumerator();
         }
 
-        public class FifoBufferEnumerator<T> : IEnumerator<T>
+        private class FifoBufferEnumerator<T> : IEnumerator<T>
         {
             
             

@@ -17,6 +17,8 @@ namespace CMSlib.ConsoleModule
         internal readonly List<string> dictKeys = new();
         internal int selected = 0;
         internal object writeLock = new();
+        
+        private readonly object dictSync = new();
 
         private const string Ctrl = "Control";
         private const string Alt = "Alt";
@@ -93,8 +95,6 @@ namespace CMSlib.ConsoleModule
         {
             get => InputModule?.Title;
         }
-        
-        private readonly object dictSync = new();
         /// <summary>
         /// Refreshes all modules in this manager, ensuring that the latest output is displayed in all of them.
         /// </summary>
