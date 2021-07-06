@@ -8,7 +8,6 @@ LogModule logging = new("LOGGING", Console.WindowWidth / 2, Console.WindowHeight
 manager.Add(input);
 manager.Add(output);
 manager.Add(logging);
-logging.AddText("HECC");
 manager.LineEntered += async (@object, args) =>
 {
     InputModule? module = @object as InputModule;
