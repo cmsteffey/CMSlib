@@ -11,47 +11,15 @@ using Microsoft.Extensions.Logging;
 
 namespace CMSlib.ConsoleModule
 {
-    public class Module : ILogger
+    public sealed class Module : BaseModule
     {
-        public int X { get; }
-        public int Y { get; }
-        public int Width { get; }
-        public int Height { get; }
-        public string Title { get; }
+       
 
         internal readonly StringBuilder inputString = new();
         internal readonly bool isInput;
         private  readonly List<string> text = new();
         private  readonly char? borderCharacter;
-        private  readonly ModuleManager parent;
-        private  readonly object AddTextLock = new();
-        private  readonly LogLevel minLevel;
-        
-        internal int      scrolledLines = 0;
-        internal bool     unread = false;
-        internal int      lrCursorPos = 0;
-        private  string   _inputClear;
 
-        public string InputClear { get {
-            _inputClear ??= "\b \b".Multiply(Width);
-            return _inputClear;
-        } }
-        /// <summary>
-        /// This string is shown at the top of the module. Setting it to null, or not setting it at all, uses the module title as the displayed title.
-        /// </summary>
-        public string DisplayName { get; set; } = null;
-        internal bool selected = false;
-
-        /// <summary>
-        /// Event fired when a line is entered into this module
-        /// </summary>
-        public event AsyncEventHandler<LineEnteredEventArgs> LineEntered;
-        /// <summary>
-        /// Event fired when a key is pressed while this module is focused
-        /// </summary>
-        public event AsyncEventHandler<KeyEnteredEventArgs> KeyEntered;
-
-        private event AsyncEventHandler<LineEnteredEventArgs> ReadLineLineEntered;
 
         internal Module()
         {
@@ -59,33 +27,29 @@ namespace CMSlib.ConsoleModule
         }
 
         internal Module(ModuleManager parent, string title, int x, int y, int width, int height, string text,
-            bool isInput, char? borderCharacter = null, LogLevel minimumLogLevel = LogLevel.Information)
+            bool isInput, char? borderCharacter = null, LogLevel minimumLogLevel = LogLevel.Information) : base(parent, minimumLogLevel)
         {
             (
-                    this.parent,
-                    this.borderCharacter,
-                    this.X,
-                    this.Y,
-                    this.Height,
-                    this.Width,
-                    this.isInput,
-                    this.minLevel,
-                    this.Title) =
-                (parent,
-                    borderCharacter,
-                    x,
-                    y,
-                    height,
-                    width,
-                    isInput,
-                    minimumLogLevel,
-                    title
-                );
+                this.borderCharacter,
+                this.X,
+                this.Y,
+                this.Height,
+                this.Width,
+                this.isInput,
+                this.Title) =
+            (
+                borderCharacter,
+                x,
+                y,
+                height,
+                width,
+                isInput,
+                title
+            );
             this.AddText(text);
         }
         
 
-        public delegate Task AsyncEventHandler<in T>(object sender, T eventArgs);
         /// <summary>
         /// Reads and returns the next line entered into this module. DO NOT call this method inside a LineEntered event handler.
         /// </summary>
@@ -135,7 +99,7 @@ namespace CMSlib.ConsoleModule
         /// Adds line(s) of text to this module. This supports \n, and \n will properly add text to the next line.
         /// </summary>
         /// <param name="text">The text to add</param>
-        public void AddText(string text)
+        public override void AddText(string text)
         {
             
             lock (AddTextLock)
@@ -150,11 +114,7 @@ namespace CMSlib.ConsoleModule
                 
             }
         }
-
-        public void AddText(object obj)
-        {
-            AddText(obj.ToString());
-        }
+        
         /// <summary>
         /// Gets the string representation of this Module.
         /// </summary>
@@ -238,121 +198,15 @@ namespace CMSlib.ConsoleModule
             return output.ToString();
         }
 
-        private IEnumerable<string> ToOutputLines()
-        {
-            return ToString().SplitOnNonEscapeLength(Width + 2);
-        }
-        /// <summary>
-        /// Refreshes this module, showing the latest output.
-        /// </summary>
-        public void WriteOutput()
-        {
-            lock (this.parent.writeLock)
-            {
-                Console.Write(AnsiEscape.DisableCursorVisibility);
-                var outputLines = this.ToOutputLines();
-                int i = Y - 1;
-                if(this.X > Console.BufferWidth || this.Y > Console.BufferHeight)
-                    return;
-                Console.SetCursorPosition(X, Y);
-                foreach (var line in outputLines)
-                {
-                    if(++i >= Console.WindowHeight)
-                        break;
-                    if (line.IsVisible())
-                        Console.SetCursorPosition(X, i);
-                    Console.Write(line);
-                }
-
-                Module inputModule = this.parent.InputModule;
-                if (inputModule is null) return;
-                
-                int inputCursorY = Math.Min(Console.WindowHeight - 2, inputModule.Height + inputModule.Y);
-                int inputCursorX = inputModule.X + 1 + inputModule.lrCursorPos;
-                if (inputCursorY < 0 || inputCursorX < 0)
-                    return;
-                Console.SetCursorPosition(inputCursorX,
-                    inputCursorY);
-                Console.Write(AnsiEscape.EnableCursorVisibility);
-            }
-        }
+        
+        
 
         internal Module ToInputModule()
         {
             return isInput ? this : null;
         }
 
-        bool ILogger.IsEnabled(LogLevel logLevel) =>
-            ShouldLog(logLevel);
-
-        private bool ShouldLog(LogLevel logLevel) =>
-            logLevel >= minLevel;
-        /// <summary>
-        /// Logs a message to this module.
-        /// </summary>
-        /// <param name="logLevel">The level to log this at. If this log level is not at least the minimum, this message won't show.</param>
-        /// <param name="eventId">The event id of the event being logged.</param>
-        /// <param name="state">The state to log.</param>
-        /// <param name="exception">The exception to log.</param>
-        /// <param name="formatter">The formatter to format the log message.</param>
-        /// <typeparam name="TState">The type of the state</typeparam>
-        void ILogger.Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
-        {
-            if (!this.ShouldLog(logLevel))
-                return;
-            DateTime time = DateTime.Now;
-            bool willWrite = (!unread && (scrolledLines != 0)) || scrolledLines == 0;
-            StringBuilder output = new StringBuilder();
-            string[] shortNames = {"TRC", "DBG", "INF", "WRN", "ERR", "CRT"};
-            int logLevelInt = (int) logLevel;
-            string shortName = logLevelInt >= 0 && logLevelInt < shortNames.Length ? shortNames[(int) logLevel] : "???";
-            string colorScheme =
-
-                logLevel switch
-                {
-                    LogLevel.Trace => $"{AnsiEscape.SgrCyanForeGround}",
-                    LogLevel.Information => $"{AnsiEscape.SgrCyanForeGround}{AnsiEscape.SgrBrightBold}",
-                    LogLevel.Debug => $"{AnsiEscape.SgrMagentaForeGround}{AnsiEscape.SgrBrightBold}",
-                    LogLevel.Warning => $"{AnsiEscape.SgrYellowForeGround}{AnsiEscape.SgrBrightBold}",
-                    LogLevel.Error => $"{AnsiEscape.SgrRedForeGround}{AnsiEscape.SgrBrightBold}",
-                    LogLevel.Critical =>
-                        $"{AnsiEscape.SgrWhiteBackGround}{AnsiEscape.SgrRedForeGround}{AnsiEscape.SgrBrightBold}{AnsiEscape.SgrNegative}",
-                    _ => ""
-                };
-            output.Append($"{colorScheme}");
-            output.Append(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
-            output.Append($"|{eventId.Id.ToString().TableColumn(5, ExtensionMethods.ColumnAdjust.Right)}:{shortName}|{eventId.Name.GuaranteeLength(Width - 30)}{AnsiEscape.SgrClear}");
-            lock (AddTextLock)
-            {
-                this.AddText(output
-                    .ToString()); //.PadToVisibleDivisible(width) + $"{colorScheme}[{eventId.Id.ToString().GuaranteeLength(5)}|{eventId.Name.GuaranteeLength(18)}]{AnsiEscape.SgrClear}" );
-                string formattedMessage = formatter(state, exception);
-                if (formattedMessage is not null)
-                    this.AddText(formatter(state, exception));
-                if (exception is not null)
-                {
-                    this.AddText(
-                        $"Exception in {exception.Source}: {exception.Message} at {exception.TargetSite?.Name ?? "unknown method"}");
-                }
-            }
-
-            if (willWrite)
-            {
-                this.WriteOutput();
-            }
-            
-        }
-        /// <summary>
-        /// NOT IMPL'D
-        /// </summary>
-        /// <param name="state"></param>
-        /// <typeparam name="TState"></typeparam>
-        /// <returns></returns>
-        /// <exception cref="NotImplementedException"></exception>
-        public IDisposable BeginScope<TState>(TState state)
-        {
-            throw new NotImplementedException();
-        }
+        
 
 
         public void ScrollUp(int amt)
@@ -388,32 +242,7 @@ namespace CMSlib.ConsoleModule
             }
         }
 
-        internal async Task FireLineEnteredAsync(LineEnteredEventArgs args)
-        {
-            var handler = LineEntered;
-            if (handler is not null)
-            {
-                await handler(this, args);
-            }
-        }
-
-        internal async Task FireKeyEnteredAsync(KeyEnteredEventArgs args)
-        {
-            var handler = KeyEntered;
-            if (handler is not null)
-            {
-                await handler(this, args);
-            }
-        }
-
-        internal async Task FireReadLineLineEntered(LineEnteredEventArgs args)
-        {
-            var handler = ReadLineLineEntered;
-            if (handler is not null)
-            {
-                await handler(this, args);
-            }
-        }
+        
     }
 
     /// <summary>
@@ -442,5 +271,6 @@ namespace CMSlib.ConsoleModule
             SetConsoleMode(inputHandle, inMode);
         }
     }
+    public delegate Task AsyncEventHandler<in T>(object sender, T eventArgs);
 }
 

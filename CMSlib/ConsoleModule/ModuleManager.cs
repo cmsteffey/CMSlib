@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 
 namespace CMSlib.ConsoleModule
 {
-    public class ModuleManager : ILoggerFactory
+    public sealed class ModuleManager : ILoggerFactory
     {
         
         
@@ -37,7 +37,7 @@ namespace CMSlib.ConsoleModule
                     var key = Console.ReadKey(true);
                     Module selectedModule = SelectedModule;
                     Module inputModule = selectedModule?.ToInputModule();
-                    Module.AsyncEventHandler<KeyEnteredEventArgs> handler = KeyEntered;
+                    AsyncEventHandler<KeyEnteredEventArgs> handler = KeyEntered;
 
                     if (inputModule is not null)
                     {
@@ -230,11 +230,11 @@ namespace CMSlib.ConsoleModule
         /// <summary>
         /// Event fired when a line is entered in any module.
         /// </summary>
-        public event Module.AsyncEventHandler<LineEnteredEventArgs> LineEntered;
+        public event AsyncEventHandler<LineEnteredEventArgs> LineEntered;
         /// <summary>
         /// Event fired when a key is pressed.
         /// </summary>
-        public event Module.AsyncEventHandler<KeyEnteredEventArgs> KeyEntered;
+        public event AsyncEventHandler<KeyEnteredEventArgs> KeyEntered;
 
         /// <summary>
         /// Tries to get the next queued module to be used as a logger, and if the queue is empty return the input module.
@@ -433,7 +433,7 @@ namespace CMSlib.ConsoleModule
         {
             if (inputModule is null) return;
             string line;
-            Module.AsyncEventHandler<LineEnteredEventArgs> handler;
+            AsyncEventHandler<LineEnteredEventArgs> handler;
             lock (this.writeLock)
             {
                 handler = LineEntered;
