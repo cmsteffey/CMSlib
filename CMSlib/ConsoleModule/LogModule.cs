@@ -14,7 +14,7 @@ namespace CMSlib.ConsoleModule
         
 
         public LogModule(string title, int x, int y, int width, int height,
-            char? borderCharacter = null, LogLevel minimumLogLevel = LogLevel.Information) : base(title, x, y, width - 2, height - 2, minimumLogLevel)
+            char? borderCharacter = null, LogLevel minimumLogLevel = LogLevel.Information) : base(title, x, y, width, height, minimumLogLevel)
         {
             this.borderCharacter = borderCharacter;
         }
@@ -39,7 +39,7 @@ namespace CMSlib.ConsoleModule
             lock (AddTextLock)
             {
                 int before = this.text.Count;
-                this.text.AddRange(text.Replace("\t", "        ").Replace("\r\n", "\n").Split('\n').SelectMany(x=>x.PadToVisibleDivisible(Width).SplitOnNonEscapeLength(Width)));
+                this.text.AddRange(text.Replace("\t", "        ").Replace("\r\n", "\n").Split('\n').SelectMany(x=>x.PadToVisibleDivisible(Width - 2).SplitOnNonEscapeLength(Width - 2)));
                 if (scrolledLines != 0)
                 {
                     scrolledLines += this.text.Count - before;
@@ -83,12 +83,12 @@ namespace CMSlib.ConsoleModule
 
         public override void PageDown()
         {
-            ScrollDown(Height);
+            ScrollDown(Height - 2);
         }
 
         public override void PageUp()
         {
-            ScrollUp(Height);
+            ScrollUp(Height - 2);
         }
     }
 

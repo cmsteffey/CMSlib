@@ -123,7 +123,7 @@ namespace CMSlib.ConsoleModule
                 };
             output.Append($"{colorScheme}");
             output.Append(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
-            output.Append($"|{eventId.Id.ToString().TableColumn(5, ExtensionMethods.ColumnAdjust.Right)}:{shortName}|{eventId.Name.GuaranteeLength(Width - 30)}{AnsiEscape.SgrClear}");
+            output.Append($"|{eventId.Id.ToString().TableColumn(5, ExtensionMethods.ColumnAdjust.Right)}:{shortName}|{eventId.Name.GuaranteeLength(Width - 32)}{AnsiEscape.SgrClear}");
             lock (AddTextLock)
             {
                 this.AddText(output
@@ -189,7 +189,7 @@ namespace CMSlib.ConsoleModule
                 BaseModule inputModule = this.parent?.InputModule;
                 if (inputModule is null) return;
 
-                int inputCursorY = Math.Min(Console.WindowHeight - 2, inputModule.Height + inputModule.Y);
+                int inputCursorY = Math.Min(Console.WindowHeight - 2, inputModule.Height + inputModule.Y - 2);
                 int inputCursorX = inputModule.X + 1 + inputModule.lrCursorPos;
                 if (inputCursorY < 0 || inputCursorX < 0)
                     return;
@@ -200,7 +200,7 @@ namespace CMSlib.ConsoleModule
         }
         private IEnumerable<string> ToOutputLines()
         {
-            return ToString().SplitOnNonEscapeLength(Width + 2);
+            return ToString().SplitOnNonEscapeLength(Width);
         }
     }
 
@@ -208,14 +208,15 @@ namespace CMSlib.ConsoleModule
     {
         internal static string Render(string Title, char? borderCharacter, int X, int Y, int Width, int Height, int scrolledLines, List<string> text, bool selected, string DisplayName, bool isInput, bool unread, StringBuilder inputString)
         {
-            int actingHeight = Math.Min(Height, (Console.WindowHeight - 2) - Y);
+            int internalHeight = Math.Min(Height - 2, Console.WindowHeight - 4 - Y);
+            int internalWidth = Math.Min(Width - 2, Console.WindowWidth - 4 - X);
             string actingTitle = DisplayName ?? Title;
-            StringBuilder output = borderCharacter is not null ? new((Width + 2) * (actingHeight + 2) + AnsiEscape.AsciiMode.Length + AnsiEscape.SgrUnderline.Length * 2) : new();
+            StringBuilder output = borderCharacter is not null ? new((internalWidth + 2) * (internalHeight + 2) + AnsiEscape.AsciiMode.Length + AnsiEscape.SgrUnderline.Length * 2) : new();
             int inputDifferential = isInput ? 2 : 0;
-            int lineCount = Math.Clamp(text.Count - scrolledLines, 0, actingHeight - inputDifferential);
+            int lineCount = Math.Clamp(text.Count - scrolledLines, 0, internalHeight - inputDifferential);
             int spaceCount =
-                Math.Min(actingHeight - text.Count - inputDifferential + scrolledLines,
-                    actingHeight - inputDifferential);
+                Math.Min(internalHeight - text.Count - inputDifferential + scrolledLines,
+                    internalHeight - inputDifferential);
             if (lineCount <= 0 && spaceCount <= 0)
             {
                 return string.Empty;
@@ -230,31 +231,31 @@ namespace CMSlib.ConsoleModule
             
             if (selected)
                 output.Append(AnsiEscape.SgrUnderline);
-            output.Append(actingTitle.Ellipse(Width));
+            output.Append(actingTitle.Ellipse(internalWidth));
             
             if (selected)
                 output.Append(AnsiEscape.SgrNoUnderline);
             if (borderCharacter is null)
                 output.Append(AnsiEscape.LineDrawingMode);
-            output.Append(borderCharacter??AnsiEscape.HorizontalLine, Width - actingTitle.Ellipse(Width).Length);
+            output.Append(borderCharacter??AnsiEscape.HorizontalLine, internalWidth - actingTitle.Ellipse(internalWidth).Length);
             output.Append(borderCharacter ?? AnsiEscape.UpperRightCorner);
             for (int i = 0; i < spaceCount; i++)
             {
-                output.Append(borderCharacter?.ToString()??(unread && i > actingHeight - (4 + inputDifferential) ? AnsiEscape.AsciiMode + AnsiEscape.SgrRedForeGround + AnsiEscape.SgrBrightBold + "V" + AnsiEscape.SgrClear: AnsiEscape.VerticalLine.ToString()));
-                output.Append(' ', Width);
+                output.Append(borderCharacter?.ToString()??(unread && i > internalHeight - (4 + inputDifferential) ? AnsiEscape.AsciiMode + AnsiEscape.SgrRedForeGround + AnsiEscape.SgrBrightBold + "V" + AnsiEscape.SgrClear: AnsiEscape.VerticalLine.ToString()));
+                output.Append(' ', internalWidth);
                 output.Append(borderCharacter?.ToString()??AnsiEscape.LineDrawingMode + AnsiEscape.VerticalLine);
             }
-            int index = Math.Clamp(text.Count - (actingHeight - inputDifferential) - scrolledLines, 0, text.Count == 0 ? 0 : text.Count - 1);
+            int index = Math.Clamp(text.Count - (internalHeight - inputDifferential) - scrolledLines, 0, text.Count == 0 ? 0 : text.Count - 1);
             
             List<string> toPrint = text.GetRange(index, lineCount);
             
             
             for(int i = 0; i < toPrint.Count; i++)
             {
-                output.Append(borderCharacter?.ToString()??(unread && i + Math.Max(spaceCount, 0) > actingHeight - (4 + inputDifferential) ? AnsiEscape.SgrRedForeGround + AnsiEscape.SgrBrightBold + "V" + AnsiEscape.SgrClear: AnsiEscape.VerticalLine.ToString()));
+                output.Append(borderCharacter?.ToString()??(unread && i + Math.Max(spaceCount, 0) > internalHeight - (4 + inputDifferential) ? AnsiEscape.SgrRedForeGround + AnsiEscape.SgrBrightBold + "V" + AnsiEscape.SgrClear: AnsiEscape.VerticalLine.ToString()));
                 if (borderCharacter is null) output.Append(AnsiEscape.AsciiMode);
-                output.Append(toPrint[i]);
-                bool dot = borderCharacter is null && i + Math.Max(spaceCount, 0) > Height - (2 + inputDifferential) && scrolledLines != 0;
+                output.Append(toPrint[i].GuaranteeLength(internalWidth));
+                bool dot = borderCharacter is null && i + Math.Max(spaceCount, 0) > internalHeight - (2 + inputDifferential) && scrolledLines != 0;
                 if (dot)
                 {
                     output.Append(AnsiEscape.SgrGreenForeGround + AnsiEscape.SgrBrightBold + "." + AnsiEscape.SgrClear);
@@ -263,24 +264,24 @@ namespace CMSlib.ConsoleModule
                 output.Append(borderCharacter?.ToString()??(dot?"":AnsiEscape.VerticalLine.ToString()));
             }
             if(borderCharacter is null)
-                output.Append(isInput ? AnsiEscape.VerticalWithRight : AnsiEscape.LowerLeftCorner).Append(AnsiEscape.HorizontalLine, Width).Append(isInput ? AnsiEscape.VerticalWithLeft : AnsiEscape.LowerRightCorner);
+                output.Append(isInput ? AnsiEscape.VerticalWithRight : AnsiEscape.LowerLeftCorner).Append(AnsiEscape.HorizontalLine, internalWidth).Append(isInput ? AnsiEscape.VerticalWithLeft : AnsiEscape.LowerRightCorner);
             else
-                output.Append(borderCharacter.Value, Width + 2);
+                output.Append(borderCharacter.Value, internalWidth + 2);
             if (!isInput) return output.ToString();
             if(borderCharacter is null) 
                 output
                     .Append(AnsiEscape.VerticalLine)
                     .Append(AnsiEscape.AsciiMode)
-                    .Append(inputString)
-                    .Append(' ', Width - inputString.Length)
+                    .Append(inputString.ToString().GuaranteeLength(internalWidth))
+                    .Append(' ', internalWidth - inputString.Length)
                     .Append(AnsiEscape.LineDrawingMode)
                     .Append(AnsiEscape.VerticalLine)
                     .Append(AnsiEscape.LowerLeftCorner)
-                    .Append(AnsiEscape.HorizontalLine, Width)
+                    .Append(AnsiEscape.HorizontalLine, internalWidth)
                     .Append(AnsiEscape.LowerRightCorner)
                     .Append(AnsiEscape.AsciiMode);
             else
-                output.Append(borderCharacter).Append(inputString).Append(' ', Width - inputString.Length).Append(borderCharacter.Value, Width + 3);
+                output.Append(borderCharacter).Append(inputString).Append(' ', internalWidth - inputString.Length).Append(borderCharacter.Value, internalWidth + 3);
             return output.ToString();
         }
     }
