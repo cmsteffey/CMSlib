@@ -31,7 +31,7 @@ namespace CMSlib.ConsoleModule
         /// Clears all lines from this module, as well as optionally refreshing.
         /// </summary>
         /// <param name="refresh">Whether to refresh after clearing out the text</param>
-        public void Clear(bool refresh = true)
+        public override void Clear(bool refresh = true)
         {
             lock (AddTextLock)
             {

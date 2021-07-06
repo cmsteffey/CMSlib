@@ -49,6 +49,11 @@ namespace CMSlib.ConsoleModule
         public abstract void ScrollUp(int amt);
         public void ScrollDown(int amt) => ScrollUp(-amt);
         public abstract void ScrollTo(int line);
+        /// <summary>
+        /// Clears all lines from this module, as well as optionally refreshing.
+        /// </summary>
+        /// <param name="refresh">Whether to refresh after clearing out the text</param>
+        public abstract void Clear(bool refresh = true);
         public void AddText(object obj) => AddText(obj.ToString());
         
         /// <summary>
@@ -153,7 +158,7 @@ namespace CMSlib.ConsoleModule
         {
             throw new NotImplementedException();
         }
-        
+
         /// <summary>
         /// Refreshes this module, showing the latest output.
         /// </summary>
@@ -166,12 +171,12 @@ namespace CMSlib.ConsoleModule
                 Console.Write(AnsiEscape.DisableCursorVisibility);
                 var outputLines = this.ToOutputLines();
                 int i = Y - 1;
-                if(this.X > Console.BufferWidth || this.Y > Console.BufferHeight)
+                if (this.X > Console.BufferWidth || this.Y > Console.BufferHeight)
                     return;
                 Console.SetCursorPosition(X, Y);
                 foreach (var line in outputLines)
                 {
-                    if(++i >= Console.WindowHeight)
+                    if (++i >= Console.WindowHeight)
                         break;
                     if (line.IsVisible())
                         Console.SetCursorPosition(X, i);
@@ -180,7 +185,7 @@ namespace CMSlib.ConsoleModule
 
                 BaseModule inputModule = this.parent?.InputModule;
                 if (inputModule is null) return;
-                
+
                 int inputCursorY = Math.Min(Console.WindowHeight - 2, inputModule.Height + inputModule.Y);
                 int inputCursorX = inputModule.X + 1 + inputModule.lrCursorPos;
                 if (inputCursorY < 0 || inputCursorX < 0)

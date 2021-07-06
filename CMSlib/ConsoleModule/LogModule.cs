@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 using System.Linq;
 namespace CMSlib.ConsoleModule
 {
-    public class LogModule : BaseModule
+    public sealed class LogModule : BaseModule
     {
         private  readonly List<string> text = new();
         private  readonly char? borderCharacter;
@@ -21,18 +21,14 @@ namespace CMSlib.ConsoleModule
         
 
         
-        /// <summary>
-        /// Clears all lines from this module, as well as optionally refreshing.
-        /// </summary>
-        /// <param name="refresh">Whether to refresh after clearing out the text</param>
-        public void Clear(bool refresh = true)
+        
+        public override void Clear(bool refresh = true)
         {
             lock (AddTextLock)
             {
                 scrolledLines = 0;
                 text.Clear();
             }
-
             if(refresh)
                 WriteOutput();
         }
