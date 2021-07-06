@@ -357,7 +357,7 @@ namespace CMSlib.ConsoleModule
             Dictionary<string, bool> mods = key.Modifiers.ToStringDictionary<ConsoleModifiers>();
             if (mods[Alt])
                 return;
-            BaseModule inputModule = selectedModule?.isInput ?? false ? selectedModule : null;
+            Module inputModule = selectedModule?.isInput ?? false ? selectedModule.As<Module>() : null;
             switch (key.Key)
             {
                 case ConsoleKey.RightArrow:
@@ -397,7 +397,7 @@ namespace CMSlib.ConsoleModule
                 case ConsoleKey.Enter:
                     await EnterLineAsync(inputModule, true);
                     return;
-                case ConsoleKey.Backspace when inputModule?.As<Module>()?.inputString.Length.Equals(0) ?? false:
+                case ConsoleKey.Backspace when inputModule?.inputString.Length.Equals(0) ?? false:
                     return;
                 case ConsoleKey.Backspace when mods[Ctrl]:
                     goto NotImpl;
@@ -406,11 +406,10 @@ namespace CMSlib.ConsoleModule
                     break;
                 case ConsoleKey.Backspace:
                     if (inputModule is null) return;
-                    if (inputModule is not Module input) return;
                     lock (this.writeLock)
                     {
-                        input.inputString.Remove(input.inputString.Length - 1, 1);
-                        input.lrCursorPos--;
+                        inputModule.inputString.Remove(inputModule.inputString.Length - 1, 1);
+                        inputModule.lrCursorPos--;
                         Console.Write("\b \b");
                     }
             
@@ -431,7 +430,7 @@ namespace CMSlib.ConsoleModule
             }
         }
 
-        public async Task EnterLineAsync(BaseModule inputModule, bool scrollToBottom)
+        public async Task EnterLineAsync(Module inputModule, bool scrollToBottom)
         {
             if (inputModule is null) return;
             string line;

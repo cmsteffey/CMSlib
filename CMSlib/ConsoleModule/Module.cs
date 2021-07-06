@@ -26,7 +26,7 @@ namespace CMSlib.ConsoleModule
         }
 
         internal Module(ModuleManager parent, string title, int x, int y, int width, int height, string text,
-            bool isInput, char? borderCharacter = null, LogLevel minimumLogLevel = LogLevel.Information) : base(parent, minimumLogLevel)
+            bool isInput, char? borderCharacter = null, LogLevel minimumLogLevel = LogLevel.Information) : base(parent, minimumLogLevel,isInput)
         {
             (
                 this.borderCharacter,
@@ -34,7 +34,6 @@ namespace CMSlib.ConsoleModule
                 this.Y,
                 this.Height,
                 this.Width,
-                this.isInput,
                 this.Title) =
             (
                 borderCharacter,
@@ -42,7 +41,6 @@ namespace CMSlib.ConsoleModule
                 y,
                 height,
                 width,
-                isInput,
                 title
             );
             this.AddText(text);

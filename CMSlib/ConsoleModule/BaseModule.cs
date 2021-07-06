@@ -182,7 +182,7 @@ namespace CMSlib.ConsoleModule
                     Console.Write(line);
                 }
 
-                Module inputModule = this.parent.InputModule;
+                BaseModule inputModule = this.parent.InputModule;
                 if (inputModule is null) return;
                 
                 int inputCursorY = Math.Min(Console.WindowHeight - 2, inputModule.Height + inputModule.Y);
