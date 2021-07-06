@@ -435,7 +435,7 @@ namespace CMSlib.ConsoleModule
             }
         }
 
-        public async Task EnterLineAsync(InputModule inputModule, bool scrollToBottom)
+        private async Task EnterLineAsync(InputModule inputModule, bool scrollToBottom)
         {
             if (inputModule is null) return;
             string line;
