@@ -16,7 +16,6 @@ namespace CMSlib.ConsoleModule
        
 
         internal readonly StringBuilder inputString = new();
-        internal readonly bool isInput;
         private  readonly List<string> text = new();
         private  readonly char? borderCharacter;
 
@@ -198,18 +197,7 @@ namespace CMSlib.ConsoleModule
             return output.ToString();
         }
 
-        
-        
-
-        internal Module ToInputModule()
-        {
-            return isInput ? this : null;
-        }
-
-        
-
-
-        public void ScrollUp(int amt)
+        public override void ScrollUp(int amt)
         {
             if (this.text.Count == 0) return;
             lock (AddTextLock)
@@ -220,18 +208,7 @@ namespace CMSlib.ConsoleModule
             }
         }
 
-        public void ScrollDown(int amt)
-        {
-            if (this.text.Count == 0) return;
-            lock(AddTextLock){
-                int before = scrolledLines;
-                scrolledLines = Math.Clamp(scrolledLines - amt, 0, this.text.Count - 1);
-                if (scrolledLines == 0) unread = false;
-                if(before != scrolledLines) WriteOutput();
-            }
-        }
-
-        public void ScrollTo(int line)
+        public override void ScrollTo(int line)
         {
             if (this.text.Count == 0) return;
             lock (AddTextLock)

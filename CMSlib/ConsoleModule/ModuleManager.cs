@@ -13,7 +13,7 @@ namespace CMSlib.ConsoleModule
     {
         
         
-        private readonly Dictionary<string, Module> modules = new();
+        private readonly Dictionary<string, BaseModule> modules = new();
         internal readonly List<string> dictKeys = new();
         internal int selected = 0;
         internal object writeLock = new();
@@ -37,8 +37,8 @@ namespace CMSlib.ConsoleModule
                 while (true)
                 {
                     var key = Console.ReadKey(true);
-                    Module selectedModule = SelectedModule;
-                    Module inputModule = selectedModule?.ToInputModule();
+                    BaseModule selectedModule = SelectedModule;
+                    BaseModule inputModule = selectedModule?.isInput ?? false ? selectedModule : null;
                     AsyncEventHandler<KeyEnteredEventArgs> handler = KeyEntered;
 
                     if (inputModule is not null)
@@ -71,16 +71,16 @@ namespace CMSlib.ConsoleModule
         /// The currently selected module. Returns null if there is no module currently selected;
         /// </summary>
         
-        public Module? SelectedModule
+        public BaseModule? SelectedModule
         {
             get { lock(dictSync)return selected == -1 ? null : modules[dictKeys[selected]]; }
         }
 
-        private Queue<Module> loggerQueue = new();
+        private Queue<BaseModule> loggerQueue = new();
         /// <summary>
         /// The currently selected module that has input enabled. Returns null if there isn't one.
         /// </summary>
-        public Module? InputModule
+        public BaseModule? InputModule
         {
             get
             {
@@ -151,7 +151,7 @@ namespace CMSlib.ConsoleModule
         /// <returns>Whether this operation was successful. It will not succeed if this manager does not have a module with the supplied title.</returns>
         public bool AddToModule(string moduleTitle, string text)
         {
-            if(modules.TryGetValue(moduleTitle, out Module module))
+            if(modules.TryGetValue(moduleTitle, out BaseModule module))
             {
                 module.AddText(text);
                 return true;
@@ -167,7 +167,7 @@ namespace CMSlib.ConsoleModule
         /// <returns>Whether this operation was successful. It will not succeed if this manager does not have a module with the supplied title.</returns>
         public bool EnqueueLoggerModule(string moduleTitle)
         {
-            if (!modules.TryGetValue(moduleTitle, out Module toQueue)) return false;
+            if (!modules.TryGetValue(moduleTitle, out BaseModule toQueue)) return false;
             loggerQueue.Enqueue(toQueue);
             return true;
         }
@@ -186,6 +186,7 @@ namespace CMSlib.ConsoleModule
         /// <param name="borderChar">This character is used in every character of the border. Leave as null to have a lined border.</param>
         /// <param name="minimumLogLevel">The minimum log level that is outputted when this module is used as an ILogger</param>
         /// <param name="immediateOutput">Whether to immediately call RefreshModule on this module after construction</param>
+        /// <param name="isInput">Whether this module should be able to take input - if this is false, LineEntered is never fired</param>
         /// <returns>Whether the module was successfully created</returns>
         public bool AddModule(string title, int x, int y, int width, int height, string startingText = "", char? borderChar = null, LogLevel minimumLogLevel = LogLevel.Information, bool immediateOutput = true, bool isInput = true)
         {
@@ -209,18 +210,18 @@ namespace CMSlib.ConsoleModule
         /// Gets a module by title
         /// </summary>
         /// <param name="title">The title of the module to get</param>
-        public Module this[string title] => GetModule(title);
+        public BaseModule this[string title] => GetModule(title);
         /// <summary>
         /// Gets a module by order created/index in the internal list
         /// </summary>
         /// <param name="index">The zero-based index of the module</param>
-        public Module this[int index] =>  modules[dictKeys[index]];
+        public BaseModule this[int index] =>  modules[dictKeys[index]];
         /// <summary>
         /// Gets a module by title
         /// </summary>
         /// <param name="title">The title of the module to get</param>
         /// <returns>The module with that title</returns>
-        public Module GetModule(string title)
+        public BaseModule GetModule(string title)
         {
             if (!modules.ContainsKey(title))
                 throw new KeyNotFoundException($"There is no module with the title of {title}");
@@ -247,7 +248,7 @@ namespace CMSlib.ConsoleModule
         {
             lock (dictSync)
             {
-                if (loggerQueue.TryDequeue(out Module next))
+                if (loggerQueue.TryDequeue(out var next))
                 {
                     return next;
                 }
@@ -351,12 +352,12 @@ namespace CMSlib.ConsoleModule
             Environment.Exit(0);
         }
 
-        public async Task HandleKeyAsync(ConsoleKeyInfo key, Module selectedModule)
+        public async Task HandleKeyAsync(ConsoleKeyInfo key, BaseModule selectedModule)
         {
             Dictionary<string, bool> mods = key.Modifiers.ToStringDictionary<ConsoleModifiers>();
             if (mods[Alt])
                 return;
-            Module inputModule = selectedModule?.ToInputModule();
+            BaseModule inputModule = selectedModule?.isInput ?? false ? selectedModule : null;
             switch (key.Key)
             {
                 case ConsoleKey.RightArrow:
@@ -396,7 +397,7 @@ namespace CMSlib.ConsoleModule
                 case ConsoleKey.Enter:
                     await EnterLineAsync(inputModule, true);
                     return;
-                case ConsoleKey.Backspace when inputModule?.inputString.Length.Equals(0) ?? false:
+                case ConsoleKey.Backspace when inputModule?.As<Module>()?.inputString.Length.Equals(0) ?? false:
                     return;
                 case ConsoleKey.Backspace when mods[Ctrl]:
                     goto NotImpl;
@@ -405,10 +406,11 @@ namespace CMSlib.ConsoleModule
                     break;
                 case ConsoleKey.Backspace:
                     if (inputModule is null) return;
+                    if (inputModule is not Module input) return;
                     lock (this.writeLock)
                     {
-                        inputModule.inputString.Remove(inputModule.inputString.Length - 1, 1);
-                        inputModule.lrCursorPos--;
+                        input.inputString.Remove(input.inputString.Length - 1, 1);
+                        input.lrCursorPos--;
                         Console.Write("\b \b");
                     }
             
@@ -429,7 +431,7 @@ namespace CMSlib.ConsoleModule
             }
         }
 
-        public async Task EnterLineAsync(Module inputModule, bool scrollToBottom)
+        public async Task EnterLineAsync(BaseModule inputModule, bool scrollToBottom)
         {
             if (inputModule is null) return;
             string line;
@@ -468,7 +470,7 @@ namespace CMSlib.ConsoleModule
         /// </summary>
         public string Line { get; internal init; }
         
-        public Module Module { get; internal init; }
+        public BaseModule Module { get; internal init; }
     }
     /// <summary>
     /// EventArgs for the KeyEntered Event
@@ -480,6 +482,6 @@ namespace CMSlib.ConsoleModule
         /// </summary>
         public ConsoleKeyInfo KeyInfo { get; internal init; }
         
-        public Module Module { get; internal init; }
+        public BaseModule Module { get; internal init; }
     }
 }

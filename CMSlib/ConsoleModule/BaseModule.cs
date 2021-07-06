@@ -25,6 +25,7 @@ namespace CMSlib.ConsoleModule
         internal  int      scrolledLines = 0;
         internal  bool     unread = false;
         internal  int      lrCursorPos = 0;
+        internal readonly bool isInput;
         protected readonly LogLevel minLevel;
         protected readonly ModuleManager parent;
         protected readonly object AddTextLock = new();
@@ -34,14 +35,18 @@ namespace CMSlib.ConsoleModule
         {
         }
 
-        protected BaseModule(ModuleManager parent, LogLevel minLevel)
+        protected BaseModule(ModuleManager parent, LogLevel minLevel, bool isInput)
         {
             this.parent = parent;
             this.minLevel = minLevel;
+            this.isInput = isInput;
         }
 
         public abstract override string ToString();
         public abstract void AddText(string text);
+        public abstract void ScrollUp(int amt);
+        public void ScrollDown(int amt) => ScrollUp(-amt);
+        public abstract void ScrollTo(int line);
         public void AddText(object obj) => AddText(obj.ToString());
         
         /// <summary>

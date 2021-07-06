@@ -53,6 +53,11 @@ namespace CMSlib.Extensions
             }
             return -1;
         }
+
+        public static T? As<T>(this object obj) where T : class
+        {
+            return obj as T;
+        }
         
     }
 }
