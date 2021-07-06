@@ -354,7 +354,7 @@ namespace CMSlib.ConsoleModule
             Console.Write(AnsiEscape.MainScreenBuffer);
             Console.Write(AnsiEscape.SoftReset);
             Console.Write(AnsiEscape.EnableCursorBlink);
-            Environment.Exit(0);
+            System.Diagnostics.Process.GetCurrentProcess().Kill();
         }
 
         public async Task HandleKeyAsync(ConsoleKeyInfo key, BaseModule selectedModule)
