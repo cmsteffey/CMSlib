@@ -25,9 +25,8 @@ namespace CMSlib.ConsoleModule
         internal  int      scrolledLines = 0;
         internal  bool     unread = false;
         internal  int      lrCursorPos = 0;
-        internal readonly bool isInput;
         protected readonly LogLevel minLevel;
-        protected readonly ModuleManager parent;
+        internal ModuleManager parent = null;
         protected readonly object AddTextLock = new();
         internal bool selected = false;
 
@@ -35,11 +34,14 @@ namespace CMSlib.ConsoleModule
         {
         }
 
-        protected BaseModule(ModuleManager parent, LogLevel minLevel, bool isInput)
+        protected BaseModule(string title, int x, int y, int width, int height, LogLevel minLevel)
         {
-            this.parent = parent;
             this.minLevel = minLevel;
-            this.isInput = isInput;
+            this.Title = title;
+            this.X = x;
+            this.Y = y;
+            this.Width = width;
+            this.Height = height;
         }
 
         public abstract override string ToString();
@@ -58,7 +60,6 @@ namespace CMSlib.ConsoleModule
         /// </summary>
         public event AsyncEventHandler<KeyEnteredEventArgs> KeyEntered;
         
-        protected event AsyncEventHandler<LineEnteredEventArgs> ReadLineLineEntered;
         internal async Task FireLineEnteredAsync(LineEnteredEventArgs args)
         {
             var handler = LineEntered;
@@ -77,14 +78,7 @@ namespace CMSlib.ConsoleModule
             }
         }
 
-        internal async Task FireReadLineLineEntered(LineEnteredEventArgs args)
-        {
-            var handler = ReadLineLineEntered;
-            if (handler is not null)
-            {
-                await handler(this, args);
-            }
-        }
+        
         
         
         /// <summary>
@@ -165,6 +159,8 @@ namespace CMSlib.ConsoleModule
         /// </summary>
         public void WriteOutput()
         {
+            if (this.parent is null)
+                return;
             lock (this.parent.writeLock)
             {
                 Console.Write(AnsiEscape.DisableCursorVisibility);
@@ -182,7 +178,7 @@ namespace CMSlib.ConsoleModule
                     Console.Write(line);
                 }
 
-                BaseModule inputModule = this.parent.InputModule;
+                BaseModule inputModule = this.parent?.InputModule;
                 if (inputModule is null) return;
                 
                 int inputCursorY = Math.Min(Console.WindowHeight - 2, inputModule.Height + inputModule.Y);

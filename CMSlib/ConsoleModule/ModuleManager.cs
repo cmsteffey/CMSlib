@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using CMSlib.Extensions;
@@ -38,7 +39,7 @@ namespace CMSlib.ConsoleModule
                 {
                     var key = Console.ReadKey(true);
                     BaseModule selectedModule = SelectedModule;
-                    BaseModule inputModule = selectedModule?.isInput ?? false ? selectedModule : null;
+                    InputModule inputModule = selectedModule as InputModule;
                     AsyncEventHandler<KeyEnteredEventArgs> handler = KeyEntered;
 
                     if (inputModule is not null)
@@ -85,7 +86,7 @@ namespace CMSlib.ConsoleModule
             get
             {
                 lock (dictSync)
-                    return selected < 0 || selected >= modules.Count ? null : modules[dictKeys[selected]].isInput ? modules[dictKeys[selected]] : null;
+                    return selected < 0 || selected >= modules.Count ? null : modules[dictKeys[selected]] as InputModule;
             }
         }
         /// <summary>
@@ -188,20 +189,24 @@ namespace CMSlib.ConsoleModule
         /// <param name="immediateOutput">Whether to immediately call RefreshModule on this module after construction</param>
         /// <param name="isInput">Whether this module should be able to take input - if this is false, LineEntered is never fired</param>
         /// <returns>Whether the module was successfully created</returns>
-        public bool AddModule(string title, int x, int y, int width, int height, string startingText = "", char? borderChar = null, LogLevel minimumLogLevel = LogLevel.Information, bool immediateOutput = true, bool isInput = true)
+        public bool Add<TModule>(TModule module) where TModule : BaseModule
         {
-            if (modules.ContainsKey(title))
+            if (module is null)
+                throw new InvalidOperationException("Attempted to add null module");
+            if (module.parent is not null)
+                throw new InvalidOperationException("This module is tied to a different manager");
+            if (modules.ContainsKey(module.Title))
             {
                 return false;
             }
             lock (dictSync)
             {
-                Module toAdd = new(this, title, x, y, width-2, height-2, startingText, isInput, borderChar, minimumLogLevel);
-                modules.Add(title, toAdd);
-                dictKeys.Add(title);
+                module.parent = this;
+                modules.Add(module.Title, module);
+                dictKeys.Add(module.Title);
                 if (dictKeys.Count - 1 == selected)
-                    toAdd.selected = true;
-                if (immediateOutput) RefreshModule(title);
+                    module.selected = true;
+                module.WriteOutput();
             }
             return true;
         }
@@ -357,7 +362,7 @@ namespace CMSlib.ConsoleModule
             Dictionary<string, bool> mods = key.Modifiers.ToStringDictionary<ConsoleModifiers>();
             if (mods[Alt])
                 return;
-            Module inputModule = selectedModule?.isInput ?? false ? selectedModule.As<Module>() : null;
+            InputModule inputModule = selectedModule as InputModule;
             switch (key.Key)
             {
                 case ConsoleKey.RightArrow:
@@ -371,10 +376,10 @@ namespace CMSlib.ConsoleModule
                     selectedModule?.ScrollTo(int.MaxValue);
                     break;
                 case ConsoleKey.PageUp:
-                    selectedModule?.ScrollUp((selectedModule.Height - (selectedModule.isInput ? 2 : 0)));
+                    selectedModule?.ScrollUp(selectedModule.Height);
                     break;
                 case ConsoleKey.PageDown:
-                    selectedModule?.ScrollDown((selectedModule.Height - (selectedModule.isInput ? 2 : 0)));
+                    selectedModule?.ScrollDown(selectedModule.Height);
                     break;
                 case ConsoleKey.UpArrow when mods[Ctrl]:
                     selectedModule?.ScrollUp(1);
@@ -430,7 +435,7 @@ namespace CMSlib.ConsoleModule
             }
         }
 
-        public async Task EnterLineAsync(Module inputModule, bool scrollToBottom)
+        public async Task EnterLineAsync(InputModule inputModule, bool scrollToBottom)
         {
             if (inputModule is null) return;
             string line;
@@ -483,4 +488,28 @@ namespace CMSlib.ConsoleModule
         
         public BaseModule Module { get; internal init; }
     }
+    public class WinConsoleConfiguerer
+    {
+        [DllImport("kernel32.dll", SetLastError = true)]
+        private static extern bool GetConsoleMode(IntPtr hConsoleHandle, out uint lpMode);
+        
+        [DllImport("kernel32.dll")]
+        private static extern bool SetConsoleMode(IntPtr hConsoleHandle, uint dwMode);
+
+        [DllImport("kernel32.dll")]
+        private static extern IntPtr GetStdHandle(int nStdHandle);
+        
+        public void SetupConsole()
+        {
+            IntPtr outputHandle = GetStdHandle(-11);
+            IntPtr inputHandle = GetStdHandle(-10);
+            GetConsoleMode(outputHandle, out uint outmode);
+            GetConsoleMode(inputHandle, out uint inMode);
+            outmode |= 4;
+            SetConsoleMode(outputHandle, outmode);
+            inMode = (uint)(inMode & ~64);
+            SetConsoleMode(inputHandle, inMode);
+        }
+    }
+    public delegate Task AsyncEventHandler<in T>(object sender, T eventArgs);
 }
