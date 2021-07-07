@@ -177,16 +177,7 @@ namespace CMSlib.ConsoleModule
         /// This is used to get the module with the indexer,
         /// as well as used in AddToModule.
         /// The title must be unique between other modules in this manager.</param>
-        /// <param name="x">The zero based x coordinate of the module. 0 is the farthest left column.</param>
-        /// <param name="y">The zero based y coordinate of the module. 0 is the topmost row.</param>
-        /// <param name="width">The width of the module - this includes the border.</param>
-        /// <param name="height">The height of the module - this includes the border.</param>
-        /// <param name="startingText">This text is put in the output when the module is initialized</param>
-        /// <param name="borderChar">This character is used in every character of the border. Leave as null to have a lined border.</param>
-        /// <param name="minimumLogLevel">The minimum log level that is outputted when this module is used as an ILogger</param>
-        /// <param name="immediateOutput">Whether to immediately call RefreshModule on this module after construction</param>
-        /// <param name="isInput">Whether this module should be able to take input - if this is false, LineEntered is never fired</param>
-        /// <returns>Whether the module was successfully created</returns>
+        
         public bool Add<TModule>(TModule module) where TModule : BaseModule
         {
             if (module is null)
@@ -473,7 +464,7 @@ namespace CMSlib.ConsoleModule
         /// </summary>
         public string Line { get; internal init; }
         
-        public BaseModule Module { get; internal init; }
+        public InputModule Module { get; internal init; }
     }
     /// <summary>
     /// EventArgs for the KeyEntered Event
