@@ -25,7 +25,6 @@ namespace CMSlib.ConsoleModule
 
         public ModuleManager()
         {
-            Console.TreatControlCAsInput = true;
             Console.CancelKeyPress += (_, _) => { QuitApp(); };
             if (Environment.OSVersion.Platform.ToString().ToLower().Contains("win"))
                 new WinConsoleConfiguerer().SetupConsole();
