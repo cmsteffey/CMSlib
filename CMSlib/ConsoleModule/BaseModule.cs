@@ -59,23 +59,10 @@ namespace CMSlib.ConsoleModule
         public void AddText(object obj) => AddText(obj.ToString());
         
         /// <summary>
-        /// Event fired when a line is entered into this module
-        /// </summary>
-        public event AsyncEventHandler<LineEnteredEventArgs> LineEntered;
-        /// <summary>
         /// Event fired when a key is pressed while this module is focused
         /// </summary>
         public event AsyncEventHandler<KeyEnteredEventArgs> KeyEntered;
         
-        internal async Task FireLineEnteredAsync(LineEnteredEventArgs args)
-        {
-            var handler = LineEntered;
-            if (handler is not null)
-            {
-                await handler(this, args);
-            }
-        }
-
         internal async Task FireKeyEnteredAsync(KeyEnteredEventArgs args)
         {
             var handler = KeyEntered;

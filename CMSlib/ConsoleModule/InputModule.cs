@@ -14,6 +14,22 @@ namespace CMSlib.ConsoleModule
             
         }
         
+        /// <summary>
+        /// Event fired when a line is entered into this module
+        /// </summary>
+        public event AsyncEventHandler<LineEnteredEventArgs> LineEntered;
+        
+        
+        internal async Task FireLineEnteredAsync(LineEnteredEventArgs args)
+        {
+            var handler = LineEntered;
+            if (handler is not null)
+            {
+                await handler(this, args);
+            }
+        }
+
+        
         protected event AsyncEventHandler<LineEnteredEventArgs> ReadLineLineEntered;
         internal async Task FireReadLineLineEntered(LineEnteredEventArgs args)
         {
