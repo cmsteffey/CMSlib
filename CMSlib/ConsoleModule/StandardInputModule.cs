@@ -46,6 +46,7 @@ namespace CMSlib.ConsoleModule
             {
                 this.inputString.Append(toAdd);
                 Console.Write(toAdd);
+                lrCursorPos++;
             }
         }
 
