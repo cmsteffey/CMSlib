@@ -37,6 +37,18 @@ namespace CMSlib.ConsoleModule
             if(refresh)
                 WriteOutput();
         }
+
+        internal override void AddChar(char toAdd)
+        {
+            if (parent is null) return;
+            if (toAdd is '\u0000') return;
+            lock (this.parent.writeLock)
+            {
+                this.inputString.Append(toAdd);
+                Console.Write(toAdd);
+            }
+        }
+
         /// <summary>
         /// Adds line(s) of text to this module. This supports \n, and \n will properly add text to the next line.
         /// </summary>

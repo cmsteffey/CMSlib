@@ -10,10 +10,11 @@ manager.Add(input); //input module, full left side
 manager.Add(output); //output module, top right
 manager.Add(logging); //logger module, no input, bottom right
 
-manager.LineEntered += async (@object, args) =>
+while (true)
 {
-    InputModule? module = @object as InputModule;
-    module?.AddText($"{args.Line}");
-};
+    
+    var inputEnteredEventArgs = await input.ReadLineAsync();
+    input.AddText(inputEnteredEventArgs.Line);
+}
 
 System.Threading.Tasks.Task.Delay(-1).GetAwaiter().GetResult();

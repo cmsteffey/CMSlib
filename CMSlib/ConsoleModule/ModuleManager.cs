@@ -411,16 +411,8 @@ namespace CMSlib.ConsoleModule
                     return;
                 default:
                     if (inputModule is null) return;
-                    if (key.KeyChar == '\u0000') return;
-                    if (inputModule.inputString.Length < inputModule.Width)
-                    {
-                        lock (this.writeLock)
-                        {
-                            inputModule.inputString.Append(key.KeyChar);
-                            Console.Write(key.KeyChar);
-                            inputModule.lrCursorPos++;
-                        }
-                    }
+                    inputModule.AddChar(key.KeyChar);
+                    
                     break;
             }
         }

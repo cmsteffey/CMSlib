@@ -13,6 +13,8 @@ namespace CMSlib.ConsoleModule
         {
             
         }
+
+        internal abstract void AddChar(char toAdd);
         
         /// <summary>
         /// Event fired when a line is entered into this module
@@ -71,5 +73,6 @@ namespace CMSlib.ConsoleModule
             }
             return result;
         }
+        
     }
 }
