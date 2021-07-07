@@ -14,7 +14,8 @@ while (true)
 {
     
     var inputEnteredEventArgs = await input.ReadLineAsync();
-    input.AddText(inputEnteredEventArgs.Line);
+    logging.AddText(inputEnteredEventArgs.Line);
+    logging.WriteOutput();
 }
 
 System.Threading.Tasks.Task.Delay(-1).GetAwaiter().GetResult();
