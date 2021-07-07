@@ -15,6 +15,7 @@ namespace CMSlib.ConsoleModule
         }
 
         internal abstract void AddChar(char toAdd);
+        internal abstract void Backspace(bool write = true);
         
         /// <summary>
         /// Event fired when a line is entered into this module

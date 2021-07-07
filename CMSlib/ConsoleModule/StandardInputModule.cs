@@ -38,17 +38,48 @@ namespace CMSlib.ConsoleModule
                 WriteOutput();
         }
 
+        internal override void Backspace(bool write = true)
+        {
+            if (parent is null) return;
+            lock (this.parent.writeLock)
+            {
+                this.inputString.Remove(inputString.Length - 1, 1);
+                
+                
+                if (inputString.Length + 1 > Width - 3)
+                {
+                    if (!write) return;
+                    this.WriteOutput();
+                }
+                else
+                {
+                    lrCursorPos--;
+                    if (!write) return;
+                    Console.Write("\b \b");
+                }
+                
+            }
+        }
+        
         internal override void AddChar(char toAdd)
         {
-            if (this.inputString.Length == Width - 3) return;
             if (parent is null) return;
             if (toAdd is '\u0000') return;
             lock (this.parent.writeLock)
             {
                 this.inputString.Append(toAdd);
-                Console.Write(toAdd);
-                lrCursorPos++;
+                if (inputString.Length > Width - 3)
+                {
+                    this.WriteOutput();
+                }
+                else
+                {
+                    Console.Write(toAdd);
+                    lrCursorPos++;
+                }
+                
             }
+            
         }
 
         /// <summary>

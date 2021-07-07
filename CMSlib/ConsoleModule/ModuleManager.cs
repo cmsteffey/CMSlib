@@ -400,18 +400,10 @@ namespace CMSlib.ConsoleModule
                     NotImpl:
                     break;
                 case ConsoleKey.Backspace:
-                    if (inputModule is null) return;
-                    lock (this.writeLock)
-                    {
-                        inputModule.inputString.Remove(inputModule.inputString.Length - 1, 1);
-                        inputModule.lrCursorPos--;
-                        Console.Write("\b \b");
-                    }
-            
+                    inputModule?.Backspace();
                     return;
                 default:
-                    if (inputModule is null) return;
-                    inputModule.AddChar(key.KeyChar);
+                    inputModule?.AddChar(key.KeyChar);
                     
                     break;
             }

@@ -18,7 +18,7 @@ namespace CMSlib.Extensions
         {
             if (maxLength < 4)
                 throw new ArgumentException("The length parameter of the Ellipse method must be 4 or greater.");
-            if (str.Length > maxLength)
+            if (str.VisibleLength() > maxLength)
             {
                 return str.Substring(0, maxLength - 3) + "...";
             }

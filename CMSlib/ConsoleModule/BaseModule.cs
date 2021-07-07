@@ -256,11 +256,13 @@ namespace CMSlib.ConsoleModule
             else
                 output.Append(borderCharacter.Value, internalWidth + 2);
             if (!isInput) return output.ToString();
+            string inputStringToDisplay = inputString.ToString()
+                .Substring(Math.Clamp(inputString.Length - internalWidth + 1, 0, inputString.Length == 0 ? 0 : inputString.Length - 1)).GuaranteeLength(internalWidth);
             if(borderCharacter is null) 
                 output
                     .Append(AnsiEscape.VerticalLine)
                     .Append(AnsiEscape.AsciiMode)
-                    .Append(inputString.ToString().GuaranteeLength(internalWidth))
+                    .Append(inputStringToDisplay)
                     .Append(AnsiEscape.LineDrawingMode)
                     .Append(AnsiEscape.VerticalLine)
                     .Append(AnsiEscape.LowerLeftCorner)
@@ -268,7 +270,7 @@ namespace CMSlib.ConsoleModule
                     .Append(AnsiEscape.LowerRightCorner)
                     .Append(AnsiEscape.AsciiMode);
             else
-                output.Append(borderCharacter).Append(inputString).Append(' ', internalWidth - inputString.Length).Append(borderCharacter.Value, internalWidth + 3);
+                output.Append(borderCharacter).Append(inputStringToDisplay).Append(borderCharacter.Value, internalWidth + 3);
             return output.ToString();
         }
     }

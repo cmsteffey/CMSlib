@@ -12,7 +12,7 @@ namespace CMSlib.Tables
         /// <summary>
         /// This will return a padded table column with the given width in characters, containing the string. The optional parameters adjust the formatting.
         /// </summary>
-        /// <param name="str"></param>
+        /// <param name="obj">the object to put into the column</param>
         /// <param name="innerWidth">The width of the column in characters, excluding the optional pipes on the sides.</param>
         /// <param name="adjust">Left will pad spaces on the right, pushing text to the left. Right will pad spaces to the left, pushing text to the right. Center will attempt to evenly pad spaces on both sides, centering the text.</param>
         /// <param name="ellipse">If the string does not fit into the column, this decides whether to replace the last three spaces in the column with "..."</param>
@@ -27,7 +27,7 @@ namespace CMSlib.Tables
                 return ellipse ? (leftPipe ? "|" : string.Empty) + str.Ellipse(innerWidth) + (rightPipe ? "|" : string.Empty)
                     : (leftPipe ? "|" : string.Empty) + str.Substring(0, innerWidth) + (rightPipe ? "|" : string.Empty);
             }
-            int spaces = innerWidth - str.Length;
+            int spaces = innerWidth - str.VisibleLength();
             if (adjust == ColumnAdjust.Left)
             {
                 return new StringBuilder().Append(leftPipe ? "|" : null).Append(str).Append(' ', spaces).Append(rightPipe ? '|' : null).ToString();
