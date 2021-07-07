@@ -40,6 +40,7 @@ namespace CMSlib.ConsoleModule
 
         internal override void AddChar(char toAdd)
         {
+            if (this.inputString.Length == Width - 3) return;
             if (parent is null) return;
             if (toAdd is '\u0000') return;
             lock (this.parent.writeLock)
