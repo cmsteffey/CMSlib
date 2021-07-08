@@ -172,12 +172,7 @@ namespace CMSlib.ConsoleModule
         /// <summary>
         /// Adds a module to this manager.
         /// </summary>
-        /// <param name="title">The internal title of the module.
-        /// This is used to get the module with the indexer,
-        /// as well as used in AddToModule.
-        /// The title must be unique between other modules in this manager.</param>
-        
-        public bool Add<TModule>(TModule module) where TModule : BaseModule
+        public bool Add(BaseModule module)
         {
             if (module is null)
                 throw new InvalidOperationException("Attempted to add null module");
