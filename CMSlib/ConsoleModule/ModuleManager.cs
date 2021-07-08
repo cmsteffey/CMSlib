@@ -81,6 +81,8 @@ namespace CMSlib.ConsoleModule
         {
             return GetEnumerator();
         }
+        
+        
 
         /// <summary>
         /// The currently selected module. Returns null if there is no module currently selected;
@@ -276,6 +278,19 @@ namespace CMSlib.ConsoleModule
             if(refreshNew)
                 currentPage[newSelected].WriteOutput();
         }
+
+        public void NextPage()
+        {
+            lock(dictSync)
+                selected = (++selected).Modulus(Pages.Count);
+            RefreshAll();
+        }
+        public void PrevPage()
+        {
+            lock(dictSync)
+                selected = (--selected).Modulus(Pages.Count);
+            RefreshAll();
+        }
         /// <summary>
         /// Selects the previous module - enables scrolling for that module.
         /// </summary>
@@ -352,12 +367,21 @@ namespace CMSlib.ConsoleModule
                 case ConsoleKey.DownArrow when mods[Ctrl]:
                     selectedModule?.ScrollDown(1);
                     break;
+                case ConsoleKey.OemMinus when mods[Ctrl]:
+                case ConsoleKey.Tab when mods[Ctrl] && mods[Shift]:
+                    PrevPage();
+                    break;
+                case ConsoleKey.OemPlus when mods[Ctrl]:
+                case ConsoleKey.Tab when mods[Ctrl]:
+                    NextPage();
+                    break;
                 case ConsoleKey.Tab when mods[Shift]:
                     this.SelectPrev();
                     break;
                 case ConsoleKey.Tab:
                     this.SelectNext();
                     break;
+                
                 case ConsoleKey.C when mods[Ctrl]:
                     ModuleManager.QuitApp();
                     break;
