@@ -264,13 +264,15 @@ namespace CMSlib.ConsoleModule
                 refreshPast = pastSelected >= 0;
                 if (refreshPast)
                 {
-                    currentPage[pastSelected].selected = false;
+                    lock(currentPage.dictSync)
+                        currentPage[pastSelected].selected = false;
                 }
                 
                 refreshNew = newSelected >= 0;
                 if (refreshNew)
                 {
-                    currentPage[newSelected].selected = true;
+                    lock(currentPage.dictSync)
+                        currentPage[newSelected].selected = true;
                 }
             }
             if(refreshPast)

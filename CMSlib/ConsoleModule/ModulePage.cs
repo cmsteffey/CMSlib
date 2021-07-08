@@ -7,8 +7,8 @@ namespace CMSlib.ConsoleModule
     {
         private Dictionary<string, BaseModule> modules = new();
         private List<string> dictKeys = new();
-        private object dictSync = new();
-        private int _selected = 0;
+        internal object dictSync = new();
+        internal int selected = 0;
         private ModuleManager parent = null;
 
         internal void SetParent(ModuleManager parent)
@@ -22,17 +22,7 @@ namespace CMSlib.ConsoleModule
             }
         }
         
-        internal int selected {
-            get
-            {
-                lock (dictSync) return _selected;
-            }
-            set
-            {
-                lock (dictSync) _selected = value;
-            }
-            
-        }
+       
 
         public void Add(BaseModule module)
         {
@@ -41,6 +31,8 @@ namespace CMSlib.ConsoleModule
                 module.parent = this.parent;
                 modules.Add(module.Title, module);
                 dictKeys.Add(module.Title);
+                if (selected == modules.Count - 1)
+                    module.selected = true;
                 module.WriteOutput();
             }
         }
@@ -87,7 +79,7 @@ namespace CMSlib.ConsoleModule
             get
             {
                 lock(dictSync)
-                    return _selected == -1 ? null : modules[dictKeys[_selected]];
+                    return selected == -1 ? null : modules[dictKeys[selected]];
             }
             
         }
