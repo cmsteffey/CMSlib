@@ -18,7 +18,7 @@ namespace CMSlib.Extensions
         {
             if (maxLength < 4)
                 throw new ArgumentException("The length parameter of the Ellipse method must be 4 or greater.");
-            if (str.Length > maxLength)
+            if (str.VisibleLength() > maxLength)
             {
                 return str.Substring(0, maxLength - 3) + "...";
             }
@@ -221,9 +221,11 @@ namespace CMSlib.Extensions
 
         public static string GuaranteeLength(this string str, int length)
         {
+            //TODO visibleSubstring, for this and for table api
             if (str is null || str.Length == 0) return new string(' ', length);
-            if (str.Length == length) return str;
-            return str.Length > length ? str[..length] : str.PadToVisibleDivisible(length);
+            int visibleLength = str.VisibleLength();
+            if (visibleLength == length) return str;
+            return visibleLength > length ? str[..length] : str.PadToVisibleDivisible(length);
         }
 
 
