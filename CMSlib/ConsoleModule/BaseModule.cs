@@ -20,14 +20,15 @@ namespace CMSlib.ConsoleModule
         /// This string is shown at the top of the module. Setting it to null, or not setting it at all, uses the module title as the displayed title.
         /// </summary>
         public string DisplayName { get; set; } = null;
-        
+
+        internal bool      selected = false;
         internal  int      scrolledLines = 0;
         internal  bool     unread = false;
         internal  int      lrCursorPos = 0;
         protected readonly LogLevel minLevel;
         internal ModuleManager parent = null;
         protected readonly object AddTextLock = new();
-        internal bool selected = false;
+        public List<ModulePage> Pages { get; } = new();
 
         protected BaseModule()
         {
@@ -41,7 +42,6 @@ namespace CMSlib.ConsoleModule
             this.Y = y;
             this.Width = width;
             this.Height = height;
-            //to account for the fact that width represents internal width
         }
 
         public abstract override string ToString();

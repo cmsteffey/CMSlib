@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -8,12 +9,9 @@ using Microsoft.Extensions.Logging;
 
 namespace CMSlib.ConsoleModule
 {
-    public sealed class ModuleManager : ILoggerFactory
+    public sealed class ModuleManager : ILoggerFactory, IEnumerable<ModulePage>
     {
-        
-        
-        private readonly Dictionary<string, BaseModule> modules = new();
-        internal readonly List<string> dictKeys = new();
+        public List<ModulePage> Pages { get; } = new();
         internal int selected = 0;
         internal object writeLock = new();
         
@@ -63,29 +61,42 @@ namespace CMSlib.ConsoleModule
                 }
             });
         }
-        
-        
+
+        public void Add(ModulePage page)
+        {
+            lock (dictSync)
+            {
+                page.SetParent(this);
+                Pages.Add(page);
+                
+            }
+        }
+
+        public IEnumerator<ModulePage> GetEnumerator()
+        {
+            return Pages.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
         /// <summary>
         /// The currently selected module. Returns null if there is no module currently selected;
         /// </summary>
-        
+
         public BaseModule? SelectedModule
-        {
-            get { lock(dictSync)return selected == -1 ? null : modules[dictKeys[selected]]; }
-        }
+
+            => Pages[selected].SelectedModule;
+        
 
         private Queue<BaseModule> loggerQueue = new();
+
         /// <summary>
         /// The currently selected module that has input enabled. Returns null if there isn't one.
         /// </summary>
-        public BaseModule? InputModule
-        {
-            get
-            {
-                lock (dictSync)
-                    return selected < 0 || selected >= modules.Count ? null : modules[dictKeys[selected]] as InputModule;
-            }
-        }
+        public BaseModule? InputModule => SelectedModule as InputModule;
         /// <summary>
         /// The title of the current input module
         /// </summary>
@@ -100,11 +111,10 @@ namespace CMSlib.ConsoleModule
         public void RefreshAll(bool clear = true)
         {
             if (clear) Console.Clear();
-            foreach(string title in modules.Keys)
+            foreach (BaseModule module in Pages[selected])
             {
-                RefreshModule(title);
+                module.WriteOutput();
             }
-
         }
         /// <summary>
         /// Refreshes a module by its title. This ensures that the latest output is displayed.
@@ -113,12 +123,9 @@ namespace CMSlib.ConsoleModule
         /// <returns>Whether this operation was successful. It will not succeed if this manager does not have a module with the supplied title.</returns>
         public bool RefreshModule(string title)
         {
-            if (!modules.ContainsKey(title))
-            {
-                return false;
-            }
-            modules[title].WriteOutput();
-
+            BaseModule module = GetModule(title);
+            if (module is null) return false;
+            module.WriteOutput();
             return true;
         }
         /// <summary>
@@ -128,7 +135,9 @@ namespace CMSlib.ConsoleModule
         /// <returns>Whether this operation was successful. It will not succeed if this manager does not have a module with the supplied title.</returns>
         public bool RemoveModule(string title)
         {
+            return false;
             //TODO shift selected back down once module is removed
+            /*
             bool success;
             lock (dictSync)
             {
@@ -140,23 +149,10 @@ namespace CMSlib.ConsoleModule
                 }
             }
             return success;
-        }
-        /// <summary>
-        /// Adds the supplied text to the module specified.
-        /// </summary>
-        /// <param name="moduleTitle">The title of the module to add the text to</param>
-        /// <param name="text">The text to add to the module</param>
-        /// <returns>Whether this operation was successful. It will not succeed if this manager does not have a module with the supplied title.</returns>
-        public bool AddToModule(string moduleTitle, string text)
-        {
-            if(modules.TryGetValue(moduleTitle, out BaseModule module))
-            {
-                module.AddText(text);
-                return true;
-            }
-            return false;
-        }
+            */
 
+        }
+        
         
         /// <summary>
         /// Adds a module to the logger queue by title. This queue is accessed when this is called to CreateLogger.
@@ -165,34 +161,15 @@ namespace CMSlib.ConsoleModule
         /// <returns>Whether this operation was successful. It will not succeed if this manager does not have a module with the supplied title.</returns>
         public bool EnqueueLoggerModule(string moduleTitle)
         {
-            if (!modules.TryGetValue(moduleTitle, out BaseModule toQueue)) return false;
-            loggerQueue.Enqueue(toQueue);
+            BaseModule module = GetModule(moduleTitle);
+            if(module is null) return false;
+            loggerQueue.Enqueue(module);
             return true;
         }
         /// <summary>
         /// Adds a module to this manager.
         /// </summary>
-        public bool Add(BaseModule module)
-        {
-            if (module is null)
-                throw new InvalidOperationException("Attempted to add null module");
-            if (module.parent is not null)
-                throw new InvalidOperationException("This module is tied to a different manager");
-            if (modules.ContainsKey(module.Title))
-            {
-                return false;
-            }
-            lock (dictSync)
-            {
-                module.parent = this;
-                modules.Add(module.Title, module);
-                dictKeys.Add(module.Title);
-                if (dictKeys.Count - 1 == selected)
-                    module.selected = true;
-                module.WriteOutput();
-            }
-            return true;
-        }
+        
         
         /// <summary>
         /// Gets a module by title
@@ -200,20 +177,13 @@ namespace CMSlib.ConsoleModule
         /// <param name="title">The title of the module to get</param>
         public BaseModule this[string title] => GetModule(title);
         /// <summary>
-        /// Gets a module by order created/index in the internal list
-        /// </summary>
-        /// <param name="index">The zero-based index of the module</param>
-        public BaseModule this[int index] =>  modules[dictKeys[index]];
-        /// <summary>
         /// Gets a module by title
         /// </summary>
         /// <param name="title">The title of the module to get</param>
         /// <returns>The module with that title</returns>
         public BaseModule GetModule(string title)
         {
-            if (!modules.ContainsKey(title))
-                throw new KeyNotFoundException($"There is no module with the title of {title}");
-            return modules[title];
+            return Pages.FirstOrDefault(x => x.ContainsTitle(title))?[title];
         }
 
         /// <summary>
@@ -240,9 +210,9 @@ namespace CMSlib.ConsoleModule
                 {
                     return next;
                 }
-                else if (modules.Count > 0)
+                else if (Pages.Count > 0 && this.Pages.FirstOrDefault()?.FirstOrDefault() is BaseModule module)
                 {
-                    return this.modules.First().Value;
+                    return module;
                 }
                 else
                 {
@@ -259,8 +229,7 @@ namespace CMSlib.ConsoleModule
         public void Dispose()
         {
             GC.SuppressFinalize(this);
-            dictKeys.Clear();
-            modules.Clear();
+            Pages.Clear();
             this.RefreshAll();
         }
         //todo add input for this too
@@ -273,28 +242,31 @@ namespace CMSlib.ConsoleModule
             int pastSelected;
             bool refreshNew;
             bool refreshPast;
+            ModulePage currentPage;
             lock (dictSync)
             {
-                pastSelected = selected;
-                selected++;
-                newSelected = (++selected).Modulus(dictKeys.Count + 1) - 1;
-                selected = newSelected;
+                currentPage = Pages[selected];
+                int currentSelected = currentPage.selected;
+                pastSelected = currentSelected;
+                currentSelected++;
+                newSelected = (++currentSelected).Modulus(currentPage.Count + 1) - 1;
+                currentPage.selected = newSelected;
                 refreshPast = pastSelected >= 0;
                 if (refreshPast)
                 {
-                    modules[dictKeys[pastSelected]].selected = false;
+                    currentPage[pastSelected].selected = false;
                 }
                 
                 refreshNew = newSelected >= 0;
                 if (refreshNew)
                 {
-                    modules[dictKeys[newSelected]].selected = true;
+                    currentPage[newSelected].selected = true;
                 }
             }
             if(refreshPast)
-                modules[dictKeys[pastSelected]].WriteOutput();
+                currentPage[pastSelected].WriteOutput();
             if(refreshNew)
-                modules[dictKeys[newSelected]].WriteOutput();
+                currentPage[newSelected].WriteOutput();
         }
         /// <summary>
         /// Selects the previous module - enables scrolling for that module.
@@ -305,29 +277,30 @@ namespace CMSlib.ConsoleModule
             int pastSelected;
             bool refreshNew;
             bool refreshPast;
+            ModulePage currentPage;
             lock (dictSync)
             {
-                
-                pastSelected = selected;
-                newSelected = selected.Modulus(dictKeys.Count + 1) - 1;
-
-                selected = newSelected;
+                currentPage = Pages[selected];
+                int currentSelected = currentPage.selected;
+                pastSelected = currentSelected;
+                newSelected = currentSelected.Modulus(currentPage.Count + 1) - 1;
+                currentPage.selected = newSelected;
                 refreshPast = pastSelected >= 0;
                 if (refreshPast)
                 {
-                    modules[dictKeys[pastSelected]].selected = false;
+                    currentPage[pastSelected].selected = false;
                 }
-
+                
                 refreshNew = newSelected >= 0;
                 if (refreshNew)
                 {
-                    modules[dictKeys[newSelected]].selected = true;
+                    currentPage[newSelected].selected = true;
                 }
             }
             if(refreshPast)
-                modules[dictKeys[pastSelected]].WriteOutput();
+                currentPage[pastSelected].WriteOutput();
             if(refreshNew)
-                modules[dictKeys[newSelected]].WriteOutput();
+                currentPage[newSelected].WriteOutput();
         }
         /// <summary>
         /// Quits the app, properly returning to the main buffer and clearing all possible cursor/format options.

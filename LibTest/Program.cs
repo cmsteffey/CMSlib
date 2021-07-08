@@ -5,10 +5,12 @@ ModuleManager manager = new();
 StandardInputModule input = new("INPUT", 0, 0, Console.WindowWidth / 2, Console.WindowHeight);
 StandardInputModule output = new("OUTPUT", Console.WindowWidth / 2, 0, Console.WindowWidth / 2, Console.WindowHeight / 2);
 LogModule logging = new("LOGGING", Console.WindowWidth / 2, Console.WindowHeight / 2, Console.WindowWidth / 2, Console.WindowHeight / 2);
-
-manager.Add(input); //input module, full left side
-manager.Add(output); //output module, top right
-manager.Add(logging); //logger module, no input, bottom right
+ModulePage page = new();
+page.Add(input); //input module, full left side
+page.Add(output); //output module, top right
+page.Add(logging); //logger module, no input, bottom right
+manager.Add(page);
+manager.RefreshAll();
 
 while (true)
 {
