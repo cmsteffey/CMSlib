@@ -97,6 +97,12 @@ namespace CMSlib.ConsoleModule
         /// The currently selected module that has input enabled. Returns null if there isn't one.
         /// </summary>
         public BaseModule? InputModule => SelectedModule as InputModule;
+
+        public ModulePage? SelectedPage
+        {
+            get { lock(dictSync) return selected < 0 || selected >= Pages.Count ? null : Pages[selected]; }
+        }
+
         /// <summary>
         /// The title of the current input module
         /// </summary>
@@ -111,7 +117,9 @@ namespace CMSlib.ConsoleModule
         public void RefreshAll(bool clear = true)
         {
             if (clear) Console.Clear();
-            foreach (BaseModule module in Pages[selected])
+            ModulePage selectedPage = SelectedPage;
+            if (selectedPage is null) return;
+            foreach (BaseModule module in selectedPage)
             {
                 module.WriteOutput();
             }
@@ -181,7 +189,7 @@ namespace CMSlib.ConsoleModule
         /// </summary>
         /// <param name="title">The title of the module to get</param>
         /// <returns>The module with that title</returns>
-        public BaseModule GetModule(string title)
+        public BaseModule? GetModule(string title)
         {
             return Pages.FirstOrDefault(x => x.ContainsTitle(title))?[title];
         }
