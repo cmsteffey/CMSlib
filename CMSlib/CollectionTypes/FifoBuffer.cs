@@ -19,8 +19,9 @@ namespace CMSlib.CollectionTypes
             _internalBuffer.Add(item);
             
         }
-        
 
+        public T this[int index] => _internalBuffer[_internalBuffer.Count - 1 - index];
+        public int Count => _internalBuffer.Count;
         public IEnumerator<T> GetEnumerator()
         {
             return new FifoBufferEnumerator<T>(this);

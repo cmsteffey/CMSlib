@@ -372,6 +372,14 @@ namespace CMSlib.ConsoleModule
                 case ConsoleKey.DownArrow when mods[Ctrl]:
                     selectedModule?.ScrollDown(1);
                     break;
+                case ConsoleKey.UpArrow:
+                    inputModule?.inputString?.Clear();
+                    inputModule?.ScrollHistory(1);
+                    break;
+                case ConsoleKey.DownArrow:
+                    inputModule?.inputString?.Clear();
+                    inputModule?.ScrollHistory(-1);
+                    break;
                 case ConsoleKey.OemMinus when mods[Ctrl]:
                 case ConsoleKey.Tab when mods[Ctrl] && mods[Shift]:
                     PrevPage();
@@ -424,6 +432,7 @@ namespace CMSlib.ConsoleModule
                 line = inputModule.inputString.ToString();
                 inputModule.inputString.Clear();
                 inputModule.lrCursorPos = 0;
+                inputModule.AddToHistory(line);
                 if (scrollToBottom)
                 {
                     inputModule.scrolledLines = 0;

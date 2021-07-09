@@ -1,6 +1,8 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using CMSlib.CollectionTypes;
 using Microsoft.Extensions.Logging;
 
 namespace CMSlib.ConsoleModule
@@ -8,11 +10,28 @@ namespace CMSlib.ConsoleModule
     public abstract class InputModule : BaseModule
     {
         internal StringBuilder inputString = new();
-
+        private FifoBuffer<string> prevInput = new(50);
+        private int historyPointer = 0;
         protected InputModule(string title, int x, int y, int width, int height, LogLevel minLevel) : base(title, x, y, width, height, minLevel)
         {
             
         }
+
+        internal void AddToHistory(string line)
+        {
+            prevInput.Add(line);
+        }
+
+        internal void ScrollHistory(int amt)
+        {
+            int before = historyPointer;
+            historyPointer = Math.Clamp(historyPointer + amt, 0, prevInput.Count - 1);
+            if (before == historyPointer) return;
+            inputString.Append(prevInput[historyPointer]);
+            lrCursorPos = Math.Min(prevInput[historyPointer].Length, Width - 3);
+            this.WriteOutput();
+        }
+        
 
         internal abstract void AddChar(char toAdd);
         internal abstract void Backspace(bool write = true);
