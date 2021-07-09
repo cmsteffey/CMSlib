@@ -23,6 +23,7 @@ namespace CMSlib.ConsoleModule
 
         public ModuleManager()
         {
+            Console.TreatControlCAsInput = true;
             Console.CancelKeyPress += (_, _) => { QuitApp(); };
             if (Environment.OSVersion.Platform.ToString().ToLower().Contains("win"))
                 new WinConsoleConfiguerer().SetupConsole();
@@ -238,7 +239,6 @@ namespace CMSlib.ConsoleModule
         
         public void Dispose()
         {
-            GC.SuppressFinalize(this);
             Pages.Clear();
             this.RefreshAll();
         }
@@ -347,6 +347,9 @@ namespace CMSlib.ConsoleModule
             InputModule inputModule = selectedModule as InputModule;
             switch (key.Key)
             {
+                case ConsoleKey.C when mods[Ctrl]:
+                    QuitApp();
+                    break;
                 case ConsoleKey.RightArrow:
                     break;
                 case ConsoleKey.LeftArrow:

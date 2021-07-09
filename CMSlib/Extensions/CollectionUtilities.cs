@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -55,6 +56,20 @@ namespace CMSlib.Extensions
             }
 
             yield return ulong.MaxValue;
+        }
+
+        public static string ToReadableString<TKey, TValue>(this Dictionary<TKey, TValue> dict)
+        {
+            StringBuilder builder = new();
+            foreach (var pair in dict)
+            {
+                builder.Append('{');
+                builder.Append(pair.Key.ToString());
+                builder.Append(',');
+                builder.Append(pair.Value.ToString());
+                builder.Append('}');
+            }
+            return builder.ToString();
         }
     }
 }
