@@ -122,10 +122,7 @@ namespace CMSlib.ConsoleModule
             if (clear) Console.Clear();
             ModulePage selectedPage = SelectedPage;
             if (selectedPage is null) return;
-            foreach (BaseModule module in selectedPage)
-            {
-                module.WriteOutput();
-            }
+            selectedPage.RefreshAll(false);
         }
         /// <summary>
         /// Refreshes a module by its title. This ensures that the latest output is displayed.
@@ -433,6 +430,7 @@ namespace CMSlib.ConsoleModule
                 inputModule.inputString.Clear();
                 inputModule.lrCursorPos = 0;
                 inputModule.AddToHistory(line);
+                inputModule.usingHistory = false;
                 if (scrollToBottom)
                 {
                     inputModule.scrolledLines = 0;

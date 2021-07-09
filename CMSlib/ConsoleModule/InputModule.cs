@@ -11,7 +11,8 @@ namespace CMSlib.ConsoleModule
     {
         internal StringBuilder inputString = new();
         private FifoBuffer<string> prevInput = new(50);
-        private int historyPointer = 0;
+        private int historyPointer = -1;
+        internal bool usingHistory = false;
         protected InputModule(string title, int x, int y, int width, int height, LogLevel minLevel) : base(title, x, y, width, height, minLevel)
         {
             
@@ -20,10 +21,15 @@ namespace CMSlib.ConsoleModule
         internal void AddToHistory(string line)
         {
             prevInput.Add(line);
+            if (usingHistory)
+                historyPointer++;
+            else
+                historyPointer = -1;
         }
 
         internal void ScrollHistory(int amt)
         {
+            usingHistory = true;
             int before = historyPointer;
             historyPointer = Math.Clamp(historyPointer + amt, 0, prevInput.Count - 1);
             if (before == historyPointer) return;

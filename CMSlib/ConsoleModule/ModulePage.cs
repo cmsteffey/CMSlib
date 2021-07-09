@@ -10,6 +10,35 @@ namespace CMSlib.ConsoleModule
         internal object dictSync = new();
         internal int selected = 0;
         private ModuleManager parent = null;
+        private string _displayName = null;
+        public string DisplayName
+        {
+            get
+            {
+                return _displayName;
+            }
+            set
+            {
+                RefreshAll();
+                _displayName = value;
+            }
+        }
+
+        public void RefreshAll(bool clear = true)
+        {
+            if (parent is null) return;
+            lock (parent.writeLock)
+            {
+                if(clear)System.Console.Clear();
+                Dictionary<string, BaseModule>.ValueCollection modules;
+                lock(dictSync)
+                    modules = this.modules.Values;
+                foreach (var modulesValue in modules)
+                {
+                    modulesValue.WriteOutput();
+                }
+            }
+        }
 
         internal void SetParent(ModuleManager parent)
         {

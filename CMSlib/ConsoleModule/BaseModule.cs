@@ -28,7 +28,6 @@ namespace CMSlib.ConsoleModule
         protected readonly LogLevel minLevel;
         internal ModuleManager parent = null;
         protected readonly object AddTextLock = new();
-        public List<ModulePage> Pages { get; } = new();
 
         protected BaseModule()
         {
