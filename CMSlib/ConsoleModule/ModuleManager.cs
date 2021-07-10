@@ -344,6 +344,18 @@ namespace CMSlib.ConsoleModule
             InputModule inputModule = selectedModule as InputModule;
             switch (key.Key)
             {
+                case ConsoleKey.V when mods[Ctrl]:
+                    if(inputModule is null)return;
+                    
+                    if (Environment.OSVersion.Platform.ToString().ToLower().Contains("win"))
+                    {
+                        string clipboard = new WinConsoleConfiguerer().GetClipboard();
+                        foreach (var ch in clipboard.Replace("\r\n", "\n").Replace("\n", ""))
+                        {
+                            inputModule.AddChar(ch);
+                        }
+                    }
+                    break;
                 case ConsoleKey.C when mods[Ctrl]:
                     QuitApp();
                     break;
@@ -478,12 +490,32 @@ namespace CMSlib.ConsoleModule
         [DllImport("kernel32.dll", SetLastError = true)]
         private static extern bool GetConsoleMode(IntPtr hConsoleHandle, out uint lpMode);
         
-        [DllImport("kernel32.dll")]
+        [DllImport("kernel32.dll", SetLastError = true)]
         private static extern bool SetConsoleMode(IntPtr hConsoleHandle, uint dwMode);
 
-        [DllImport("kernel32.dll")]
+        [DllImport("kernel32.dll", SetLastError = true)]
         private static extern IntPtr GetStdHandle(int nStdHandle);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        private static extern bool OpenClipboard(IntPtr hWnd);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        private static extern bool CloseClipboard();
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        private static extern IntPtr GetConsoleWindow();
+
+        [DllImport("user32.dll", SetLastError = true)]
+        private static extern IntPtr GetClipboardData(uint format);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        private static extern IntPtr GlobalLock(IntPtr handle);
         
+        [DllImport("kernel32.dll", SetLastError = true)]
+        private static extern IntPtr GlobalUnlock(IntPtr handle);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        private static extern int GlobalSize(IntPtr hmem);
         public void SetupConsole()
         {
             IntPtr outputHandle = GetStdHandle(-11);
@@ -495,6 +527,27 @@ namespace CMSlib.ConsoleModule
             inMode = (uint)(inMode & ~64);
             SetConsoleMode(inputHandle, inMode);
         }
+
+        public string GetClipboard()
+        {
+
+            if (OpenClipboard(GetConsoleWindow()))
+            {
+                IntPtr dataHandle = GetClipboardData(1);
+                if (dataHandle != IntPtr.Zero)
+                {
+                    IntPtr contentHandle = GlobalLock(dataHandle);
+                    int size = GlobalSize(contentHandle);
+                    byte[] bytes = new byte[size];
+                    Marshal.Copy(contentHandle,bytes, 0, size);
+                    GlobalUnlock(dataHandle);
+                    CloseClipboard();
+                    return System.Text.Encoding.Default.GetString(bytes);
+                }
+            }
+            return String.Empty;
+        }
+        
     }
     public delegate Task AsyncEventHandler<in T>(object sender, T eventArgs);
 }

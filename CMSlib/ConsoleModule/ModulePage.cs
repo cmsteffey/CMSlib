@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace CMSlib.ConsoleModule
@@ -11,6 +12,7 @@ namespace CMSlib.ConsoleModule
         internal int selected = 0;
         private ModuleManager parent = null;
         private string _displayName = null;
+        internal Guid id = Guid.NewGuid();
         public string DisplayName
         {
             get
@@ -47,6 +49,7 @@ namespace CMSlib.ConsoleModule
                 foreach (var module in modules.Values)
                 {
                     module.parent = this.parent;
+                    module.parentPages.Add(this.id);
                 }
             }
         }

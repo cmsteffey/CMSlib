@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using CMSlib.Tables;
 using ExtensionMethods = CMSlib.Tables.ExtensionMethods;
@@ -29,8 +30,11 @@ namespace CMSlib.ConsoleModule
         internal ModuleManager parent = null;
         protected readonly object AddTextLock = new();
 
+        internal List<Guid> parentPages = new();
+
         protected BaseModule()
         {
+            
         }
 
         protected BaseModule(string title, int x, int y, int width, int height, LogLevel minLevel)
@@ -153,6 +157,8 @@ namespace CMSlib.ConsoleModule
         public void WriteOutput()
         {
             if (this.parent is null)
+                return;
+            if (this.parentPages is null || !this.parentPages.Contains(parent.SelectedPage.id))
                 return;
             lock (this.parent.writeLock)
             {
