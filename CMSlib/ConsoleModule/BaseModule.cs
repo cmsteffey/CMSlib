@@ -112,7 +112,7 @@ namespace CMSlib.ConsoleModule
                 };
             output.Append($"{colorScheme}");
             output.Append(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
-            output.Append($"|{eventId.Id.ToString().TableColumn(5, ExtensionMethods.ColumnAdjust.Right)}:{shortName}|{eventId.Name.GuaranteeLength(Width - 32)}{AnsiEscape.SgrClear}");
+            output.Append($"|{eventId.Id.ToString().TableColumn(5, ExtensionMethods.ColumnAdjust.Right)}:{shortName}|{eventId.Name?.GuaranteeLength(Width - 32)}{AnsiEscape.SgrClear}");
             lock (AddTextLock)
             {
                 this.AddText(output

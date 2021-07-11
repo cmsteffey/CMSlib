@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -58,6 +59,51 @@ namespace CMSlib.Extensions
         {
             return obj as T;
         }
+
+        public static IEnumerable<string> GetMembers<T>(this T _) => GetMembers<T>();
         
+        public static IEnumerable<string> GetMembers<T>()
+        {
+            Type type = typeof(T);
+
+            StringBuilder builder = new();
+            
+            foreach (var info in type.GetFields())
+            {
+                builder.Clear();
+                builder.Append(info.IsStatic ? '.' : '#');
+                builder.Append(info.Name);
+                yield return builder.ToString();
+            }
+            foreach (var info in type.GetProperties( ))
+            {
+                builder.Clear();
+                builder.Append('#');
+                builder.Append(info.Name);
+                builder.Append('{');
+                builder.Append(' ');
+                bool hasPublicGet = info.GetGetMethod() is null;
+                builder.Append(hasPublicGet ? "get;" : "");
+                bool hasPublicSet = info.GetSetMethod() is null;
+                if (hasPublicGet && hasPublicSet)
+                    builder.Append(' ');
+                builder.Append(hasPublicSet ? "set;" : "");
+                builder.Append(' ');
+                builder.Append('}');
+                yield return builder.ToString();
+            }
+            foreach (var info in type.GetMethods())
+            {
+                builder.Clear();
+                builder.Append(info.IsStatic ? '.' : '#');
+                builder.Append(info.Name);
+                builder.Append('(');
+                builder.Append(string.Join(", ",
+                    info.GetParameters().Select(x => x.ParameterType.FullName + " " + x.Name)));
+                builder.Append(')');
+                yield return builder.ToString();
+            }
+        }
+
     }
 }

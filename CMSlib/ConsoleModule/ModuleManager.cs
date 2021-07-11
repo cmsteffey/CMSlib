@@ -454,11 +454,11 @@ namespace CMSlib.ConsoleModule
                 Module = inputModule,
                 Line = line
             };
+            inputModule.WriteOutput();
             if (handler != null)
                 await handler(inputModule, e);
             await inputModule.FireLineEnteredAsync(e);
             await inputModule.FireReadLineLineEntered(e);
-            inputModule.WriteOutput();
         }
     }
     /// <summary>
@@ -484,6 +484,15 @@ namespace CMSlib.ConsoleModule
         public ConsoleKeyInfo KeyInfo { get; internal init; }
         
         public BaseModule Module { get; internal init; }
+
+        public int? InputLineLength
+        {
+            get
+            {
+                var IM = Module as InputModule;
+                return IM?.inputString?.Length;
+            }
+        }
     }
     public class WinConsoleConfiguerer
     {
