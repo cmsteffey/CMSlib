@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using CMSlib.ConsoleModule.InputStates;
 using CMSlib.Extensions;
 using Microsoft.Extensions.Logging;
 
@@ -25,33 +26,31 @@ namespace CMSlib.ConsoleModule
         {
             Console.TreatControlCAsInput = true;
             Console.CancelKeyPress += (_, _) => { QuitApp(); };
+            IConsoleHelper helper;
             if (Environment.OSVersion.Platform.ToString().ToLower().Contains("win"))
+            {
                 new WinConsoleConfiguerer().SetupConsole();
+                helper = new WinConsoleHelper();
+            }
+            else
+            {
+                helper = new StdConsoleHelper();
+            }
             Console.Write(AnsiEscape.AlternateScreenBuffer);
             Console.Write(AnsiEscape.DisableCursorBlink);
             _ = Task.Run(async () =>
             {
                 while (true)
                 {
-                    var key = Console.ReadKey(true);
                     BaseModule selectedModule = SelectedModule;
                     InputModule inputModule = selectedModule as InputModule;
-                    AsyncEventHandler<KeyEnteredEventArgs> handler = KeyEntered;
-                    KeyEnteredEventArgs e = new()
-                    {
-                        Module = inputModule,
-                        KeyInfo = key
-                    };
-                    if(handler is not null)
-                        await handler(inputModule, e);
-                    if (inputModule is not null)
-                    {
-                        await inputModule.FireKeyEnteredAsync(e);
-                    }
+                    
+                    
 
                     try
                     {
-                        await HandleKeyAsync(key, selectedModule);
+                        var inputRecord = helper.ReadInput();
+                        await HandleInputAsync(inputRecord, selectedModule);
                     }
                     catch (Exception exception)
                     {
@@ -198,7 +197,11 @@ namespace CMSlib.ConsoleModule
         /// </summary>
         public event AsyncEventHandler<LineEnteredEventArgs> LineEntered;
         /// <summary>
-        /// Event fired when a key is pressed.
+        /// Event fired when input is received.
+        /// </summary>
+        public event AsyncEventHandler<InputReceivedEventArgs> InputReceived;
+        /// <summary>
+        /// Event fired when input is received.
         /// </summary>
         public event AsyncEventHandler<KeyEnteredEventArgs> KeyEntered;
 
@@ -335,8 +338,45 @@ namespace CMSlib.ConsoleModule
             System.Diagnostics.Process.GetCurrentProcess().Kill();
         }
 
+        private async Task HandleInputAsync(InputRecord? input, BaseModule selectedModule)
+        {
+            if (input is null)
+                return;
+            if (input.Value.EventType == EventType.Key)
+            {
+                
+                ConsoleKeyInfo key = input.Value;
+                InputModule inputModule = selectedModule as InputModule;
+                AsyncEventHandler<KeyEnteredEventArgs> handler = KeyEntered;
+                KeyEnteredEventArgs e = new()
+                {
+                    Module = selectedModule,
+                    KeyInfo = key
+                };
+                if(handler is not null)
+                    await handler(inputModule, e);
+                
+                if (inputModule is not null)
+                {
+                    await inputModule.FireKeyEnteredAsync(e);
+                }
+                
+                await HandleKeyAsync(key, selectedModule);
+            }
+            else
+            {
+                switch (input.Value.EventType)
+                {
+                    case EventType.Mouse when input.Value.MouseEvent.ButtonState != 0:
+                        selectedModule.AddText("click!");
+                        break;
+                }
+            }
+        }
+
         private async Task HandleKeyAsync(ConsoleKeyInfo key, BaseModule selectedModule)
         {
+            
             Dictionary<string, bool> mods = key.Modifiers.ToStringDictionary<ConsoleModifiers>();
             if (mods[Alt])
                 return;
@@ -473,14 +513,29 @@ namespace CMSlib.ConsoleModule
         public InputModule Module { get; internal init; }
     }
     /// <summary>
-    /// EventArgs for the KeyEntered Event
+    /// EventArgs for the InputReceived Event
     /// </summary>
-    public class KeyEnteredEventArgs : EventArgs{
+    public class InputReceivedEventArgs : EventArgs{
+        internal InputReceivedEventArgs(){}
+        /// <summary>
+        /// Info about the input.
+        /// </summary>
+        public InputStates.BaseInputState Input { get; internal init; }
+    }
+
+    public class MouseInputReceivedEventArgs : EventArgs
+    {
+        internal MouseInputReceivedEventArgs()
+        {
+        }
+        public MouseMoveInputState InputState { get; internal init; }
+    }
+    public class KeyEnteredEventArgs : EventArgs {
         internal KeyEnteredEventArgs(){}
         /// <summary>
-        /// Info about the key pressed.
+        /// Info about the input.
         /// </summary>
-        public ConsoleKeyInfo KeyInfo { get; internal init; }
+        public ConsoleKeyInfo? KeyInfo { get; internal init; }
         
         public BaseModule Module { get; internal init; }
 

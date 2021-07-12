@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using CMSlib.Tables;
 using ExtensionMethods = CMSlib.Tables.ExtensionMethods;
@@ -29,7 +30,7 @@ namespace CMSlib.ConsoleModule
         protected readonly LogLevel minLevel;
         internal ModuleManager parent = null;
         protected readonly object AddTextLock = new();
-
+        
         internal List<Guid> parentPages = new();
 
         protected BaseModule()
@@ -69,6 +70,19 @@ namespace CMSlib.ConsoleModule
         internal async Task FireKeyEnteredAsync(KeyEnteredEventArgs args)
         {
             var handler = KeyEntered;
+            if (handler is not null)
+            {
+                await handler(this, args);
+            }
+        }
+        /// <summary>
+        /// Event fired when a key is pressed while this module is focused
+        /// </summary>
+        public event AsyncEventHandler<MouseInputReceivedEventArgs> MouseInputReceived;
+        
+        internal async Task FireMouseInputReceived(MouseInputReceivedEventArgs args)
+        {
+            var handler = MouseInputReceived;
             if (handler is not null)
             {
                 await handler(this, args);
