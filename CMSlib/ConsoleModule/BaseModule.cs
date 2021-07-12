@@ -123,7 +123,7 @@ namespace CMSlib.ConsoleModule
                 if (exception is not null)
                 {
                     this.AddText(
-                        $"Exception in {exception.Source}: {exception.Message} at {exception.TargetSite?.Name ?? "unknown method"}");
+                        $"Exception in {exception.Source}: {exception}");
                 }
             }
 

@@ -37,16 +37,15 @@ namespace CMSlib.ConsoleModule
                     BaseModule selectedModule = SelectedModule;
                     InputModule inputModule = selectedModule as InputModule;
                     AsyncEventHandler<KeyEnteredEventArgs> handler = KeyEntered;
-
+                    KeyEnteredEventArgs e = new()
+                    {
+                        Module = inputModule,
+                        KeyInfo = key
+                    };
+                    if(handler is not null)
+                        await handler(inputModule, e);
                     if (inputModule is not null)
                     {
-                        KeyEnteredEventArgs e = new()
-                        {
-                            Module = inputModule,
-                            KeyInfo = key
-                        };
-                        if(handler is not null)
-                            await handler(inputModule, e);
                         await inputModule.FireKeyEnteredAsync(e);
                     }
 
@@ -54,9 +53,9 @@ namespace CMSlib.ConsoleModule
                     {
                         await HandleKeyAsync(key, selectedModule);
                     }
-                    catch (Exception e)
+                    catch (Exception exception)
                     {
-                        inputModule?.AddText(e.ToString());
+                        inputModule?.AddText(exception.ToString());
                         inputModule?.WriteOutput();
                     }
                 }
@@ -336,7 +335,7 @@ namespace CMSlib.ConsoleModule
             System.Diagnostics.Process.GetCurrentProcess().Kill();
         }
 
-        public async Task HandleKeyAsync(ConsoleKeyInfo key, BaseModule selectedModule)
+        private async Task HandleKeyAsync(ConsoleKeyInfo key, BaseModule selectedModule)
         {
             Dictionary<string, bool> mods = key.Modifiers.ToStringDictionary<ConsoleModifiers>();
             if (mods[Alt])
@@ -527,13 +526,16 @@ namespace CMSlib.ConsoleModule
         private static extern int GlobalSize(IntPtr hmem);
         public void SetupConsole()
         {
-            IntPtr outputHandle = GetStdHandle(-11);
-            IntPtr inputHandle = GetStdHandle(-10);
+            IntPtr outputHandle = GetStdHandle(-11); //CONSOLE OUTPUT
+            IntPtr inputHandle = GetStdHandle(-10); //CONSOLE INPUT
             GetConsoleMode(outputHandle, out uint outmode);
             GetConsoleMode(inputHandle, out uint inMode);
-            outmode |= 4;
+            outmode |= 4; // ENABLE VIRTUAL TERMINAL OUTPUT
             SetConsoleMode(outputHandle, outmode);
-            inMode = (uint)(inMode & ~64);
+            inMode = (uint) (inMode & ~0x0040); //DISABLE QUICK_EDIT MODE
+            inMode = (uint) (inMode & ~0x0002); //DISABLE LINE INPUT
+            inMode |= 0x0010; //MOUSE INPUT
+            inMode |= 0x0080; //EXTENDED_FLAGS
             SetConsoleMode(inputHandle, inMode);
         }
 
@@ -548,11 +550,14 @@ namespace CMSlib.ConsoleModule
                     IntPtr contentHandle = GlobalLock(dataHandle);
                     int size = GlobalSize(contentHandle);
                     byte[] bytes = new byte[size];
-                    Marshal.Copy(contentHandle,bytes, 0, size);
+                    Marshal.Copy(contentHandle, bytes, 0, size);
                     GlobalUnlock(dataHandle);
                     CloseClipboard();
                     return System.Text.Encoding.Default.GetString(bytes);
                 }
+
+                CloseClipboard();
+                return "you don't have text on your clipboard :(";
             }
             return String.Empty;
         }
