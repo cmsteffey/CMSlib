@@ -29,7 +29,15 @@ namespace CMSlib.ConsoleModule
 
         public override void ScrollUp(int amt)
         {
-            
+            switch (amt)
+            {
+                case > 0:
+                    PageUp();
+                    break;
+                case < 0:
+                    PageDown();
+                    break;
+            }
         }
 
         public override void ScrollTo(int line)
@@ -58,7 +66,7 @@ namespace CMSlib.ConsoleModule
             
             int actingInternalWidthPer = Math.Min((Width - pages.Count) / pages.Count, internalWidthPer);
             int relativeX = record.MouseEvent.MousePosition.X - X;
-            if(relativeX < 0) return;
+            if(relativeX < 0 || relativeX % (actingInternalWidthPer + 1) == actingInternalWidthPer) return;
             int target = relativeX / (actingInternalWidthPer + 1);
             if(target < 0 || target >= pages.Count) return;
             this.parent.ToPage(target);

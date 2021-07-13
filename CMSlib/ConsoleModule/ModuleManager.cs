@@ -22,7 +22,7 @@ namespace CMSlib.ConsoleModule
         private const string Alt = "Alt";
         private const string Shift = "Shift";
 
-        
+        ///
         public ModuleManager()
         {
             Console.TreatControlCAsInput = true;
@@ -373,7 +373,15 @@ namespace CMSlib.ConsoleModule
             
                     await HandleKeyAsync(key, selectedModule, helper);
                     break;
-                
+                case EventType.Mouse when input.Value.MouseEvent.EventFlags.HasFlag(EventFlags.MouseWheeled):
+                    const int scrollAmt = 3;
+                    ModulePage sPage = SelectedPage;
+                    if (sPage is null) return;
+                    foreach (var module in sPage.Where(x=>input.Value.MouseEvent.MousePosition.Inside(x)))
+                    {
+                        module.ScrollUp((int)input.Value.MouseEvent.ButtonState >> 16 > 0 ? scrollAmt : -scrollAmt);
+                    }
+                    break;
                 case EventType.Mouse when input.Value.MouseEvent.ButtonState != 0:
                     ModulePage page = SelectedPage;
                     if (page is null) return;
