@@ -301,8 +301,12 @@ namespace CMSlib.ConsoleModule
         }
         public void ToPage(int page)
         {
+
             lock (dictSync)
+            {
+                if (page == selected) return;
                 selected = page;
+            }
             RefreshAll();
         }
         /// <summary>
