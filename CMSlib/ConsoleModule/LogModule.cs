@@ -84,6 +84,11 @@ namespace CMSlib.ConsoleModule
             }
         }
 
+        internal override void HandleClickAsync(InputRecord record)
+        {
+            
+        }
+
         public override void PageDown()
         {
             ScrollDown(Height - 2);

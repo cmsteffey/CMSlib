@@ -18,7 +18,7 @@ pageOne.Add(bar);
 manager.Add(pageOne);
 ModulePage pageTwo = new()
 {
-    DisplayName = "LOGGING"
+    DisplayName = "1234567890"
 };
 pageTwo.Add(logging);
 pageTwo.Add(bar);

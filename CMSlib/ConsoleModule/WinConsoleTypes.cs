@@ -89,6 +89,13 @@ namespace CMSlib.ConsoleModule
             this.X = X;
             this.Y = Y;
         }
+
+        public bool Inside(BaseModule module)
+        {
+            int xDiff = X - module.X;
+            int yDiff = Y - module.Y;
+            return xDiff >= 0 && xDiff < module.Width && yDiff >= 0 && yDiff< module.Height;
+        }
     };
     [StructLayout (LayoutKind.Sequential)]
     public struct WindowBufferSizeRecord {

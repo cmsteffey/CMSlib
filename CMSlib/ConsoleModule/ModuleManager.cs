@@ -22,41 +22,48 @@ namespace CMSlib.ConsoleModule
         private const string Alt = "Alt";
         private const string Shift = "Shift";
 
+        
         public ModuleManager()
         {
             Console.TreatControlCAsInput = true;
-            Console.CancelKeyPress += (_, _) => { QuitApp(); };
             IConsoleHelper helper;
             if (Environment.OSVersion.Platform.ToString().ToLower().Contains("win"))
             {
-                new WinConsoleConfiguerer().SetupConsole();
+                
                 helper = new WinConsoleHelper();
+                helper.SetupConsole();
             }
             else
             {
                 helper = new StdConsoleHelper();
             }
+            Console.CancelKeyPress += (_, _) => { helper.QuitApp(null); };
+
             Console.Write(AnsiEscape.AlternateScreenBuffer);
             Console.Write(AnsiEscape.DisableCursorBlink);
             _ = Task.Run(async () =>
             {
-                while (true)
+                try
                 {
-                    BaseModule selectedModule = SelectedModule;
-                    InputModule inputModule = selectedModule as InputModule;
-                    
-                    
-
-                    try
+                    while (true)
                     {
-                        var inputRecord = helper.ReadInput();
-                        await HandleInputAsync(inputRecord, selectedModule);
+                        BaseModule selectedModule = SelectedModule;
+                        InputModule inputModule = selectedModule as InputModule;
+                        try
+                        {
+                            var inputRecord = helper.ReadInput();
+                            await HandleInputAsync(inputRecord, selectedModule, helper);
+                        }
+                        catch (Exception exception)
+                        {
+                            inputModule?.AddText(exception.ToString());
+                            inputModule?.WriteOutput();
+                        }
                     }
-                    catch (Exception exception)
-                    {
-                        inputModule?.AddText(exception.ToString());
-                        inputModule?.WriteOutput();
-                    }
+                }
+                catch (Exception e)
+                {
+                    helper.QuitApp(e);
                 }
             });
         }
@@ -89,7 +96,7 @@ namespace CMSlib.ConsoleModule
 
         public BaseModule? SelectedModule
 
-            => Pages[selected].SelectedModule;
+            => selected >= 0 && selected < Pages.Count ? Pages[selected].SelectedModule : null;
         
 
         private Queue<BaseModule> loggerQueue = new();
@@ -292,6 +299,12 @@ namespace CMSlib.ConsoleModule
                 selected = (--selected).Modulus(Pages.Count);
             RefreshAll();
         }
+        public void ToPage(int page)
+        {
+            lock (dictSync)
+                selected = page;
+            RefreshAll();
+        }
         /// <summary>
         /// Selects the previous module - enables scrolling for that module.
         /// </summary>
@@ -326,55 +339,51 @@ namespace CMSlib.ConsoleModule
             if(refreshNew)
                 currentPage[newSelected].WriteOutput();
         }
-        /// <summary>
-        /// Quits the app, properly returning to the main buffer and clearing all possible cursor/format options.
-        /// </summary>
-        public static void QuitApp()
-        {
-            
-            Console.Write(AnsiEscape.MainScreenBuffer);
-            Console.Write(AnsiEscape.SoftReset);
-            Console.Write(AnsiEscape.EnableCursorBlink);
-            System.Diagnostics.Process.GetCurrentProcess().Kill();
-        }
+        
 
-        private async Task HandleInputAsync(InputRecord? input, BaseModule selectedModule)
+        private async Task HandleInputAsync(InputRecord? input, BaseModule selectedModule, IConsoleHelper helper)
         {
             if (input is null)
                 return;
-            if (input.Value.EventType == EventType.Key)
+            
+            
+            switch (input.Value.EventType)
             {
+                case EventType.Key when input.Value.KeyEvent.bKeyDown:
+                    ConsoleKeyInfo key = input.Value;
+                    InputModule inputModule = selectedModule as InputModule;
+            
+                    AsyncEventHandler<KeyEnteredEventArgs> handler = KeyEntered;
+                    KeyEnteredEventArgs e = new()
+                    {
+                        Module = selectedModule,
+                        KeyInfo = key
+                    };
+                    if(handler is not null)
+                        await handler(inputModule, e);
+            
+                    if (inputModule is not null)
+                    {
+                        await inputModule.FireKeyEnteredAsync(e);
+                    }
+            
+                    await HandleKeyAsync(key, selectedModule, helper);
+                    break;
                 
-                ConsoleKeyInfo key = input.Value;
-                InputModule inputModule = selectedModule as InputModule;
-                AsyncEventHandler<KeyEnteredEventArgs> handler = KeyEntered;
-                KeyEnteredEventArgs e = new()
-                {
-                    Module = selectedModule,
-                    KeyInfo = key
-                };
-                if(handler is not null)
-                    await handler(inputModule, e);
-                
-                if (inputModule is not null)
-                {
-                    await inputModule.FireKeyEnteredAsync(e);
-                }
-                
-                await HandleKeyAsync(key, selectedModule);
+                case EventType.Mouse when input.Value.MouseEvent.ButtonState != 0:
+                    ModulePage page = SelectedPage;
+                    if (page is null) return;
+                    foreach (var module in page.Where(x=>input.Value.MouseEvent.MousePosition.Inside(x)))
+                    {
+                        module.HandleClickAsync(input.Value);
+                    }
+                    break;
             }
-            else
-            {
-                switch (input.Value.EventType)
-                {
-                    case EventType.Mouse when input.Value.MouseEvent.ButtonState != 0:
-                        selectedModule.AddText("click!");
-                        break;
-                }
-            }
+            
         }
 
-        private async Task HandleKeyAsync(ConsoleKeyInfo key, BaseModule selectedModule)
+
+        private async Task HandleKeyAsync(ConsoleKeyInfo key, BaseModule selectedModule, IConsoleHelper helper)
         {
             
             Dictionary<string, bool> mods = key.Modifiers.ToStringDictionary<ConsoleModifiers>();
@@ -388,7 +397,7 @@ namespace CMSlib.ConsoleModule
                     
                     if (Environment.OSVersion.Platform.ToString().ToLower().Contains("win"))
                     {
-                        string clipboard = new WinConsoleConfiguerer().GetClipboard();
+                        string clipboard = helper.GetClipboard();
                         foreach (var ch in clipboard.Replace("\r\n", "\n").Replace("\n", ""))
                         {
                             inputModule.AddChar(ch);
@@ -396,7 +405,7 @@ namespace CMSlib.ConsoleModule
                     }
                     break;
                 case ConsoleKey.C when mods[Ctrl]:
-                    QuitApp();
+                    helper.QuitApp(null);
                     break;
                 case ConsoleKey.RightArrow:
                     break;
@@ -443,9 +452,6 @@ namespace CMSlib.ConsoleModule
                     this.SelectNext();
                     break;
                 
-                case ConsoleKey.C when mods[Ctrl]:
-                    ModuleManager.QuitApp();
-                    break;
                 case ConsoleKey.Enter when mods[Shift]:
                     await EnterLineAsync(inputModule, false);
                     break;
@@ -520,7 +526,7 @@ namespace CMSlib.ConsoleModule
         /// <summary>
         /// Info about the input.
         /// </summary>
-        public InputStates.BaseInputState Input { get; internal init; }
+        public BaseInputState Input { get; internal init; }
     }
 
     public class MouseInputReceivedEventArgs : EventArgs
@@ -548,75 +554,6 @@ namespace CMSlib.ConsoleModule
             }
         }
     }
-    public class WinConsoleConfiguerer
-    {
-        [DllImport("kernel32.dll", SetLastError = true)]
-        private static extern bool GetConsoleMode(IntPtr hConsoleHandle, out uint lpMode);
-        
-        [DllImport("kernel32.dll", SetLastError = true)]
-        private static extern bool SetConsoleMode(IntPtr hConsoleHandle, uint dwMode);
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        private static extern IntPtr GetStdHandle(int nStdHandle);
-
-        [DllImport("user32.dll", SetLastError = true)]
-        private static extern bool OpenClipboard(IntPtr hWnd);
-
-        [DllImport("user32.dll", SetLastError = true)]
-        private static extern bool CloseClipboard();
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        private static extern IntPtr GetConsoleWindow();
-
-        [DllImport("user32.dll", SetLastError = true)]
-        private static extern IntPtr GetClipboardData(uint format);
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        private static extern IntPtr GlobalLock(IntPtr handle);
-        
-        [DllImport("kernel32.dll", SetLastError = true)]
-        private static extern IntPtr GlobalUnlock(IntPtr handle);
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        private static extern int GlobalSize(IntPtr hmem);
-        public void SetupConsole()
-        {
-            IntPtr outputHandle = GetStdHandle(-11); //CONSOLE OUTPUT
-            IntPtr inputHandle = GetStdHandle(-10); //CONSOLE INPUT
-            GetConsoleMode(outputHandle, out uint outmode);
-            GetConsoleMode(inputHandle, out uint inMode);
-            outmode |= 4; // ENABLE VIRTUAL TERMINAL OUTPUT
-            SetConsoleMode(outputHandle, outmode);
-            inMode = (uint) (inMode & ~0x0040); //DISABLE QUICK_EDIT MODE
-            inMode = (uint) (inMode & ~0x0002); //DISABLE LINE INPUT
-            inMode |= 0x0010; //MOUSE INPUT
-            inMode |= 0x0080; //EXTENDED_FLAGS
-            SetConsoleMode(inputHandle, inMode);
-        }
-
-        public string GetClipboard()
-        {
-
-            if (OpenClipboard(GetConsoleWindow()))
-            {
-                IntPtr dataHandle = GetClipboardData(1);
-                if (dataHandle != IntPtr.Zero)
-                {
-                    IntPtr contentHandle = GlobalLock(dataHandle);
-                    int size = GlobalSize(contentHandle);
-                    byte[] bytes = new byte[size];
-                    Marshal.Copy(contentHandle, bytes, 0, size);
-                    GlobalUnlock(dataHandle);
-                    CloseClipboard();
-                    return System.Text.Encoding.Default.GetString(bytes);
-                }
-
-                CloseClipboard();
-                return "you don't have text on your clipboard :(";
-            }
-            return String.Empty;
-        }
-        
-    }
+    
     public delegate Task AsyncEventHandler<in T>(object sender, T eventArgs);
 }

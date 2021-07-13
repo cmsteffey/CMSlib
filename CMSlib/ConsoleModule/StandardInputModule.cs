@@ -19,9 +19,12 @@ namespace CMSlib.ConsoleModule
         {
             this.borderCharacter = borderCharacter;
         }
-        
 
-        
+        internal override void HandleClickAsync(InputRecord record)
+        {
+            
+        }
+
         /// <summary>
         /// Clears all lines from this module, as well as optionally refreshing.
         /// </summary>

@@ -89,6 +89,8 @@ namespace CMSlib.ConsoleModule
             }
         }
 
+        internal abstract void HandleClickAsync(InputRecord record);
+
         
         
         
