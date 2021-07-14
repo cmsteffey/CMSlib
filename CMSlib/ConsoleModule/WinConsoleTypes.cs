@@ -1,5 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 using System;
+
 namespace CMSlib.ConsoleModule
 {
     
@@ -88,6 +89,29 @@ namespace CMSlib.ConsoleModule
         {
             this.X = X;
             this.Y = Y;
+        }
+
+        public static bool operator ==(Coord a, Coord b)
+        {
+            return a.Equals(b);
+        }
+
+        public static bool operator !=(Coord a, Coord b)
+        {
+            return !a.Equals(b);
+        }
+        public override bool Equals(object? obj)
+        {
+            if (obj is null)
+                return false;
+            if (obj is not Coord c)
+                return false;
+            return c.X == X && c.Y == Y;
+        }
+
+        public override int GetHashCode()
+        {
+            return unchecked(((X) << 16) + Y);
         }
 
         public bool Inside(BaseModule module)

@@ -20,7 +20,7 @@ namespace CMSlib.ConsoleModule
             this.borderCharacter = borderCharacter;
         }
 
-        internal override void HandleClickAsync(InputRecord record)
+        internal override void HandleClickAsync(InputRecord record, ButtonState? before)
         {
             
         }

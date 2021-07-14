@@ -84,7 +84,7 @@ namespace CMSlib.ConsoleModule
             }
         }
 
-        internal override void HandleClickAsync(InputRecord record)
+        internal override void HandleClickAsync(InputRecord record, ButtonState? before)
         {
             
         }

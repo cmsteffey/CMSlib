@@ -60,8 +60,10 @@ namespace CMSlib.ConsoleModule
             this.internalWidthPer = internalWidthPer;
         }
 
-        internal override void HandleClickAsync(InputRecord record)
+        internal override void HandleClickAsync(InputRecord record, ButtonState? before)
         {
+            if (!before.HasValue || before.Value == record.MouseEvent.ButtonState) return;
+            
             List<ModulePage> pages = parent.Pages;
             
             int actingInternalWidthPer = Math.Min((Width - pages.Count) / pages.Count, internalWidthPer);

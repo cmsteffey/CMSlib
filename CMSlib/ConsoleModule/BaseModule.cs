@@ -89,7 +89,7 @@ namespace CMSlib.ConsoleModule
             }
         }
 
-        internal abstract void HandleClickAsync(InputRecord record);
+        internal abstract void HandleClickAsync(InputRecord record, ButtonState? before);
 
         
         
@@ -217,8 +217,9 @@ namespace CMSlib.ConsoleModule
     {
         internal static string Render(string Title, char? borderCharacter, int X, int Y, int Width, int Height, int scrolledLines, List<string> text, bool selected, string DisplayName, bool isInput, bool unread, StringBuilder inputString)
         {
-            int internalHeight = Math.Min(Height - 2, Console.WindowHeight - Y);
-            int internalWidth = Width - 2;
+            int internalHeight = Math.Min(Height - 2, Console.WindowHeight - Y - 2);
+            int internalWidth = Math.Min(Width - 2, Console.WindowWidth - X - 2);
+            if (internalHeight < 0 || internalWidth < 0) return string.Empty;
             string actingTitle = DisplayName ?? Title;
             StringBuilder output = borderCharacter is not null ? new((internalWidth + 2) * (internalHeight + 2) + AnsiEscape.AsciiMode.Length + AnsiEscape.SgrUnderline.Length * 2) : new();
             int inputDifferential = isInput ? 2 : 0;
@@ -226,10 +227,8 @@ namespace CMSlib.ConsoleModule
             int spaceCount =
                 Math.Min(internalHeight - text.Count - inputDifferential + scrolledLines,
                     internalHeight - inputDifferential);
-            if (lineCount <= 0 && spaceCount <= 0)
-            {
-                return string.Empty;
-            }
+            if (lineCount <= 0 && spaceCount <= 0) return string.Empty;
+            
             if (borderCharacter is null)
                 output.Append(AnsiEscape.LineDrawingMode);
             else

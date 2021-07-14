@@ -22,9 +22,12 @@ namespace CMSlib.ConsoleModule
         private const string Alt = "Alt";
         private const string Shift = "Shift";
 
+        private ButtonState? cachedState = null;
+        private Coord? cachedWindowSize = null;
         ///
         public ModuleManager()
         {
+            
             Console.TreatControlCAsInput = true;
             IConsoleHelper helper;
             if (Environment.OSVersion.Platform.ToString().ToLower().Contains("win"))
@@ -349,8 +352,9 @@ namespace CMSlib.ConsoleModule
         {
             if (input is null)
                 return;
-            
-            
+            ButtonState? cached = cachedState;
+            if (input.Value.EventType == EventType.Mouse)
+                cachedState = input.Value.MouseEvent.ButtonState;
             switch (input.Value.EventType)
             {
                 case EventType.Key when input.Value.KeyEvent.bKeyDown:
@@ -387,7 +391,15 @@ namespace CMSlib.ConsoleModule
                     if (page is null) return;
                     foreach (var module in page.Where(x=>input.Value.MouseEvent.MousePosition.Inside(x)))
                     {
-                        module.HandleClickAsync(input.Value);
+                        module.HandleClickAsync(input.Value, cached);
+                    }
+                    break;
+                case EventType.WindowBufferSize:
+                    Coord? cachedWindowSize = this.cachedWindowSize;
+                    if (!cachedWindowSize.HasValue || cachedWindowSize.Value != input.Value.WindowBufferSizeEvent.size)
+                    {
+                        this.cachedWindowSize = input.Value.WindowBufferSizeEvent.size;
+                        this.RefreshAll(false);
                     }
                     break;
             }
