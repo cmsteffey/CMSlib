@@ -359,8 +359,8 @@ namespace CMSlib.ConsoleModule
             {
                 case EventType.Key when input.Value.KeyEvent.bKeyDown:
                     ConsoleKeyInfo key = input.Value;
+                    selectedModule?.HandleKeyAsync(key);
                     InputModule inputModule = selectedModule as InputModule;
-            
                     AsyncEventHandler<KeyEnteredEventArgs> handler = KeyEntered;
                     KeyEnteredEventArgs e = new()
                     {
@@ -391,7 +391,9 @@ namespace CMSlib.ConsoleModule
                     if (page is null) return;
                     foreach (var module in page.Where(x=>input.Value.MouseEvent.MousePosition.Inside(x)))
                     {
-                        module.HandleClickAsync(input.Value, cached);
+                        await module.FireMouseInputReceived(new MouseInputReceivedEventArgs()
+                            {InputState = new ClickInputState(input.Value)});
+                        await module.HandleClickAsync(input.Value, cached);
                     }
                     break;
                 case EventType.WindowBufferSize:
@@ -399,8 +401,9 @@ namespace CMSlib.ConsoleModule
                     if (!cachedWindowSize.HasValue || cachedWindowSize.Value != input.Value.WindowBufferSizeEvent.size)
                     {
                         this.cachedWindowSize = input.Value.WindowBufferSizeEvent.size;
-                        this.RefreshAll(false);
                     }
+                    if(!cachedWindowSize.HasValue || input.Value.WindowBufferSizeEvent.size.Y < cachedWindowSize.Value.Y ||  input.Value.WindowBufferSizeEvent.size.X != cachedWindowSize.Value.X)
+                        RefreshAll();
                     break;
             }
             
@@ -499,9 +502,10 @@ namespace CMSlib.ConsoleModule
             }
         }
 
-        private async Task EnterLineAsync(InputModule inputModule, bool scrollToBottom)
+        private async Task EnterLineAsync(BaseModule selected, bool scrollToBottom)
         {
-            if (inputModule is null) return;
+            
+            if (selected is not ConsoleModule.InputModule inputModule) return;
             string line;
             AsyncEventHandler<LineEnteredEventArgs> handler;
             lock (this.writeLock)
@@ -558,7 +562,7 @@ namespace CMSlib.ConsoleModule
         internal MouseInputReceivedEventArgs()
         {
         }
-        public MouseMoveInputState InputState { get; internal init; }
+        public BaseInputState InputState { get; internal init; }
     }
     public class KeyEnteredEventArgs : EventArgs {
         internal KeyEnteredEventArgs(){}

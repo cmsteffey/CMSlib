@@ -94,6 +94,8 @@ namespace CMSlib.Extensions
 
         public static IEnumerable<string> SplitOnNonEscapeLength(this string str, int length)
         {
+            if (string.IsNullOrEmpty(str))
+                yield break;
             bool inEscapeCharacter = false; //whether [i] is in an escape sequence
             int visibleTotal = 0; //total visible characters (non-escape)
             int strStart = 0; //start of current yield

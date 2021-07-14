@@ -17,7 +17,7 @@ namespace CMSlib.ConsoleModule
         public int Width { get; protected init;}
         public int Height { get; protected init;}
         public string Title { get; protected init; }
-        
+
         /// <summary>
         /// This string is shown at the top of the module. Setting it to null, or not setting it at all, uses the module title as the displayed title.
         /// </summary>
@@ -89,8 +89,8 @@ namespace CMSlib.ConsoleModule
             }
         }
 
-        internal abstract void HandleClickAsync(InputRecord record, ButtonState? before);
-
+        internal abstract Task HandleClickAsync(InputRecord record, ButtonState? before);
+        internal abstract Task HandleKeyAsync(ConsoleKeyInfo info);
         
         
         
@@ -181,9 +181,8 @@ namespace CMSlib.ConsoleModule
                 Console.Write(AnsiEscape.DisableCursorVisibility);
                 var outputLines = this.ToOutputLines();
                 int i = Y - 1;
-                if (this.X > Console.BufferWidth || this.Y > Console.BufferHeight)
+                if (this.X >= Console.BufferWidth || this.Y >= Console.BufferHeight)
                     return;
-                Console.SetCursorPosition(X, Y);
                 foreach (var line in outputLines)
                 {
                     if (++i >= Console.WindowHeight)

@@ -1,9 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 using CMSlib.Extensions;
 using Microsoft.Extensions.Logging;
-
+using static CMSlib.ConsoleModule.AnsiEscape;
 namespace CMSlib.ConsoleModule
 {
     public class ToggleModule : BaseModule
@@ -36,10 +36,8 @@ namespace CMSlib.ConsoleModule
             
         }
 
-        internal override void HandleClickAsync(InputRecord record, ButtonState? before)
+        private async Task FlipToggleAsync()
         {
-            
-            if (!before.HasValue || before.Value == record.MouseEvent.ButtonState) return;
             bool newState;
             lock (toggleLock)
             {
@@ -47,9 +45,25 @@ namespace CMSlib.ConsoleModule
                 newState = _enabled;
             }
 
-            ToggleFlipped?.Invoke(this, new(newState));
+            var handler = ToggleFlipped;
+            if (handler is not null)
+                await handler(this, new ToggleFlippedEventArgs(newState));
             this.WriteOutput();
         }
+        internal async override Task HandleKeyAsync(ConsoleKeyInfo info)
+        {
+            if(info.Key == ConsoleKey.Enter)
+                await FlipToggleAsync();
+                
+        }
+        
+        internal async override Task HandleClickAsync(InputRecord record, ButtonState? before)
+        {
+            
+            if (before.HasValue && before.Value != record.MouseEvent.ButtonState) 
+                await FlipToggleAsync();
+        }
+        
 
         public override void ScrollTo(int line)
         {
@@ -87,32 +101,32 @@ namespace CMSlib.ConsoleModule
                 return string.Empty;
             string displayTitle = Title.Ellipse(internalWidth);
             StringBuilder builder = new();
-            builder.Append(AnsiEscape.LineDrawingMode);
-            builder.Append(AnsiEscape.UpperLeftCorner);
-            builder.Append(displayTitle);
-            builder.Append(new string(AnsiEscape.HorizontalLine, internalWidth - displayTitle.Length));
-            builder.Append(AnsiEscape.UpperRightCorner);
+            builder.Append(LineDrawingMode);
+            builder.Append(UpperLeftCorner);
+            builder.Append(selected ? Underline(displayTitle) : displayTitle);
+            builder.Append(new string(HorizontalLine, internalWidth - displayTitle.Length));
+            builder.Append(UpperRightCorner);
             string displayString = enabled ? enabledText : disabledText;
             if (internalHeight > 0)
             {
-                builder.Append(AnsiEscape.VerticalLine);
-                builder.Append(AnsiEscape.AsciiMode);
+                builder.Append(VerticalLine);
+                builder.Append(AsciiMode);
                 builder.Append(enabled
-                    ? AnsiEscape.SgrGreenForeGround + AnsiEscape.SgrBrightBold + AnsiEscape.SgrNegative + " " + AnsiEscape.SgrClear + AnsiEscape.SgrWhiteBackGround + " "
-                    : AnsiEscape.SgrWhiteBackGround + " " + AnsiEscape.SgrRedBackGround  + " ");
-                builder.Append(AnsiEscape.SgrClear);
+                    ? SgrGreenForeGround  +  SgrNegative +   SgrWhiteBackGround + '\u0020' + SgrClear + SgrWhiteBackGround + '\u0020'
+                    : SgrWhiteBackGround + '\u0020' + SgrClear + SgrRedForeGround +  SgrNegative + SgrWhiteBackGround + '\u0020');
+                builder.Append(SgrClear);
                 if (internalWidth != 2)
                 {
                     builder.Append(' ');
                     builder.Append(displayString[..Math.Min(internalWidth - 3, displayString.Length)].GuaranteeLength(internalWidth - 3));
                 }
-                builder.Append(AnsiEscape.LineDrawingMode);
-                builder.Append(AnsiEscape.VerticalLine);
+                builder.Append(LineDrawingMode);
+                builder.Append(VerticalLine);
             }
             for (int i = 1; i < internalHeight; i++)
             {
-                builder.Append(AnsiEscape.VerticalLine);
-                builder.Append(AnsiEscape.AsciiMode);
+                builder.Append(VerticalLine);
+                builder.Append(AsciiMode);
                 if ((internalWidth * i - 3) < displayString.Length)
                     builder.Append(
                         displayString[
@@ -120,12 +134,12 @@ namespace CMSlib.ConsoleModule
                             .GuaranteeLength(internalWidth));
                 else
                     builder.Append(new string(' ', internalWidth));
-                builder.Append(AnsiEscape.LineDrawingMode);
-                builder.Append(AnsiEscape.VerticalLine);
+                builder.Append(LineDrawingMode);
+                builder.Append(VerticalLine);
             }
-            builder.Append(AnsiEscape.LowerLeftCorner);
-            builder.Append(new string(AnsiEscape.HorizontalLine, internalWidth));
-            builder.Append(AnsiEscape.LowerRightCorner);
+            builder.Append(LowerLeftCorner);
+            builder.Append(new string(HorizontalLine, internalWidth));
+            builder.Append(LowerRightCorner);
             return builder.ToString();
         }
     }

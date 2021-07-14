@@ -2,6 +2,7 @@
 using CMSlib.Extensions;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
 namespace CMSlib.ConsoleModule
@@ -20,7 +21,12 @@ namespace CMSlib.ConsoleModule
             this.borderCharacter = borderCharacter;
         }
 
-        internal override void HandleClickAsync(InputRecord record, ButtonState? before)
+        internal async override Task HandleClickAsync(InputRecord record, ButtonState? before)
+        {
+            
+        }
+
+        internal async override Task HandleKeyAsync(ConsoleKeyInfo info)
         {
             
         }

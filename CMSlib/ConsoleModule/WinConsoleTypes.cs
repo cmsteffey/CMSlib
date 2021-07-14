@@ -90,6 +90,7 @@ namespace CMSlib.ConsoleModule
             this.X = X;
             this.Y = Y;
         }
+        
 
         public static bool operator ==(Coord a, Coord b)
         {

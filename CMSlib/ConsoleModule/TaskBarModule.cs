@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 using CMSlib.Extensions;
 using Microsoft.Extensions.Logging;
 
@@ -60,7 +61,7 @@ namespace CMSlib.ConsoleModule
             this.internalWidthPer = internalWidthPer;
         }
 
-        internal override void HandleClickAsync(InputRecord record, ButtonState? before)
+        internal async override Task HandleClickAsync(InputRecord record, ButtonState? before)
         {
             if (!before.HasValue || before.Value == record.MouseEvent.ButtonState) return;
             
@@ -74,15 +75,20 @@ namespace CMSlib.ConsoleModule
             this.parent.ToPage(target);
         }
 
+        internal async override Task HandleKeyAsync(ConsoleKeyInfo info)
+        {
+            
+        }
+
         public override string ToString()
         {
             StringBuilder output = new StringBuilder();
             if (parent is null) return string.Empty;
-
+            if (Y >= Console.WindowHeight) return string.Empty;
             List<ModulePage> pages = parent.Pages;
             int actingInternalWidthPer = Math.Min((Width - pages.Count) / pages.Count, internalWidthPer);
-
-            for (int i = 0; i < Height; i++)
+            
+            for (int i = 0; i < Math.Min(Height, Console.WindowHeight - Y); i++)
             {
                 int lineWidth = 0;
                 for (int j = 0; j < pages.Count; j++)
