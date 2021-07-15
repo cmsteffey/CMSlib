@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 namespace CMSlib.ConsoleModule
 {
-    public partial class WinConsoleHelper : IConsoleHelper
+    public class WinConsoleHelper : IConsoleHelper
     {
         private uint prevIn;
         private uint prevOut;
