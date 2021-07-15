@@ -24,26 +24,18 @@ namespace CMSlib.ConsoleModule
 
         private ButtonState? cachedState = null;
         private Coord? cachedWindowSize = null;
+        
+        private ITerminal _terminal;
+        private ModuleManager(){}
         ///
-        public ModuleManager()
+        public ModuleManager(ITerminal terminal)
         {
-            
+            _terminal = terminal;
             Console.TreatControlCAsInput = true;
-            ITerminal helper;
-            if (Environment.OSVersion.Platform.ToString().ToLower().Contains("win"))
-            {
-                
-                helper = new WinTerminal();
-                helper.SetupConsole();
-            }
-            else
-            {
-                helper = new StdTerminal();
-            }
-            Console.CancelKeyPress += (_, _) => { helper.QuitApp(null); };
-
-            Console.Write(AnsiEscape.AlternateScreenBuffer);
-            Console.Write(AnsiEscape.DisableCursorBlink);
+            _terminal.SetupConsole();
+            Console.CancelKeyPress += (_, _) => { _terminal.QuitApp(null); };
+            _terminal.Write(AnsiEscape.AlternateScreenBuffer);
+            _terminal.Write(AnsiEscape.DisableCursorBlink);
             _ = Task.Run(async () =>
             {
                 try
@@ -54,8 +46,8 @@ namespace CMSlib.ConsoleModule
                         InputModule inputModule = selectedModule as InputModule;
                         try
                         {
-                            var inputRecord = helper.ReadInput();
-                            await HandleInputAsync(inputRecord, selectedModule, helper);
+                            var inputRecord = _terminal.ReadInput();
+                            await HandleInputAsync(inputRecord, selectedModule, _terminal);
                         }
                         catch (Exception exception)
                         {
@@ -66,7 +58,7 @@ namespace CMSlib.ConsoleModule
                 }
                 catch (Exception e)
                 {
-                    helper.QuitApp(e);
+                    _terminal.QuitApp(e);
                 }
             });
         }
@@ -348,7 +340,7 @@ namespace CMSlib.ConsoleModule
         }
         
 
-        private async Task HandleInputAsync(InputRecord? input, BaseModule selectedModule, ITerminal helper)
+        private async Task HandleInputAsync(InputRecord? input, BaseModule selectedModule, ITerminal terminal)
         {
             if (input is null)
                 return;
@@ -375,7 +367,7 @@ namespace CMSlib.ConsoleModule
                         await inputModule.FireKeyEnteredAsync(e);
                     }
             
-                    await HandleKeyAsync(key, selectedModule, helper);
+                    await HandleKeyAsync(key, selectedModule, terminal);
                     break;
                 case EventType.Mouse when input.Value.MouseEvent.EventFlags.HasFlag(EventFlags.MouseWheeled):
                     const int scrollAmt = 3;
@@ -410,7 +402,7 @@ namespace CMSlib.ConsoleModule
         }
 
 
-        private async Task HandleKeyAsync(ConsoleKeyInfo key, BaseModule selectedModule, ITerminal helper)
+        private async Task HandleKeyAsync(ConsoleKeyInfo key, BaseModule selectedModule, ITerminal terminal)
         {
             
             Dictionary<string, bool> mods = key.Modifiers.ToStringDictionary<ConsoleModifiers>();
@@ -424,7 +416,7 @@ namespace CMSlib.ConsoleModule
                     
                     if (Environment.OSVersion.Platform.ToString().ToLower().Contains("win"))
                     {
-                        string clipboard = helper.GetClipboard();
+                        string clipboard = terminal.GetClipboard();
                         foreach (var ch in clipboard.Replace("\r\n", "\n").Replace("\n", ""))
                         {
                             inputModule.AddChar(ch);
@@ -432,7 +424,7 @@ namespace CMSlib.ConsoleModule
                     }
                     break;
                 case ConsoleKey.C when mods[Ctrl]:
-                    helper.QuitApp(null);
+                    terminal.QuitApp(null);
                     break;
                 case ConsoleKey.RightArrow:
                     break;
@@ -532,6 +524,12 @@ namespace CMSlib.ConsoleModule
                 await handler(inputModule, e);
             await inputModule.FireLineEnteredAsync(e);
             await inputModule.FireReadLineLineEntered(e);
+        }
+
+        internal void Write(string toWrite)
+        {
+            lock(writeLock)
+                _terminal.Write(toWrite);
         }
     }
     /// <summary>

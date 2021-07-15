@@ -5,7 +5,7 @@ using System.Runtime.Loader;
 using CMSlib.ConsoleModule;
 using CMSlib.ConsoleModule.InputStates;
 
-ModuleManager manager = new();
+ModuleManager manager = new(new WinTerminal());
 StandardInputModule input = new("INPUT", 0, 0, Console.WindowWidth / 2, Console.WindowHeight - 2);
 LogModule output = new("OUTPUT", Console.WindowWidth / 2, 0, Console.WindowWidth / 2, Console.WindowHeight - 2);
 TaskBarModule bar = new("NIU", 0, Console.WindowHeight - 1, Console.WindowWidth, 1, 10);

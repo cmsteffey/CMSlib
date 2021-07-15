@@ -191,7 +191,7 @@ namespace CMSlib.ConsoleModule
                         Console.SetCursorPosition(X, i);
                     else
                         --i;
-                    Console.Write(line);
+                    parent.Write(line);
                 }
 
                 BaseModule inputModule = this.parent?.InputModule;
@@ -248,9 +248,10 @@ namespace CMSlib.ConsoleModule
             output.Append(borderCharacter ?? AnsiEscape.UpperRightCorner);
             for (int i = 0; i < spaceCount; i++)
             {
-                output.Append(borderCharacter?.ToString()??(unread && i > internalHeight - (4 + inputDifferential) ? AnsiEscape.AsciiMode + AnsiEscape.SgrRedForeGround + AnsiEscape.SgrBrightBold + "V" + AnsiEscape.SgrClear: AnsiEscape.VerticalLine.ToString()));
+                output.Append(borderCharacter?.ToString()??(unread && i > internalHeight - (4 + inputDifferential) ? AnsiEscape.AsciiMode + AnsiEscape.SgrRedForeGround + AnsiEscape.SgrBrightBold + "V" + AnsiEscape.SgrClear : AnsiEscape.LineDrawingMode + AnsiEscape.VerticalLine.ToString()));
                 output.Append(' ', internalWidth);
                 output.Append(borderCharacter?.ToString()??AnsiEscape.LineDrawingMode + AnsiEscape.VerticalLine);
+                output.Append(AnsiEscape.SgrClear);
             }
             int index = Math.Clamp(text.Count - (internalHeight - inputDifferential) - scrolledLines, 0, text.Count == 0 ? 0 : text.Count - 1);
             
@@ -269,9 +270,10 @@ namespace CMSlib.ConsoleModule
                 }
                 if (borderCharacter is null) output.Append(AnsiEscape.LineDrawingMode);
                 output.Append(borderCharacter?.ToString()??(dot?"":AnsiEscape.VerticalLine.ToString()));
+                output.Append(AnsiEscape.SgrClear);
             }
             if(borderCharacter is null)
-                output.Append(isInput ? AnsiEscape.VerticalWithRight : AnsiEscape.LowerLeftCorner).Append(AnsiEscape.HorizontalLine, internalWidth).Append(isInput ? AnsiEscape.VerticalWithLeft : AnsiEscape.LowerRightCorner);
+                output.Append(AnsiEscape.LineDrawingMode).Append(isInput ? AnsiEscape.VerticalWithRight : AnsiEscape.LowerLeftCorner).Append(AnsiEscape.HorizontalLine, internalWidth).Append(isInput ? AnsiEscape.VerticalWithLeft : AnsiEscape.LowerRightCorner);
             else
                 output.Append(borderCharacter.Value, internalWidth + 2);
             if (!isInput) return output.ToString();

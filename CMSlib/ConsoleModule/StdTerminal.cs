@@ -4,17 +4,27 @@ namespace CMSlib.ConsoleModule
 {
     public class StdTerminal : ITerminal
     {
-        public InputRecord? ReadInput()
+        InputRecord? ITerminal.ReadInput()
         {
             return Console.ReadKey();
         }
 
-        public void SetupConsole()
+        void ITerminal.SetupConsole()
         {
             
         }
 
-        public string GetClipboard()
+        void ITerminal.Write(string toWrite)
+        {
+            Console.Write(toWrite);
+        }
+
+        void ITerminal.SetCursorPosition(int x, int y)
+        {
+            Console.SetCursorPosition(x, y);
+        }
+
+        string ITerminal.GetClipboard()
         {
             return string.Empty;
         }
@@ -22,7 +32,7 @@ namespace CMSlib.ConsoleModule
         /// <summary>
         /// Quits the app, properly returning to the main buffer and clearing all possible cursor/format options.
         /// </summary>
-        public void QuitApp(Exception e)
+        void ITerminal.QuitApp(Exception e)
         {
             Console.Write(AnsiEscape.MainScreenBuffer);
             Console.Write(AnsiEscape.SoftReset);
