@@ -29,16 +29,16 @@ namespace CMSlib.ConsoleModule
         {
             
             Console.TreatControlCAsInput = true;
-            IConsoleHelper helper;
+            ITerminal helper;
             if (Environment.OSVersion.Platform.ToString().ToLower().Contains("win"))
             {
                 
-                helper = new WinConsoleHelper();
+                helper = new WinTerminal();
                 helper.SetupConsole();
             }
             else
             {
-                helper = new StdConsoleHelper();
+                helper = new StdTerminal();
             }
             Console.CancelKeyPress += (_, _) => { helper.QuitApp(null); };
 
@@ -348,7 +348,7 @@ namespace CMSlib.ConsoleModule
         }
         
 
-        private async Task HandleInputAsync(InputRecord? input, BaseModule selectedModule, IConsoleHelper helper)
+        private async Task HandleInputAsync(InputRecord? input, BaseModule selectedModule, ITerminal helper)
         {
             if (input is null)
                 return;
@@ -410,7 +410,7 @@ namespace CMSlib.ConsoleModule
         }
 
 
-        private async Task HandleKeyAsync(ConsoleKeyInfo key, BaseModule selectedModule, IConsoleHelper helper)
+        private async Task HandleKeyAsync(ConsoleKeyInfo key, BaseModule selectedModule, ITerminal helper)
         {
             
             Dictionary<string, bool> mods = key.Modifiers.ToStringDictionary<ConsoleModifiers>();

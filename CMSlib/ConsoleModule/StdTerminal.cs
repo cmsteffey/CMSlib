@@ -2,7 +2,7 @@
 
 namespace CMSlib.ConsoleModule
 {
-    public class StdConsoleHelper : IConsoleHelper
+    public class StdTerminal : ITerminal
     {
         public InputRecord? ReadInput()
         {
