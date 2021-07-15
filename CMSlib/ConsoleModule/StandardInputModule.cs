@@ -2,26 +2,32 @@
 using CMSlib.Extensions;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
 namespace CMSlib.ConsoleModule
 {
     public sealed class StandardInputModule : InputModule
     {
-        
-        private  readonly List<string> text = new();
-        private  readonly char? borderCharacter;
 
-        
+        private readonly List<string> text = new();
+        private readonly char? borderCharacter;
 
-        public StandardInputModule(string title, int x, int y, int width, int height,
-            char? borderCharacter = null, LogLevel minimumLogLevel = LogLevel.Information) : base(title, x, y, width, height, minimumLogLevel)
+        public StandardInputModule(string title, int x, int y, int width, int height, char? borderCharacter = null, LogLevel minimumLogLevel = LogLevel.Information) : base(title, x, y, width, height, minimumLogLevel)
         {
             this.borderCharacter = borderCharacter;
         }
-        
 
-        
+        internal async override Task HandleClickAsync(InputRecord record, ButtonState? before)
+        {
+
+        }
+
+        internal async override Task HandleKeyAsync(ConsoleKeyInfo info)
+        {
+
+        }
+
         /// <summary>
         /// Clears all lines from this module, as well as optionally refreshing.
         /// </summary>
@@ -34,22 +40,21 @@ namespace CMSlib.ConsoleModule
                 text.Clear();
             }
 
-            if(refresh)
-                WriteOutput();
+            if (refresh) WriteOutput();
         }
 
         internal override void Backspace(bool write = true)
         {
             if (parent is null) return;
-            lock (this.parent.writeLock)
+
+            lock (parent.writeLock)
             {
-                this.inputString.Remove(inputString.Length - 1, 1);
-                
-                
+                inputString.Remove(inputString.Length - 1, 1);
+
                 if (inputString.Length + 1 > Width - 3)
                 {
                     if (!write) return;
-                    this.WriteOutput();
+                    WriteOutput();
                 }
                 else
                 {
@@ -57,29 +62,28 @@ namespace CMSlib.ConsoleModule
                     if (!write) return;
                     Console.Write("\b \b");
                 }
-                
             }
         }
-        
+
         internal override void AddChar(char toAdd)
         {
             if (parent is null) return;
             if (toAdd is '\u0000') return;
-            lock (this.parent.writeLock)
+
+            lock (parent.writeLock)
             {
-                this.inputString.Append(toAdd);
+                inputString.Append(toAdd);
+
                 if (inputString.Length > Width - 3)
                 {
-                    this.WriteOutput();
+                    WriteOutput();
                 }
                 else
                 {
                     Console.Write(toAdd);
                     lrCursorPos++;
                 }
-                
             }
-            
         }
 
         /// <summary>
@@ -88,55 +92,57 @@ namespace CMSlib.ConsoleModule
         /// <param name="text">The text to add</param>
         public override void AddText(string text)
         {
-            
             lock (AddTextLock)
             {
                 int before = this.text.Count;
-                this.text.AddRange(text.Replace("\t", "        ").Replace("\r\n", "\n").Split('\n').SelectMany(x=>x.PadToVisibleDivisible(Width - 2).SplitOnNonEscapeLength(Width - 2)));
+
+                this.text.AddRange(text.Replace("\t", "        ").Replace("\r\n", "\n").Split('\n').SelectMany(x => x.PadToVisibleDivisible(Width - 2).SplitOnNonEscapeLength(Width - 2)));
+
                 if (scrolledLines != 0)
                 {
                     scrolledLines += this.text.Count - before;
                     unread = true;
                 }
-                
             }
         }
-        
+
         /// <summary>
         /// Gets the string representation of this Module.
         /// </summary>
         /// <returns>The string representation of this module.</returns>
         public override string ToString()
         {
-            return BoxRenderer.Render(Title, borderCharacter, X, Y, Width, Height, scrolledLines, text, selected, DisplayName,
-                true, unread, inputString);
+            return BoxRenderer.Render(Title, borderCharacter, X, Y, Width, Height, scrolledLines, text, selected, DisplayName, true, unread, inputString);
         }
 
         public override void ScrollUp(int amt)
         {
-            if (this.text.Count == 0) return;
+            if (text.Count == 0) return;
+
             lock (AddTextLock)
             {
                 int before = scrolledLines;
                 scrolledLines = Math.Clamp(scrolledLines + amt, 0, this.text.Count - 1);
-                if (before != 0 && scrolledLines == 0)
-                    unread = false;
+
+                if (before != 0 && scrolledLines == 0) unread = false;
                 if (before != scrolledLines) WriteOutput();
             }
         }
 
         public override void ScrollTo(int line)
         {
-            if (this.text.Count == 0) return;
+            if (text.Count == 0) return;
+
             lock (AddTextLock)
             {
                 int before = scrolledLines;
-                scrolledLines = Math.Clamp(line, 0, this.text.Count - 1);
-                if (before != 0 && scrolledLines == 0)
-                    unread = false;
+                scrolledLines = Math.Clamp(line, 0, text.Count - 1);
+
+                if (before != 0 && scrolledLines == 0) unread = false;
                 if (before != scrolledLines) WriteOutput();
             }
         }
+
         public override void PageDown()
         {
             ScrollDown(Height - 4);
@@ -146,9 +152,6 @@ namespace CMSlib.ConsoleModule
         {
             ScrollUp(Height - 4);
         }
-        
     }
-
-   
 }
 

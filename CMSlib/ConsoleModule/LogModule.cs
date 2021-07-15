@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using CMSlib.Extensions;
 using Microsoft.Extensions.Logging;
 using System.Linq;
+using System.Threading.Tasks;
+
 namespace CMSlib.ConsoleModule
 {
     public sealed class LogModule : BaseModule
@@ -82,6 +84,16 @@ namespace CMSlib.ConsoleModule
                     unread = false;
                 if (before != scrolledLines) WriteOutput();
             }
+        }
+
+        internal async override Task HandleClickAsync(InputRecord record, ButtonState? before)
+        {
+            
+        }
+
+        internal async override Task HandleKeyAsync(ConsoleKeyInfo info)
+        {
+            
         }
 
         public override void PageDown()

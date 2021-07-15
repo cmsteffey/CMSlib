@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using CMSlib.Tables;
 using ExtensionMethods = CMSlib.Tables.ExtensionMethods;
@@ -16,7 +17,7 @@ namespace CMSlib.ConsoleModule
         public int Width { get; protected init;}
         public int Height { get; protected init;}
         public string Title { get; protected init; }
-        
+
         /// <summary>
         /// This string is shown at the top of the module. Setting it to null, or not setting it at all, uses the module title as the displayed title.
         /// </summary>
@@ -29,7 +30,7 @@ namespace CMSlib.ConsoleModule
         protected readonly LogLevel minLevel;
         internal ModuleManager parent = null;
         protected readonly object AddTextLock = new();
-
+        
         internal List<Guid> parentPages = new();
 
         protected BaseModule()
@@ -74,7 +75,22 @@ namespace CMSlib.ConsoleModule
                 await handler(this, args);
             }
         }
+        /// <summary>
+        /// Event fired when a key is pressed while this module is focused
+        /// </summary>
+        public event AsyncEventHandler<MouseInputReceivedEventArgs> MouseInputReceived;
+        
+        internal async Task FireMouseInputReceived(MouseInputReceivedEventArgs args)
+        {
+            var handler = MouseInputReceived;
+            if (handler is not null)
+            {
+                await handler(this, args);
+            }
+        }
 
+        internal abstract Task HandleClickAsync(InputRecord record, ButtonState? before);
+        internal abstract Task HandleKeyAsync(ConsoleKeyInfo info);
         
         
         
@@ -165,9 +181,8 @@ namespace CMSlib.ConsoleModule
                 Console.Write(AnsiEscape.DisableCursorVisibility);
                 var outputLines = this.ToOutputLines();
                 int i = Y - 1;
-                if (this.X > Console.BufferWidth || this.Y > Console.BufferHeight)
+                if (this.X >= Console.BufferWidth || this.Y >= Console.BufferHeight)
                     return;
-                Console.SetCursorPosition(X, Y);
                 foreach (var line in outputLines)
                 {
                     if (++i >= Console.WindowHeight)
@@ -201,8 +216,9 @@ namespace CMSlib.ConsoleModule
     {
         internal static string Render(string Title, char? borderCharacter, int X, int Y, int Width, int Height, int scrolledLines, List<string> text, bool selected, string DisplayName, bool isInput, bool unread, StringBuilder inputString)
         {
-            int internalHeight = Math.Min(Height - 2, Console.WindowHeight - Y);
-            int internalWidth = Width - 2;
+            int internalHeight = Math.Min(Height - 2, Console.WindowHeight - Y - 2);
+            int internalWidth = Math.Min(Width - 2, Console.WindowWidth - X - 2);
+            if (internalHeight < 0 || internalWidth < 0) return string.Empty;
             string actingTitle = DisplayName ?? Title;
             StringBuilder output = borderCharacter is not null ? new((internalWidth + 2) * (internalHeight + 2) + AnsiEscape.AsciiMode.Length + AnsiEscape.SgrUnderline.Length * 2) : new();
             int inputDifferential = isInput ? 2 : 0;
@@ -210,10 +226,8 @@ namespace CMSlib.ConsoleModule
             int spaceCount =
                 Math.Min(internalHeight - text.Count - inputDifferential + scrolledLines,
                     internalHeight - inputDifferential);
-            if (lineCount <= 0 && spaceCount <= 0)
-            {
-                return string.Empty;
-            }
+            if (lineCount <= 0 && spaceCount <= 0) return string.Empty;
+            
             if (borderCharacter is null)
                 output.Append(AnsiEscape.LineDrawingMode);
             else
