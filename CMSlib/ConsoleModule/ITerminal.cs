@@ -12,5 +12,6 @@ namespace CMSlib.ConsoleModule
         internal void SetCursorPosition(int x, int y);
         internal void FlashWindow(FlashFlags flags, uint times, int milliDelay);
         internal void SetConsoleTitle(string title);
+        internal void Flush();
     }
 }

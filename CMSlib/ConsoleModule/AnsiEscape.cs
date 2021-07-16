@@ -61,5 +61,7 @@
         public static string WindowTitle(string title) => $"\u001B\u005D\u0032\u003B{title[..System.Math.Min(title.Length, 256)]}\u0007";
 
         public static string Underline(string toUnderline) => SgrUnderline + toUnderline + SgrNoUnderline;
+
+        public static string SetCursorPosition(int x, int y) => ControlSequenceIntroducer + y + ';' + x + 'H';
     }
 }

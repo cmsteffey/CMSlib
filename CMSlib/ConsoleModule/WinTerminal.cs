@@ -1,5 +1,7 @@
 ﻿using System;
+using System.IO;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace CMSlib.ConsoleModule
 {
@@ -7,7 +9,7 @@ namespace CMSlib.ConsoleModule
     {
         private uint prevIn;
         private uint prevOut;
-        
+        private TextWriter _writer = null;
         InputRecord? ITerminal.ReadInput()
         {
             IntPtr inputHandle = GetStdHandle(-10);
@@ -42,8 +44,20 @@ namespace CMSlib.ConsoleModule
         {
             Console.Write(AnsiEscape.WindowTitle(title[..Math.Min(256, title.Length)]));
         }
+        void ITerminal.Write(string toWrite)
+        {
+            Console.Write(toWrite);
+        }
+
+        void ITerminal.Flush()
+        {
+            //Console.Flush();
+        }
         void ITerminal.SetupConsole()
         {
+            _writer = Console.Out;// new StreamWriter(Console.OpenStandardOutput());
+            
+            //Console.OutputEncoding = Encoding.UTF8;
             IntPtr outputHandle = GetStdHandle(-11); //CONSOLE OUTPUT
             IntPtr inputHandle = GetStdHandle(-10); //CONSOLE INPUT
             GetConsoleMode(outputHandle, out uint outMode);
@@ -89,19 +103,16 @@ namespace CMSlib.ConsoleModule
         /// </summary>
         void ITerminal.QuitApp(Exception e)
         {
-            Console.Write(AnsiEscape.MainScreenBuffer);
-            Console.Write(AnsiEscape.SoftReset);
-            Console.Write(AnsiEscape.EnableCursorBlink);
+            _writer?.Write(AnsiEscape.MainScreenBuffer);
+            _writer?.Write(AnsiEscape.SoftReset);
+            _writer?.Write(AnsiEscape.EnableCursorBlink);
+            _writer?.Flush();
             SetConsoleMode(GetStdHandle(-10), prevIn);
             SetConsoleMode(GetStdHandle(-11), prevOut);
-            Console.WriteLine(
+            _writer?.WriteLine(
                 e is not null ? $"CMSlib gracefully exited with an exception:\n{e}" : $"[CMSlib] Exiting gracefully.");
+            _writer?.Dispose();
             System.Diagnostics.Process.GetCurrentProcess().Kill();
-        }
-
-        void ITerminal.Write(string toWrite)
-        {
-            Console.Write(toWrite);
         }
 
         void ITerminal.FlashWindow(FlashFlags flags, uint times, int milliDelay)

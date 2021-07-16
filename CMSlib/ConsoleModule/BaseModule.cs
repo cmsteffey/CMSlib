@@ -51,7 +51,11 @@ namespace CMSlib.ConsoleModule
         public abstract override string ToString();
         public abstract void AddText(string text);
         public abstract void ScrollUp(int amt);
-        public void ScrollDown(int amt) => ScrollUp(-amt);
+
+        public void ScrollDown(int amt)
+        {
+            ScrollUp(-amt);
+        }
         public abstract void ScrollTo(int line);
         public abstract void PageUp();
         public abstract void PageDown();
@@ -170,11 +174,9 @@ namespace CMSlib.ConsoleModule
         /// <summary>
         /// Refreshes this module, showing the latest output.
         /// </summary>
-        public void WriteOutput()
+        public void WriteOutput(bool flush = true)
         {
-            if (this.parent is null)
-                return;
-            if (this.parentPages is null || !this.parentPages.Contains(parent.SelectedPage.id))
+            if (this.parent is null || this.parentPages is null || !this.parentPages.Contains(parent.SelectedPage.id))
                 return;
             lock (this.parent.writeLock)
             {
@@ -183,27 +185,36 @@ namespace CMSlib.ConsoleModule
                 int i = Y - 1;
                 if (this.X >= Console.BufferWidth || this.Y >= Console.BufferHeight)
                     return;
+                
                 foreach (var line in outputLines)
                 {
                     if (++i >= Console.WindowHeight)
                         break;
                     if (line.IsVisible())
-                        Console.SetCursorPosition(X, i);
+                        parent.SetCursorPosition(X, i);
                     else
                         --i;
                     parent.Write(line);
                 }
 
                 BaseModule inputModule = parent.InputModule;
-                if (inputModule is null) return;
+                if (inputModule is null)
+                {
+                    if(flush)parent.Flush();
+                    return;
+                }
 
                 int inputCursorY = Math.Min(Console.WindowHeight - 2, inputModule.Height + inputModule.Y - 2);
                 int inputCursorX = inputModule.X + 1 + inputModule.lrCursorPos;
                 if (inputCursorY < 0 || inputCursorX < 0)
+                {
+                    if(flush)parent.Flush();
                     return;
-                Console.SetCursorPosition(inputCursorX,
+                }
+                parent.SetCursorPosition(inputCursorX,
                     inputCursorY);
-                Console.Write(AnsiEscape.EnableCursorVisibility);
+                parent.Write(AnsiEscape.EnableCursorVisibility);
+                if(flush)parent.Flush();
             }
         }
         private IEnumerable<string> ToOutputLines()

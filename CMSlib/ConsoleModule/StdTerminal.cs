@@ -29,6 +29,11 @@ namespace CMSlib.ConsoleModule
             Console.Write(AnsiEscape.WindowTitle(title[..Math.Min(256, title.Length)]));
         }
 
+        void ITerminal.Flush()
+        {
+            
+        }
+
         string ITerminal.GetClipboard()
         {
             return string.Empty;

@@ -39,6 +39,7 @@ namespace CMSlib.ConsoleModule
             Console.CancelKeyPress += (_, _) => { _terminal.QuitApp(null); };
             _terminal.Write(AnsiEscape.AlternateScreenBuffer);
             _terminal.Write(AnsiEscape.DisableCursorBlink);
+            _terminal.Flush();
             _ = Task.Run(async () =>
             {
                 try
@@ -219,7 +220,7 @@ namespace CMSlib.ConsoleModule
         /// Event fired when input is received.
         /// </summary>
         public event AsyncEventHandler<KeyEnteredEventArgs> KeyEntered;
-        
+
         //TODO add event for when the window is focused/defocused
 
         /// <summary>
@@ -576,6 +577,16 @@ namespace CMSlib.ConsoleModule
         public void SetWindowTitle(string title)
         {
             _terminal.SetConsoleTitle(title);
+        }
+
+        public void SetCursorPosition(int x, int y)
+        {
+            _terminal.SetCursorPosition(x, y);
+        }
+
+        public void Flush()
+        {
+            _terminal.Flush();
         }
 
         public void FlashWindow(FlashFlags flags, uint times, int milliDelay)
