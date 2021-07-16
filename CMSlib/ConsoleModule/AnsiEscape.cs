@@ -62,6 +62,6 @@
 
         public static string Underline(string toUnderline) => SgrUnderline + toUnderline + SgrNoUnderline;
 
-        public static string SetCursorPosition(int x, int y) => ControlSequenceIntroducer + y + ';' + x + 'H';
+        public static string SetCursorPosition(int x, int y) => ControlSequenceIntroducer + (y + 1) + ';' + (x + 1) + 'H';
     }
 }

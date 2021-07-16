@@ -39,8 +39,9 @@ namespace CMSlib.ConsoleModule
                     modules = this.modules.Values;
                 foreach (var modulesValue in modules)
                 {
-                    modulesValue.WriteOutput();
+                    modulesValue.WriteOutput(false);
                 }
+                parent.Flush();
             }
         }
 

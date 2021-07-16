@@ -9,7 +9,7 @@ namespace CMSlib.ConsoleModule
     {
         private uint prevIn;
         private uint prevOut;
-        private TextWriter _writer = null;
+        private StreamWriter _writer = null;
         InputRecord? ITerminal.ReadInput()
         {
             IntPtr inputHandle = GetStdHandle(-10);
@@ -37,27 +37,27 @@ namespace CMSlib.ConsoleModule
 
         void ITerminal.SetCursorPosition(int x, int y)
         {
-            Console.SetCursorPosition(x, y);
+            _writer.Write(AnsiEscape.SetCursorPosition(x, y));
         }
 
         void ITerminal.SetConsoleTitle(string title)
         {
-            Console.Write(AnsiEscape.WindowTitle(title[..Math.Min(256, title.Length)]));
+            _writer.Write(AnsiEscape.WindowTitle(title[..Math.Min(256, title.Length)]));
         }
         void ITerminal.Write(string toWrite)
         {
-            Console.Write(toWrite);
+            _writer.Write(toWrite);
         }
 
         void ITerminal.Flush()
         {
-            //Console.Flush();
+            _writer.Flush();
         }
         void ITerminal.SetupConsole()
         {
-            _writer = Console.Out;// new StreamWriter(Console.OpenStandardOutput());
-            
-            //Console.OutputEncoding = Encoding.UTF8;
+            _writer = new StreamWriter(Console.OpenStandardOutput());
+            _writer.AutoFlush = false;
+            Console.OutputEncoding = Encoding.UTF8;
             IntPtr outputHandle = GetStdHandle(-11); //CONSOLE OUTPUT
             IntPtr inputHandle = GetStdHandle(-10); //CONSOLE INPUT
             GetConsoleMode(outputHandle, out uint outMode);
