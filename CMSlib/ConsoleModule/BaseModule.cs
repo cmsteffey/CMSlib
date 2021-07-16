@@ -220,7 +220,7 @@ namespace CMSlib.ConsoleModule
             int internalHeight = actingHeight - 2;
             int internalWidth = Math.Min(Width - 2, Console.WindowWidth - X - 2);
             if (internalHeight < 0 || internalWidth < 0) return string.Empty;
-            string actingTitle = DisplayName ?? Title;
+            string actingTitle = (DisplayName ?? Title).Ellipse(internalWidth);
             StringBuilder output = borderCharacter is not null ? new((internalWidth + 2) * (internalHeight + 2) + AnsiEscape.AsciiMode.Length + AnsiEscape.SgrUnderline.Length * 2) : new();
             int inputDifferential = isInput ? 2 : 0;
             
@@ -236,15 +236,15 @@ namespace CMSlib.ConsoleModule
             
             if (selected)
                 output.Append(AnsiEscape.SgrUnderline);
-            output.Append(actingTitle.Ellipse(internalWidth));
+            output.Append(actingTitle);
             
             if (selected)
                 output.Append(AnsiEscape.SgrNoUnderline);
             if (borderCharacter is null)
                 output.Append(AnsiEscape.LineDrawingMode);
-            output.Append(borderCharacter??AnsiEscape.HorizontalLine, internalWidth - actingTitle.Ellipse(internalWidth).Length);
+            output.Append(borderCharacter??AnsiEscape.HorizontalLine, internalWidth - actingTitle.Length);
             output.Append(borderCharacter ?? AnsiEscape.UpperRightCorner);
-            if (internalHeight < 0)
+            if (actingHeight == 1)
                 return output.ToString();
             int lineCount = Math.Clamp(text.Count - scrolledLines, 0, internalHeight - inputDifferential);
             int spaceCount =

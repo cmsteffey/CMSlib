@@ -104,7 +104,7 @@ namespace CMSlib.ConsoleModule
                 }
 
                 if (lineWidth < Width)
-                    output.Append(new string(' ', Width - lineWidth));
+                    output.Append(' ', Width - lineWidth);
 
             }
 

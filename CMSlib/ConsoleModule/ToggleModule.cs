@@ -104,7 +104,7 @@ namespace CMSlib.ConsoleModule
             builder.Append(LineDrawingMode);
             builder.Append(UpperLeftCorner);
             builder.Append(selected ? Underline(displayTitle) : displayTitle);
-            builder.Append(new string(HorizontalLine, internalWidth - displayTitle.Length));
+            builder.Append(HorizontalLine, internalWidth - displayTitle.Length);
             builder.Append(UpperRightCorner);
             string displayString = enabled ? enabledText : disabledText;
             if (internalHeight > 0)
@@ -133,12 +133,12 @@ namespace CMSlib.ConsoleModule
                                 (internalWidth * i - 3)..Math.Min(internalWidth * (i + 1) - 3, displayString.Length)]
                             .GuaranteeLength(internalWidth));
                 else
-                    builder.Append(new string(' ', internalWidth));
+                    builder.Append(' ', internalWidth);
                 builder.Append(LineDrawingMode);
                 builder.Append(VerticalLine);
             }
             builder.Append(LowerLeftCorner);
-            builder.Append(new string(HorizontalLine, internalWidth));
+            builder.Append(HorizontalLine, internalWidth);
             builder.Append(LowerRightCorner);
             return builder.ToString();
         }
