@@ -246,11 +246,11 @@ namespace CMSlib.ConsoleModule
                 output.Append(AnsiEscape.AsciiMode);
             
             if (selected)
-                output.Append(AnsiEscape.SgrUnderline);
+                output.Append(AnsiEscape.SgrUnderline).Append(AnsiEscape.SgrBlinking);
             output.Append(actingTitle);
             
             if (selected)
-                output.Append(AnsiEscape.SgrNoUnderline);
+                output.Append(AnsiEscape.SgrNoUnderline).Append(AnsiEscape.SgrNoBlinking);
             if (borderCharacter is null)
                 output.Append(AnsiEscape.LineDrawingMode);
             output.Append(borderCharacter??AnsiEscape.HorizontalLine, internalWidth - actingTitle.Length);
@@ -264,9 +264,10 @@ namespace CMSlib.ConsoleModule
             for (int i = 0; i < spaceCount; i++)
             {
                 output.Append(borderCharacter?.ToString()??(unread && i > internalHeight - (4 + inputDifferential) ? AnsiEscape.AsciiMode + AnsiEscape.SgrRedForeGround + AnsiEscape.SgrBrightBold + "V" + AnsiEscape.SgrClear : AnsiEscape.LineDrawingMode + AnsiEscape.VerticalLine.ToString()));
-                output.Append(' ', internalWidth);
-                output.Append(borderCharacter?.ToString()??AnsiEscape.LineDrawingMode + AnsiEscape.VerticalLine);
+                
+                output.Append('\u2591', internalWidth);
                 output.Append(AnsiEscape.SgrClear);
+                output.Append(borderCharacter?.ToString()??AnsiEscape.LineDrawingMode + AnsiEscape.VerticalLine);
             }
             int index = Math.Clamp(text.Count - (internalHeight - inputDifferential) - scrolledLines, 0, text.Count == 0 ? 0 : text.Count - 1);
             

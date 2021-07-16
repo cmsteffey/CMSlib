@@ -27,6 +27,11 @@
         public const string SgrNegative               =  ControlSequenceIntroducer + "\u0037\u006D";       // <ESC>[7m
         public const string SgrUnderline              =  ControlSequenceIntroducer + "\u0030\u0034\u006D"; // <ESC>[04m
         public const string SgrNoUnderline            =  ControlSequenceIntroducer + "\u0032\u0034\u006D"; // <ESC>[24m
+        public const string SgrOverline               =  ControlSequenceIntroducer + "\u0035\u0033\u006D"; // <ESC>[53m
+        public const string SgrNoOverline             =  ControlSequenceIntroducer + "\u0035\u0035\u006D"; // <ESC>[55m
+        public const string SgrBlinking               =  ControlSequenceIntroducer + "\u0030\u0035\u006D"; // <ESC>[05m
+        public const string SgrNoBlinking             =  ControlSequenceIntroducer + "\u0032\u0035\u006D"; // <ESC>[25m
+        
         public const string SgrBrightBold             =  ControlSequenceIntroducer + "\u0031\u006D";       // <ESC>[1m
         public const string SgrClear                  =  ControlSequenceIntroducer + "\u0030\u006D";       // <ESC>[0m
         public const string SgrForeGroundClear        =  ControlSequenceIntroducer + "\u0033\u0039\u006D"; // <ESC>[49m
