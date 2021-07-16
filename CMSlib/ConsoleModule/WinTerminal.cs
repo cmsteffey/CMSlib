@@ -37,6 +37,11 @@ namespace CMSlib.ConsoleModule
         {
             Console.SetCursorPosition(x, y);
         }
+
+        void ITerminal.SetConsoleTitle(string title)
+        {
+            Console.Write(AnsiEscape.WindowTitle(title[..Math.Min(256, title.Length)]));
+        }
         void ITerminal.SetupConsole()
         {
             IntPtr outputHandle = GetStdHandle(-11); //CONSOLE OUTPUT
