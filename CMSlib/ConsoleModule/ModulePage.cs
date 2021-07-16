@@ -6,6 +6,7 @@ namespace CMSlib.ConsoleModule
 {
     public class ModulePage : IEnumerable<BaseModule>
     {
+        //TODO add page selected event, to modules too 
         private Dictionary<string, BaseModule> modules = new();
         private List<string> dictKeys = new();
         internal object dictSync = new();
