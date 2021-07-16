@@ -176,4 +176,40 @@ namespace CMSlib.ConsoleModule
         }
     }
 
+    [StructLayout(LayoutKind.Sequential)]
+    public struct FlashInfo
+    {
+        public uint cbSize;
+        public IntPtr hWnd;
+        public FlashFlags dwFlags;
+        public uint uCount;
+        public int dwTimeOut;
+    }
+    //cast 0 to enum to stop flash
+    [Flags]
+    public enum FlashFlags : int
+    {
+        /// <summary>
+        /// Flash caption
+        /// </summary>
+        FlashCaption = 0x00000001,
+        /// <summary>
+        /// Flash taskbar icon
+        /// </summary>
+        FlashTray = 0x00000002,
+        /// <summary>
+        /// Flash taskbar icon & caption
+        /// </summary>
+        FlashAll = 0x00000003,
+        /// <summary>
+        /// Flash until window enum-casted 0 is called
+        /// </summary>
+        FlashTimer = 0x00000004,
+        /// <summary>
+        /// Flash until the window comes to the foreground
+        /// </summary>
+        FlashNoTimer = 0x0000000C
+        
+    }
+
 }

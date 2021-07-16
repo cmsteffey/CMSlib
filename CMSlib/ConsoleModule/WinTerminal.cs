@@ -96,9 +96,21 @@ namespace CMSlib.ConsoleModule
         {
             Console.Write(toWrite);
         }
-        
-        
-        
+
+        void ITerminal.FlashWindow(FlashFlags flags, uint times, int milliDelay)
+        {
+            FlashInfo info = new();
+            info.cbSize = Convert.ToUInt32(Marshal.SizeOf(info));
+            info.dwFlags = flags;
+            info.hWnd = GetConsoleWindow();
+            info.uCount = times;
+            info.dwTimeOut = milliDelay;
+            
+            FlashWindowEx(ref info);
+        }
+
+        [DllImport("user32.dll", SetLastError = true)]
+        private static extern int FlashWindowEx(ref FlashInfo info);
         [DllImport("kernel32.dll", SetLastError = true)]
         private static extern IntPtr GetStdHandle(int nStdHandle);
         

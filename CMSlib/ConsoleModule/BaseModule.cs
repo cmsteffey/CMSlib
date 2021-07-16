@@ -178,7 +178,7 @@ namespace CMSlib.ConsoleModule
                 return;
             lock (this.parent.writeLock)
             {
-                Console.Write(AnsiEscape.DisableCursorVisibility);
+                parent.Write(AnsiEscape.DisableCursorVisibility);
                 var outputLines = this.ToOutputLines();
                 int i = Y - 1;
                 if (this.X >= Console.BufferWidth || this.Y >= Console.BufferHeight)
@@ -194,7 +194,7 @@ namespace CMSlib.ConsoleModule
                     parent.Write(line);
                 }
 
-                BaseModule inputModule = this.parent?.InputModule;
+                BaseModule inputModule = parent.InputModule;
                 if (inputModule is null) return;
 
                 int inputCursorY = Math.Min(Console.WindowHeight - 2, inputModule.Height + inputModule.Y - 2);
@@ -216,17 +216,15 @@ namespace CMSlib.ConsoleModule
     {
         internal static string Render(string Title, char? borderCharacter, int X, int Y, int Width, int Height, int scrolledLines, List<string> text, bool selected, string DisplayName, bool isInput, bool unread, StringBuilder inputString)
         {
-            int internalHeight = Math.Min(Height - 2, Console.WindowHeight - Y - 2);
+            int actingHeight = Math.Min(Height, Console.WindowHeight - Y);
+            int internalHeight = actingHeight - 2;
             int internalWidth = Math.Min(Width - 2, Console.WindowWidth - X - 2);
             if (internalHeight < 0 || internalWidth < 0) return string.Empty;
             string actingTitle = DisplayName ?? Title;
             StringBuilder output = borderCharacter is not null ? new((internalWidth + 2) * (internalHeight + 2) + AnsiEscape.AsciiMode.Length + AnsiEscape.SgrUnderline.Length * 2) : new();
             int inputDifferential = isInput ? 2 : 0;
-            int lineCount = Math.Clamp(text.Count - scrolledLines, 0, internalHeight - inputDifferential);
-            int spaceCount =
-                Math.Min(internalHeight - text.Count - inputDifferential + scrolledLines,
-                    internalHeight - inputDifferential);
-            if (lineCount <= 0 && spaceCount <= 0) return string.Empty;
+            
+            if (actingHeight <= 0) return string.Empty;
             
             if (borderCharacter is null)
                 output.Append(AnsiEscape.LineDrawingMode);
@@ -246,6 +244,12 @@ namespace CMSlib.ConsoleModule
                 output.Append(AnsiEscape.LineDrawingMode);
             output.Append(borderCharacter??AnsiEscape.HorizontalLine, internalWidth - actingTitle.Ellipse(internalWidth).Length);
             output.Append(borderCharacter ?? AnsiEscape.UpperRightCorner);
+            if (internalHeight < 0)
+                return output.ToString();
+            int lineCount = Math.Clamp(text.Count - scrolledLines, 0, internalHeight - inputDifferential);
+            int spaceCount =
+                Math.Min(internalHeight - text.Count - inputDifferential + scrolledLines,
+                    internalHeight - inputDifferential);
             for (int i = 0; i < spaceCount; i++)
             {
                 output.Append(borderCharacter?.ToString()??(unread && i > internalHeight - (4 + inputDifferential) ? AnsiEscape.AsciiMode + AnsiEscape.SgrRedForeGround + AnsiEscape.SgrBrightBold + "V" + AnsiEscape.SgrClear : AnsiEscape.LineDrawingMode + AnsiEscape.VerticalLine.ToString()));

@@ -10,5 +10,6 @@ namespace CMSlib.ConsoleModule
         public void QuitApp(Exception e);
         internal void Write(string toWrite);
         internal void SetCursorPosition(int x, int y);
+        internal void FlashWindow(FlashFlags flags, uint times, int milliDelay);
     }
 }

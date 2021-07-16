@@ -41,5 +41,10 @@ namespace CMSlib.ConsoleModule
                 e is not null ? $"CMSlib gracefully exited with an exception:\n{e}" : $"[CMSlib] Exiting gracefully.");
             System.Diagnostics.Process.GetCurrentProcess().Kill();
         }
+
+        void ITerminal.FlashWindow(FlashFlags flags, uint times, int milliDelay)
+        {
+            
+        }
     }
 }

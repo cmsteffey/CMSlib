@@ -15,7 +15,7 @@ namespace CMSlib.ConsoleModule
         public List<ModulePage> Pages { get; } = new();
         internal int selected = 0;
         internal object writeLock = new();
-        
+
         private readonly object dictSync = new();
 
         private const string Ctrl = "Control";
@@ -24,9 +24,13 @@ namespace CMSlib.ConsoleModule
 
         private ButtonState? cachedState = null;
         private Coord? cachedWindowSize = null;
-        
+
         private ITerminal _terminal;
-        private ModuleManager(){}
+
+        private ModuleManager()
+        {
+        }
+
         ///
         public ModuleManager(ITerminal terminal)
         {
@@ -69,7 +73,7 @@ namespace CMSlib.ConsoleModule
             {
                 page.SetParent(this);
                 Pages.Add(page);
-                
+
             }
         }
 
@@ -82,8 +86,8 @@ namespace CMSlib.ConsoleModule
         {
             return GetEnumerator();
         }
-        
-        
+
+
 
         /// <summary>
         /// The currently selected module. Returns null if there is no module currently selected;
@@ -92,7 +96,7 @@ namespace CMSlib.ConsoleModule
         public BaseModule? SelectedModule
 
             => selected >= 0 && selected < Pages.Count ? Pages[selected].SelectedModule : null;
-        
+
 
         private Queue<BaseModule> loggerQueue = new();
 
@@ -103,7 +107,10 @@ namespace CMSlib.ConsoleModule
 
         public ModulePage? SelectedPage
         {
-            get { lock(dictSync) return selected < 0 || selected >= Pages.Count ? null : Pages[selected]; }
+            get
+            {
+                lock (dictSync) return selected < 0 || selected >= Pages.Count ? null : Pages[selected];
+            }
         }
 
         /// <summary>
@@ -113,6 +120,7 @@ namespace CMSlib.ConsoleModule
         {
             get => InputModule?.Title;
         }
+
         /// <summary>
         /// Refreshes all modules in this manager, ensuring that the latest output is displayed in all of them.
         /// </summary>
@@ -124,6 +132,7 @@ namespace CMSlib.ConsoleModule
             if (selectedPage is null) return;
             selectedPage.RefreshAll(false);
         }
+
         /// <summary>
         /// Refreshes a module by its title. This ensures that the latest output is displayed.
         /// </summary>
@@ -136,6 +145,7 @@ namespace CMSlib.ConsoleModule
             module.WriteOutput();
             return true;
         }
+
         /// <summary>
         /// Removes a module by its title.
         /// </summary>
@@ -160,8 +170,8 @@ namespace CMSlib.ConsoleModule
             */
 
         }
-        
-        
+
+
         /// <summary>
         /// Adds a module to the logger queue by title. This queue is accessed when this is called to CreateLogger.
         /// </summary>
@@ -170,20 +180,22 @@ namespace CMSlib.ConsoleModule
         public bool EnqueueLoggerModule(string moduleTitle)
         {
             BaseModule module = GetModule(moduleTitle);
-            if(module is null) return false;
+            if (module is null) return false;
             loggerQueue.Enqueue(module);
             return true;
         }
+
         /// <summary>
         /// Adds a module to this manager.
         /// </summary>
-        
-        
+
+
         /// <summary>
         /// Gets a module by title
         /// </summary>
         /// <param name="title">The title of the module to get</param>
         public BaseModule this[string title] => GetModule(title);
+
         /// <summary>
         /// Gets a module by title
         /// </summary>
@@ -198,10 +210,12 @@ namespace CMSlib.ConsoleModule
         /// Event fired when a line is entered in any module.
         /// </summary>
         public event AsyncEventHandler<LineEnteredEventArgs> LineEntered;
+
         /// <summary>
         /// Event fired when input is received.
         /// </summary>
         public event AsyncEventHandler<InputReceivedEventArgs> InputReceived;
+
         /// <summary>
         /// Event fired when input is received.
         /// </summary>
@@ -237,12 +251,13 @@ namespace CMSlib.ConsoleModule
         {
             throw new NotImplementedException();
         }
-        
+
         public void Dispose()
         {
             Pages.Clear();
             this.RefreshAll();
         }
+
         //todo add input for this too
         /// <summary>
         /// Selects the next module - enables scrolling for that module.
@@ -265,35 +280,38 @@ namespace CMSlib.ConsoleModule
                 refreshPast = pastSelected >= 0;
                 if (refreshPast)
                 {
-                    lock(currentPage.dictSync)
+                    lock (currentPage.dictSync)
                         currentPage[pastSelected].selected = false;
                 }
-                
+
                 refreshNew = newSelected >= 0;
                 if (refreshNew)
                 {
-                    lock(currentPage.dictSync)
+                    lock (currentPage.dictSync)
                         currentPage[newSelected].selected = true;
                 }
             }
-            if(refreshPast)
+
+            if (refreshPast)
                 currentPage[pastSelected].WriteOutput();
-            if(refreshNew)
+            if (refreshNew)
                 currentPage[newSelected].WriteOutput();
         }
 
         public void NextPage()
         {
-            lock(dictSync)
+            lock (dictSync)
                 selected = (++selected).Modulus(Pages.Count);
             RefreshAll();
         }
+
         public void PrevPage()
         {
-            lock(dictSync)
+            lock (dictSync)
                 selected = (--selected).Modulus(Pages.Count);
             RefreshAll();
         }
+
         public void ToPage(int page)
         {
 
@@ -302,8 +320,10 @@ namespace CMSlib.ConsoleModule
                 if (page == selected) return;
                 selected = page;
             }
+
             RefreshAll();
         }
+
         /// <summary>
         /// Selects the previous module - enables scrolling for that module.
         /// </summary>
@@ -326,19 +346,20 @@ namespace CMSlib.ConsoleModule
                 {
                     currentPage[pastSelected].selected = false;
                 }
-                
+
                 refreshNew = newSelected >= 0;
                 if (refreshNew)
                 {
                     currentPage[newSelected].selected = true;
                 }
             }
-            if(refreshPast)
+
+            if (refreshPast)
                 currentPage[pastSelected].WriteOutput();
-            if(refreshNew)
+            if (refreshNew)
                 currentPage[newSelected].WriteOutput();
         }
-        
+
 
         private async Task HandleInputAsync(InputRecord? input, BaseModule selectedModule, ITerminal terminal)
         {
@@ -359,34 +380,36 @@ namespace CMSlib.ConsoleModule
                         Module = selectedModule,
                         KeyInfo = key
                     };
-                    if(handler is not null)
+                    if (handler is not null)
                         await handler(inputModule, e);
-            
+
                     if (inputModule is not null)
                     {
                         await inputModule.FireKeyEnteredAsync(e);
                     }
-            
+
                     await HandleKeyAsync(key, selectedModule, terminal);
                     break;
                 case EventType.Mouse when input.Value.MouseEvent.EventFlags.HasFlag(EventFlags.MouseWheeled):
                     const int scrollAmt = 3;
                     ModulePage sPage = SelectedPage;
                     if (sPage is null) return;
-                    foreach (var module in sPage.Where(x=>input.Value.MouseEvent.MousePosition.Inside(x)))
+                    foreach (var module in sPage.Where(x => input.Value.MouseEvent.MousePosition.Inside(x)))
                     {
-                        module.ScrollUp((int)input.Value.MouseEvent.ButtonState >> 16 > 0 ? scrollAmt : -scrollAmt);
+                        module.ScrollUp((int) input.Value.MouseEvent.ButtonState >> 16 > 0 ? scrollAmt : -scrollAmt);
                     }
+
                     break;
                 case EventType.Mouse when input.Value.MouseEvent.ButtonState != 0:
                     ModulePage page = SelectedPage;
                     if (page is null) return;
-                    foreach (var module in page.Where(x=>input.Value.MouseEvent.MousePosition.Inside(x)))
+                    foreach (var module in page.Where(x => input.Value.MouseEvent.MousePosition.Inside(x)))
                     {
                         await module.FireMouseInputReceived(new MouseInputReceivedEventArgs()
                             {InputState = new ClickInputState(input.Value)});
                         await module.HandleClickAsync(input.Value, cached);
                     }
+
                     break;
                 case EventType.WindowBufferSize:
                     Coord? cachedWindowSize = this.cachedWindowSize;
@@ -394,17 +417,20 @@ namespace CMSlib.ConsoleModule
                     {
                         this.cachedWindowSize = input.Value.WindowBufferSizeEvent.size;
                     }
-                    if(!cachedWindowSize.HasValue || input.Value.WindowBufferSizeEvent.size.Y < cachedWindowSize.Value.Y ||  input.Value.WindowBufferSizeEvent.size.X != cachedWindowSize.Value.X)
+
+                    if (!cachedWindowSize.HasValue ||
+                        input.Value.WindowBufferSizeEvent.size.Y < cachedWindowSize.Value.Y ||
+                        input.Value.WindowBufferSizeEvent.size.X != cachedWindowSize.Value.X)
                         RefreshAll();
                     break;
             }
-            
+
         }
 
 
         private async Task HandleKeyAsync(ConsoleKeyInfo key, BaseModule selectedModule, ITerminal terminal)
         {
-            
+
             Dictionary<string, bool> mods = key.Modifiers.ToStringDictionary<ConsoleModifiers>();
             if (mods[Alt])
                 return;
@@ -412,8 +438,8 @@ namespace CMSlib.ConsoleModule
             switch (key.Key)
             {
                 case ConsoleKey.V when mods[Ctrl]:
-                    if(inputModule is null)return;
-                    
+                    if (inputModule is null) return;
+
                     if (Environment.OSVersion.Platform.ToString().ToLower().Contains("win"))
                     {
                         string clipboard = terminal.GetClipboard();
@@ -422,6 +448,7 @@ namespace CMSlib.ConsoleModule
                             inputModule.AddChar(ch);
                         }
                     }
+
                     break;
                 case ConsoleKey.C when mods[Ctrl]:
                     terminal.QuitApp(null);
@@ -470,7 +497,7 @@ namespace CMSlib.ConsoleModule
                 case ConsoleKey.Tab:
                     this.SelectNext();
                     break;
-                
+
                 case ConsoleKey.Enter when mods[Shift]:
                     await EnterLineAsync(inputModule, false);
                     break;
@@ -489,14 +516,14 @@ namespace CMSlib.ConsoleModule
                     return;
                 default:
                     inputModule?.AddChar(key.KeyChar);
-                    
+
                     break;
             }
         }
 
         private async Task EnterLineAsync(BaseModule selected, bool scrollToBottom)
         {
-            
+
             if (selected is not ConsoleModule.InputModule inputModule) return;
             string line;
             AsyncEventHandler<LineEnteredEventArgs> handler;
@@ -514,6 +541,7 @@ namespace CMSlib.ConsoleModule
                     inputModule.unread = false;
                 }
             }
+
             var e = new LineEnteredEventArgs()
             {
                 Module = inputModule,
@@ -528,8 +556,17 @@ namespace CMSlib.ConsoleModule
 
         internal void Write(string toWrite)
         {
-            lock(writeLock)
-                _terminal.Write(toWrite);
+            _terminal.Write(toWrite);
+        }
+
+        public void RingBell()
+        {
+            _terminal.Write("\u0007");
+        }
+
+        public void FlashWindow(FlashFlags flags, uint times, int milliDelay)
+        {
+            _terminal.FlashWindow(flags, times, milliDelay);
         }
     }
     /// <summary>
