@@ -564,6 +564,11 @@ namespace CMSlib.ConsoleModule
             _terminal.Write("\u0007");
         }
 
+        public void SetWindowTitle(string title)
+        {
+            _terminal.SetConsoleTitle(title);
+        }
+
         public void FlashWindow(FlashFlags flags, uint times, int milliDelay)
         {
             _terminal.FlashWindow(flags, times, milliDelay);

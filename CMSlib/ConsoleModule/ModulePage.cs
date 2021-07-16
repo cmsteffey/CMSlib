@@ -21,8 +21,8 @@ namespace CMSlib.ConsoleModule
             }
             set
             {
-                RefreshAll();
                 _displayName = value;
+                RefreshAll();
             }
         }
 
