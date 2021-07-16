@@ -51,10 +51,12 @@ namespace CMSlib.ConsoleModule
             prevOut = outMode;
             prevIn = inMode;
             outMode |= 4; // ENABLE VIRTUAL TERMINAL OUTPUT
-            outMode = (uint) (outMode & ~0x0002);
+            outMode = (uint) (outMode & ~0x0002); //DISABLE WRAP AT EOL
+            
             SetConsoleMode(outputHandle, outMode);
             inMode = (uint) (inMode & ~0x0040); //DISABLE QUICK_EDIT MODE
             inMode = (uint) (inMode & ~0x0002); //DISABLE LINE INPUT
+            inMode = (uint) (inMode & ~0x0001); //DISABLE PROCESSED INPUT
             inMode |= 0x0010; //MOUSE INPUT
             inMode |= 0x0080; //EXTENDED_FLAGS
             SetConsoleMode(inputHandle, inMode);

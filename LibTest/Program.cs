@@ -35,11 +35,12 @@ input.MouseInputReceived += async (sender, eventArgs) =>
     if (eventArgs.InputState is ClickInputState)
     {
         (sender as BaseModule)?.AddText("click!");
-        manager.RefreshAll();
+        (sender as BaseModule)?.WriteOutput();
     }
 };
 manager.LineEntered += async (sender, args) =>
 {
     (sender as BaseModule)?.AddText(args.Line);
+    (sender as BaseModule)?.WriteOutput();
 };
 System.Threading.Tasks.Task.Delay(-1).GetAwaiter().GetResult();

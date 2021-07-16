@@ -35,7 +35,6 @@ namespace CMSlib.ConsoleModule
         public ModuleManager(ITerminal terminal)
         {
             _terminal = terminal;
-            Console.TreatControlCAsInput = true;
             _terminal.SetupConsole();
             Console.CancelKeyPress += (_, _) => { _terminal.QuitApp(null); };
             _terminal.Write(AnsiEscape.AlternateScreenBuffer);
@@ -220,6 +219,8 @@ namespace CMSlib.ConsoleModule
         /// Event fired when input is received.
         /// </summary>
         public event AsyncEventHandler<KeyEnteredEventArgs> KeyEntered;
+        
+        //TODO add event for when the window is focused/defocused
 
         /// <summary>
         /// Tries to get the next queued module to be used as a logger, and if the queue is empty return the input module.
@@ -298,17 +299,25 @@ namespace CMSlib.ConsoleModule
                 currentPage[newSelected].WriteOutput();
         }
 
-        public void NextPage()
+        public async Task NextPage()
         {
             lock (dictSync)
                 selected = (++selected).Modulus(Pages.Count);
+            ModulePage newSelected = SelectedPage;
+            if (newSelected is null)
+                return;
+            await newSelected.FirePageSelectedAsync(new PageSelectedEventArgs(newSelected.SelectedModule));
             RefreshAll();
         }
 
-        public void PrevPage()
+        public async Task PrevPage()
         {
             lock (dictSync)
                 selected = (--selected).Modulus(Pages.Count);
+            ModulePage newSelected = SelectedPage;
+            if (newSelected is null)
+                return;
+            await newSelected.FirePageSelectedAsync(new PageSelectedEventArgs(newSelected.SelectedModule));
             RefreshAll();
         }
 

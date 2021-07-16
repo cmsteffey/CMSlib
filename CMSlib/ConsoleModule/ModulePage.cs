@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace CMSlib.ConsoleModule
 {
@@ -116,6 +117,16 @@ namespace CMSlib.ConsoleModule
             }
             
         }
+
+        public event AsyncEventHandler<PageSelectedEventArgs> PageSelected;
+
+        internal async Task FirePageSelectedAsync(PageSelectedEventArgs e)
+        {
+            AsyncEventHandler<PageSelectedEventArgs> handler = PageSelected;
+            if (handler is not null)
+                await handler(this, e);
+        }
+        
         
 
         public IEnumerator<BaseModule> GetEnumerator()
@@ -129,5 +140,19 @@ namespace CMSlib.ConsoleModule
             return GetEnumerator();
         }
 
+    }
+
+    public class PageSelectedEventArgs
+    {
+        public BaseModule NewSelectedModule { get; }
+
+        internal PageSelectedEventArgs()
+        {
+        }
+
+        internal PageSelectedEventArgs(BaseModule newSelectedModule)
+        {
+            NewSelectedModule = newSelectedModule;
+        }
     }
 }
