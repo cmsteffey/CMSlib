@@ -419,7 +419,7 @@ namespace CMSlib.ConsoleModule
                             {InputState = new ClickInputState(input.Value)});
                         await module.HandleClickAsync(input.Value, cached);
                     }
-
+                    //TODO Allow all modules to handle all input types
                     break;
                 case EventType.WindowBufferSize:
                     Coord? cachedWindowSize = this.cachedWindowSize;

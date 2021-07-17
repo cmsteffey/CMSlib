@@ -80,16 +80,17 @@ namespace CMSlib.ConsoleModule
             
         }
 
-        public override string ToString()
+        protected override IEnumerable<string> ToOutputLines()
         {
             StringBuilder output = new StringBuilder();
-            if (parent is null) return string.Empty;
-            if (Y >= Console.WindowHeight) return string.Empty;
+            if (parent is null) yield break;
+            if (Y >= Console.WindowHeight) yield break;
             List<ModulePage> pages = parent.Pages;
             int actingInternalWidthPer = Math.Min((Width - pages.Count) / pages.Count, internalWidthPer);
             
             for (int i = 0; i < Math.Min(Height, Console.WindowHeight - Y); i++)
             {
+                output.Clear().Append(AnsiEscape.AsciiMode);
                 int lineWidth = 0;
                 for (int j = 0; j < pages.Count; j++)
                 {
@@ -105,10 +106,8 @@ namespace CMSlib.ConsoleModule
 
                 if (lineWidth < Width)
                     output.Append(' ', Width - lineWidth);
-
+                yield return output.ToString();
             }
-
-            return output.ToString();
         }
     }
 }
