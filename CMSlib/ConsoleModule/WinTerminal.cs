@@ -43,6 +43,7 @@ namespace CMSlib.ConsoleModule
         void ITerminal.SetConsoleTitle(string title)
         {
             _writer.Write(AnsiEscape.WindowTitle(title[..Math.Min(256, title.Length)]));
+            _writer.Flush();
         }
         void ITerminal.Write(string toWrite)
         {
@@ -57,7 +58,7 @@ namespace CMSlib.ConsoleModule
         {
             _writer = new StreamWriter(Console.OpenStandardOutput());
             _writer.AutoFlush = false;
-            Console.OutputEncoding = Encoding.UTF8;
+            Console.OutputEncoding = Encoding.Unicode;
             IntPtr outputHandle = GetStdHandle(-11); //CONSOLE OUTPUT
             IntPtr inputHandle = GetStdHandle(-10); //CONSOLE INPUT
             GetConsoleMode(outputHandle, out uint outMode);
