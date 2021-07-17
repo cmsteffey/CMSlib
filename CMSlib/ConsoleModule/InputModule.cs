@@ -32,7 +32,7 @@ namespace CMSlib.ConsoleModule
             usingHistory = true;
             int before = historyPointer;
             historyPointer = Math.Clamp(historyPointer + amt, 0, prevInput.Count == 0 ? 0 : prevInput.Count - 1);
-            if (before == historyPointer) return;
+            if (before == historyPointer || historyPointer < 0 || historyPointer >= prevInput.Count) return;
             inputString.Append(prevInput[historyPointer]);
             lrCursorPos = Math.Min(prevInput[historyPointer].Length, Width - 3);
             this.WriteOutput();
