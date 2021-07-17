@@ -569,19 +569,25 @@ namespace CMSlib.ConsoleModule
             _terminal.Write(toWrite);
         }
 
-        public void RingBell()
+        public void RingBell(bool immediate = false)
         {
             _terminal.Write("\u0007");
+            if (immediate)
+                _terminal.Flush();
         }
 
-        public void SetWindowTitle(string title)
+        public void SetWindowTitle(string title, bool immediate = false)
         {
             _terminal.SetConsoleTitle(title);
+            if(immediate)
+                _terminal.Flush();
         }
 
-        public void SetCursorPosition(int x, int y)
+        public void SetCursorPosition(int x, int y, bool immediate = false)
         {
             _terminal.SetCursorPosition(x, y);
+            if(immediate)
+                _terminal.Flush();
         }
 
         public void Flush()
