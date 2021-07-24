@@ -45,12 +45,9 @@ namespace CMSlib.Extensions
                     i++;
                     continue;
                 }
-                if(str[i] == '\u0000')
-                    continue;
-
                 if (inEsc)
                 {
-                    if (str[i] >= '\u0040' || str[i] == '\u0000')
+                    if (str[i] == '\u0000')
                         inEsc = false; 
                     continue;
                 }
@@ -113,7 +110,7 @@ namespace CMSlib.Extensions
                     continue;
                 }
                 if (inEscapeCharacter){
-                    if (str[i] >= '\u0040' || str[i] == '\u0000') //end of Control sequence
+                    if (str[i] == '\u0000') //end of Control sequence
                     {
                         inEscapeCharacter = false;
                         string ansiEsc = str[escStart..(i + 1)];
