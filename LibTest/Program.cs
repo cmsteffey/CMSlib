@@ -12,6 +12,7 @@ TaskBarModule bar = new("NIU", 0, Console.WindowHeight - 2, Console.WindowWidth,
 LogModule logging = new("LOGGING", 0,0,Console.WindowWidth, Console.WindowHeight - 2);
 ToggleModule toggle = new("TEST1", Math.Max(Console.WindowWidth - 9, 0), 0, 9, 3, true);
 ToggleModule toggle2 = new("TEST2", Math.Max(Console.WindowWidth - 9, 0), 3, 9, 3, true);
+
 ModulePage pageOne = new()
 {
     DisplayName = "IO"
