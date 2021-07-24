@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace CMSlib.ConsoleModule
 {
     public class ModulePage : IEnumerable<BaseModule>
     {
+        //TODO add page selected event, to modules too 
         private Dictionary<string, BaseModule> modules = new();
         private List<string> dictKeys = new();
         internal object dictSync = new();
@@ -21,8 +23,8 @@ namespace CMSlib.ConsoleModule
             }
             set
             {
-                RefreshAll();
                 _displayName = value;
+                RefreshAll();
             }
         }
 
@@ -37,8 +39,9 @@ namespace CMSlib.ConsoleModule
                     modules = this.modules.Values;
                 foreach (var modulesValue in modules)
                 {
-                    modulesValue.WriteOutput();
+                    modulesValue.WriteOutput(false);
                 }
+                parent.Flush();
             }
         }
 
@@ -115,6 +118,16 @@ namespace CMSlib.ConsoleModule
             }
             
         }
+
+        public event AsyncEventHandler<PageSelectedEventArgs> PageSelected;
+
+        internal async Task FirePageSelectedAsync(PageSelectedEventArgs e)
+        {
+            AsyncEventHandler<PageSelectedEventArgs> handler = PageSelected;
+            if (handler is not null)
+                await handler(this, e);
+        }
+        
         
 
         public IEnumerator<BaseModule> GetEnumerator()
@@ -128,5 +141,19 @@ namespace CMSlib.ConsoleModule
             return GetEnumerator();
         }
 
+    }
+
+    public class PageSelectedEventArgs
+    {
+        public BaseModule NewSelectedModule { get; }
+
+        internal PageSelectedEventArgs()
+        {
+        }
+
+        internal PageSelectedEventArgs(BaseModule newSelectedModule)
+        {
+            NewSelectedModule = newSelectedModule;
+        }
     }
 }

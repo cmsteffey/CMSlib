@@ -5,10 +5,10 @@ using System.Runtime.Loader;
 using CMSlib.ConsoleModule;
 using CMSlib.ConsoleModule.InputStates;
 
-ModuleManager manager = new();
+ModuleManager manager = new(new WinTerminal());
 StandardInputModule input = new("INPUT", 0, 0, Console.WindowWidth / 2, Console.WindowHeight - 2);
 LogModule output = new("OUTPUT", Console.WindowWidth / 2, 0, Console.WindowWidth / 2, Console.WindowHeight - 2);
-TaskBarModule bar = new("NIU", 0, Console.WindowHeight - 1, Console.WindowWidth, 1, 10);
+TaskBarModule bar = new("NIU", 0, Console.WindowHeight - 2, Console.WindowWidth, 2, 10);
 LogModule logging = new("LOGGING", 0,0,Console.WindowWidth, Console.WindowHeight - 2);
 ToggleModule toggle = new("TEST1", Math.Max(Console.WindowWidth - 9, 0), 0, 9, 3, true);
 ToggleModule toggle2 = new("TEST2", Math.Max(Console.WindowWidth - 9, 0), 3, 9, 3, true);
@@ -42,5 +42,6 @@ input.MouseInputReceived += async (sender, eventArgs) =>
 manager.LineEntered += async (sender, args) =>
 {
     (sender as BaseModule)?.AddText(args.Line);
+    (sender as BaseModule)?.WriteOutput();
 };
 System.Threading.Tasks.Task.Delay(-1).GetAwaiter().GetResult();

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using CMSlib.Extensions;
@@ -50,14 +51,14 @@ namespace CMSlib.ConsoleModule
                 await handler(this, new ToggleFlippedEventArgs(newState));
             this.WriteOutput();
         }
-        internal async override Task HandleKeyAsync(ConsoleKeyInfo info)
+        internal override async Task HandleKeyAsync(ConsoleKeyInfo info)
         {
             if(info.Key == ConsoleKey.Enter)
                 await FlipToggleAsync();
                 
         }
         
-        internal async override Task HandleClickAsync(InputRecord record, ButtonState? before)
+        internal override async Task HandleClickAsync(InputRecord record, ButtonState? before)
         {
             
             if (before.HasValue && before.Value != record.MouseEvent.ButtonState) 
@@ -91,25 +92,24 @@ namespace CMSlib.ConsoleModule
         }
 
         public event AsyncEventHandler<ToggleFlippedEventArgs> ToggleFlipped;
-
-        public override string ToString()
+        protected override IEnumerable<string> ToOutputLines()
         {
             bool enabled = Enabled;
             int internalWidth = Math.Min(Width - 2, Console.WindowWidth - X - 2);
             int internalHeight = Math.Min(Height - 2, Console.WindowHeight - Y - 2);
             if (internalWidth < 2)
-                return string.Empty;
+                yield break;
             string displayTitle = Title.Ellipse(internalWidth);
             StringBuilder builder = new();
-            builder.Append(LineDrawingMode);
-            builder.Append(UpperLeftCorner);
-            builder.Append(selected ? Underline(displayTitle) : displayTitle);
-            builder.Append(new string(HorizontalLine, internalWidth - displayTitle.Length));
-            builder.Append(UpperRightCorner);
+            yield return builder.Append(LineDrawingMode)
+                .Append(UpperLeftCorner)
+                .Append(selected ? Underline(displayTitle) : displayTitle)
+                .Append(HorizontalLine, internalWidth - displayTitle.Length)
+                .Append(UpperRightCorner).ToString();
             string displayString = enabled ? enabledText : disabledText;
             if (internalHeight > 0)
             {
-                builder.Append(VerticalLine);
+                builder.Clear().Append(VerticalLine);
                 builder.Append(AsciiMode);
                 builder.Append(enabled
                     ? SgrGreenForeGround  +  SgrNegative +   SgrWhiteBackGround + '\u0020' + SgrClear + SgrWhiteBackGround + '\u0020'
@@ -122,10 +122,11 @@ namespace CMSlib.ConsoleModule
                 }
                 builder.Append(LineDrawingMode);
                 builder.Append(VerticalLine);
+                yield return builder.ToString();
             }
             for (int i = 1; i < internalHeight; i++)
             {
-                builder.Append(VerticalLine);
+                builder.Clear().Append(VerticalLine);
                 builder.Append(AsciiMode);
                 if ((internalWidth * i - 3) < displayString.Length)
                     builder.Append(
@@ -133,15 +134,17 @@ namespace CMSlib.ConsoleModule
                                 (internalWidth * i - 3)..Math.Min(internalWidth * (i + 1) - 3, displayString.Length)]
                             .GuaranteeLength(internalWidth));
                 else
-                    builder.Append(new string(' ', internalWidth));
+                    builder.Append(' ', internalWidth);
                 builder.Append(LineDrawingMode);
                 builder.Append(VerticalLine);
+                yield return builder.ToString();
             }
-            builder.Append(LowerLeftCorner);
-            builder.Append(new string(HorizontalLine, internalWidth));
+            builder.Clear().Append(LowerLeftCorner);
+            builder.Append(HorizontalLine, internalWidth);
             builder.Append(LowerRightCorner);
-            return builder.ToString();
+            yield return builder.ToString();
         }
+        
     }
 
     public class ToggleFlippedEventArgs : EventArgs

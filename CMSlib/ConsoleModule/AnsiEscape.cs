@@ -24,12 +24,17 @@
         public const string SgrCyanBackGround         =  ControlSequenceIntroducer + "\u0034\u0036\u006D\u0000"; // <ESC>[46m
         public const string SgrWhiteBackGround        =  ControlSequenceIntroducer + "\u0034\u0037\u006D\u0000"; // <ESC>[47m
         
+
         public const string SgrNegative               =  ControlSequenceIntroducer + "\u0037\u006D\u0000";       // <ESC>[7m
         public const string SgrUnderline              =  ControlSequenceIntroducer + "\u0030\u0034\u006D\u0000"; // <ESC>[04m
         public const string SgrNoUnderline            =  ControlSequenceIntroducer + "\u0032\u0034\u006D\u0000"; // <ESC>[24m
         public const string SgrBrightBold             =  ControlSequenceIntroducer + "\u0031\u006D\u0000";       // <ESC>[1m
         public const string SgrClear                  =  ControlSequenceIntroducer + "\u0030\u006D\u0000";       // <ESC>[0m
         public const string SgrForeGroundClear        =  ControlSequenceIntroducer + "\u0033\u0039\u006D\u0000"; // <ESC>[49m
+        public const string SgrOverline               =  ControlSequenceIntroducer + "\u0035\u0033\u006D\u0000"; // <ESC>[53m
+        public const string SgrNoOverline             =  ControlSequenceIntroducer + "\u0035\u0035\u006D\u0000"; // <ESC>[55m
+        public const string SgrBlinking               =  ControlSequenceIntroducer + "\u0030\u0035\u006D\u0000"; // <ESC>[05m
+        public const string SgrNoBlinking             =  ControlSequenceIntroducer + "\u0032\u0035\u006D\u0000"; // <ESC>[25m
 
         public const string AlternateScreenBuffer     =  ControlSequenceIntroducer + "?1049h\u0000";
         public const string MainScreenBuffer          =  ControlSequenceIntroducer + "?1049l\u0000";
@@ -61,5 +66,7 @@
         public static string WindowTitle(string title) => $"\u001B\u005D\u0032\u003B{title[..System.Math.Min(title.Length, 256)]}\u0007\u0000";
 
         public static string Underline(string toUnderline) => SgrUnderline + toUnderline + SgrNoUnderline;
+
+        public static string SetCursorPosition(int x, int y) => ControlSequenceIntroducer + (y + 1) + ';' + (x + 1) + 'H';
     }
 }

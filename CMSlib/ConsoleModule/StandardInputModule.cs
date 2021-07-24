@@ -106,11 +106,8 @@ namespace CMSlib.ConsoleModule
             }
         }
 
-        /// <summary>
-        /// Gets the string representation of this Module.
-        /// </summary>
-        /// <returns>The string representation of this module.</returns>
-        public override string ToString()
+
+        protected override IEnumerable<string> ToOutputLines()
         {
             return BoxRenderer.Render(Title, borderCharacter, X, Y, Width, Height, scrolledLines, text, selected, DisplayName, true, unread, inputString);
         }
