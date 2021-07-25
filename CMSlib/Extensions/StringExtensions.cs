@@ -228,6 +228,11 @@ namespace CMSlib.Extensions
             return visibleLength > length ? str[..length] : str.PadToVisibleDivisible(length);
         }
 
+        public static string RemoveNonAscii(this string str)
+        {
+            return System.Text.RegularExpressions.Regex.Replace(str, "(^[\u0020-\u007F])+( )*", "");
+        }
+
 
     }
     
