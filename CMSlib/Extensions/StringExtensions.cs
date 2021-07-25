@@ -230,7 +230,7 @@ namespace CMSlib.Extensions
 
         public static string RemoveNonAscii(this string str)
         {
-            return System.Text.RegularExpressions.Regex.Replace(str, "(^[\u0020-\u007F])+( )*", "");
+            return string.IsNullOrEmpty(str) ? str : System.Text.RegularExpressions.Regex.Replace(str, "[^\u001F-\u007F]+( )*", "");
         }
 
 
