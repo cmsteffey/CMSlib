@@ -51,7 +51,8 @@ namespace CMSlib.Extensions
                         inEsc = false; 
                     continue;
                 }
-                returns++;
+                if(str[i] is >= ' ')
+                    returns++;
             }
 
             return returns;

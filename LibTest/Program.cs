@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Dynamic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Runtime.Loader;
+using System.Text;
 using CMSlib.ConsoleModule;
 using CMSlib.ConsoleModule.InputStates;
+using CMSlib.Extensions;
 
 ModuleManager manager = new(new WinTerminal());
 StandardInputModule input = new("INPUT", 0, 0, Console.WindowWidth / 2, Console.WindowHeight - 2);
@@ -41,7 +44,16 @@ input.MouseInputReceived += async (sender, eventArgs) =>
 };
 manager.LineEntered += async (sender, args) =>
 {
-    (sender as BaseModule)?.AddText(args.Line);
+    StringBuilder builder = new();
+    int visLen = args.Line.VisibleLength();
+    builder.Append(AnsiEscape.LineDrawingMode).Append(AnsiEscape.UpperLeftCorner)
+        .Append(AnsiEscape.HorizontalLine, visLen).Append(AnsiEscape.UpperRightCorner).Append('\n');
+    builder.Append(AnsiEscape.LineDrawingMode).Append(AnsiEscape.VerticalLine).Append(AnsiEscape.AsciiMode)
+        .Append(args.Line).Append(AnsiEscape.LineDrawingMode).Append(AnsiEscape.VerticalLine).Append('\n');
+    builder.Append(AnsiEscape.LineDrawingMode).Append(AnsiEscape.LowerLeftCorner)
+        .Append(AnsiEscape.HorizontalLine, visLen).Append(AnsiEscape.LowerRightCorner).Append('\n');
+    
+    (sender as BaseModule)?.AddText(builder);
     (sender as BaseModule)?.WriteOutput();
 };
 System.Threading.Tasks.Task.Delay(-1).GetAwaiter().GetResult();
