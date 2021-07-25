@@ -214,7 +214,7 @@ namespace CMSlib.ConsoleModule
                 }
                 parent.SetCursorPosition(inputCursorX,
                     inputCursorY);
-                parent.Write(AnsiEscape.EnableCursorVisibility);
+                parent.Write(AnsiEscape.AsciiMode + AnsiEscape.EnableCursorVisibility);
                 if(flush)parent.Flush();
             }
         }
