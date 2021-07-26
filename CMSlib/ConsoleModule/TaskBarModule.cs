@@ -100,7 +100,7 @@ namespace CMSlib.ConsoleModule
                         .GuaranteeLength(actingInternalWidthPer) : new string(' ', actingInternalWidthPer));
                     output.Append(AnsiEscape.SgrClear);
                     lineWidth += actingInternalWidthPer;
-                    output.Append('|');
+                    output.Append(AnsiEscape.LineDrawingMode).Append(AnsiEscape.VerticalLine).Append(AnsiEscape.AsciiMode);
                     lineWidth++;
                 }
 
