@@ -4,6 +4,7 @@ using CMSlib.Extensions;
 using Microsoft.Extensions.Logging;
 using System.Linq;
 using System.Threading.Tasks;
+using CMSlib.CollectionTypes;
 
 namespace CMSlib.ConsoleModule
 {

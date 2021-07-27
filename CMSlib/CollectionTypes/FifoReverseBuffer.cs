@@ -4,10 +4,10 @@ using System.Collections.Generic;
 
 namespace CMSlib.CollectionTypes
 {
-    public class FifoBuffer<T> : IEnumerable<T>
+    public class FifoReverseBuffer<T> : IEnumerable<T>
     {
         private readonly List<T> _internalBuffer;
-        public FifoBuffer(int capacity)
+        public FifoReverseBuffer(int capacity)
         {
             _internalBuffer = new List<T>(capacity);
         }
@@ -18,6 +18,16 @@ namespace CMSlib.CollectionTypes
                 _internalBuffer.RemoveAt(0);
             _internalBuffer.Add(item);
             
+        }
+
+        public void Clear() => _internalBuffer.Clear();
+
+        public void AddRange(IEnumerable<T> items)
+        {
+            foreach (var t in items)
+            {
+                Add(t);
+            }
         }
 
         public T this[int index] => _internalBuffer[_internalBuffer.Count - 1 - index];
@@ -62,9 +72,9 @@ namespace CMSlib.CollectionTypes
             }
 
             private List<T> _internalBuffer;
-            internal FifoBufferEnumerator(FifoBuffer<T> buffer)
+            internal FifoBufferEnumerator(FifoReverseBuffer<T> reverseBuffer)
             {
-                _internalBuffer = buffer._internalBuffer;
+                _internalBuffer = reverseBuffer._internalBuffer;
             }
 
         }
