@@ -38,7 +38,7 @@ namespace CMSlib.CollectionTypes
         {
             get
             {
-                if (index >= _buffer.Length || index < 0)
+                if (index >= _count || index < 0)
                     throw new IndexOutOfRangeException(
                         "Index must be greater or equal to 0 and less than the size of this collection");
                 return _buffer[(index + _offset) % _buffer.Length];
