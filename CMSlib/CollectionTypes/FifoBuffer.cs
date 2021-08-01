@@ -10,6 +10,7 @@ namespace CMSlib.CollectionTypes
         private int _offset;
         private int _count;
         private object lockObj = new();
+
         public FifoBuffer(int capacity)
         {
             _buffer = new T[capacity];
@@ -27,12 +28,12 @@ namespace CMSlib.CollectionTypes
                 }
                 else
                 {
-                    _buffer[_offset] = item;
-                    _offset++;
+                    _buffer[_count] = item;
                     _count++;
                 }
             }
         }
+
 
         public T this[int index]
         {
@@ -43,6 +44,13 @@ namespace CMSlib.CollectionTypes
                         "Index must be greater or equal to 0 and less than the size of this collection");
                 return _buffer[(index + _offset) % _buffer.Length];
             }
+        }
+
+        public FifoBuffer<T> GetRange(int startIndex, int count)
+        {
+            FifoBuffer<T> returns = new FifoBuffer<T>(count);
+            
+            return returns;
         }
 
         public int Count => _count;

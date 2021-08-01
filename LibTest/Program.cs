@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.Loader;
 using System.Text;
+using CMSlib.CollectionTypes;
 using CMSlib.ConsoleModule;
 using CMSlib.ConsoleModule.InputStates;
 using CMSlib.Extensions;
@@ -34,12 +35,19 @@ pageTwo.Add(toggle);
 pageTwo.Add(toggle2);
 manager.Add(pageTwo);
 manager.RefreshAll();
+int count = 0;
+FifoBuffer<int> ints = new FifoBuffer<int>(10);
 input.MouseInputReceived += async (sender, eventArgs) =>
 {
     if (eventArgs.InputState is ClickInputState)
     {
-        (sender as BaseModule)?.AddText("click!");
-        manager.RefreshAll();
+        ints.Add(count);
+        count++;
+        StringBuilder builder = new();
+        foreach (var t in ints)
+            builder.Append(t).Append(' ');
+        (sender as BaseModule)?.AddText(builder.ToString());
+        (sender as BaseModule)?.WriteOutput();
     }
 };
 manager.LineEntered += async (sender, args) =>
