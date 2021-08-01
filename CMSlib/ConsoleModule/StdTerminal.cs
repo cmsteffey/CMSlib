@@ -6,7 +6,7 @@ namespace CMSlib.ConsoleModule
     {
         InputRecord? ITerminal.ReadInput()
         {
-            return Console.ReadKey();
+            return Console.ReadKey(true);
         }
 
         void ITerminal.SetupConsole()
