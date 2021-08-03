@@ -322,7 +322,7 @@ namespace CMSlib.ConsoleModule
             {
                 output.Append(borderCharacter).Append(inputStringToDisplay).Append(borderCharacter.Value);
                 yield return output.ToString();
-                yield return output.Clear().Append(internalWidth + 2).ToString();
+                yield return output.Clear().Append(borderCharacter.Value, internalWidth + 2).ToString();
             }
         }
     }
