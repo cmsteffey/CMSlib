@@ -143,7 +143,7 @@ namespace CMSlib.ConsoleModule
 
     }
 
-    public class PageSelectedEventArgs
+    public class PageSelectedEventArgs : EventArgs
     {
         public BaseModule NewSelectedModule { get; }
 

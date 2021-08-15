@@ -649,5 +649,5 @@ namespace CMSlib.ConsoleModule
         }
     }
     
-    public delegate Task AsyncEventHandler<in T>(object sender, T eventArgs);
+    public delegate Task AsyncEventHandler<in T>(object sender, T eventArgs) where T : System.EventArgs;
 }

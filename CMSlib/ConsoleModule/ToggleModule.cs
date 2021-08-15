@@ -103,7 +103,7 @@ namespace CMSlib.ConsoleModule
             StringBuilder builder = new();
             yield return builder.Append(LineDrawingMode)
                 .Append(UpperLeftCorner)
-                .Append(selected ? Underline(displayTitle) : displayTitle)
+                .Append(selected ? Underline(displayTitle) : AsciiMode + displayTitle + LineDrawingMode)
                 .Append(HorizontalLine, internalWidth - displayTitle.Length)
                 .Append(UpperRightCorner).ToString();
             string displayString = enabled ? enabledText : disabledText;
