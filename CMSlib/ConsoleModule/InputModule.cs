@@ -13,7 +13,7 @@ namespace CMSlib.ConsoleModule
         private FifoReverseBuffer<string> prevInput = new(50);
         private int historyPointer = -1;
         internal bool usingHistory = false;
-        protected InputModule(string title, int x, int y, int width, int height, LogLevel minLevel) : base(title, x, y, width, height, minLevel)
+        protected InputModule(string title, int x, int y, int width, int height, LogLevel minimumLogLevel) : base(title, x, y, width, height, minimumLogLevel)
         {
             
         }

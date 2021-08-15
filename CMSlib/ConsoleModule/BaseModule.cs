@@ -17,6 +17,7 @@ namespace CMSlib.ConsoleModule
         public int Width { get; protected init;}
         public int Height { get; protected init;}
         public string Title { get; protected init; }
+        public LogLevel MinimumLogLevel { get; set; }
 
         /// <summary>
         /// This string is shown at the top of the module. Setting it to null, or not setting it at all, uses the module title as the displayed title.
@@ -27,7 +28,6 @@ namespace CMSlib.ConsoleModule
         internal  int      scrolledLines = 0;
         internal  bool     unread = false;
         internal  int      lrCursorPos = 0;
-        protected readonly LogLevel minLevel;
         internal ModuleManager parent = null;
         protected readonly object AddTextLock = new();
         
@@ -38,9 +38,9 @@ namespace CMSlib.ConsoleModule
             
         }
 
-        protected BaseModule(string title, int x, int y, int width, int height, LogLevel minLevel)
+        protected BaseModule(string title, int x, int y, int width, int height, LogLevel minimumLogLevel)
         {
-            this.minLevel = minLevel;
+            this.MinimumLogLevel = minimumLogLevel;
             this.Title = title;
             this.X = x;
             this.Y = y;
@@ -156,7 +156,7 @@ namespace CMSlib.ConsoleModule
             ShouldLog(logLevel);
 
         private bool ShouldLog(LogLevel logLevel) =>
-            logLevel >= minLevel;
+            logLevel >= MinimumLogLevel;
         
         /// <summary>
         /// NOT IMPL'D
