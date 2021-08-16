@@ -14,4 +14,17 @@ namespace CMSlib.ConsoleModule
         internal void SetConsoleTitle(string title);
         internal void Flush();
     }
+
+    public class NoInputException : Exception
+    {
+        public ITerminal Terminal { get; }
+        private NoInputException()
+        {
+            
+        }
+        public NoInputException(ITerminal t)
+        {
+            Terminal = t;
+        }
+    }
 }

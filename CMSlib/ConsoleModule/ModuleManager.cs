@@ -53,6 +53,10 @@ namespace CMSlib.ConsoleModule
                             var inputRecord = _terminal.ReadInput();
                             await HandleInputAsync(inputRecord, selectedModule, _terminal);
                         }
+                        catch (NoInputException niex)
+                        {
+                            break;
+                        }
                         catch (Exception exception)
                         {
                             inputModule?.AddText(exception.ToString());

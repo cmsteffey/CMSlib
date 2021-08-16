@@ -6,7 +6,8 @@ namespace CMSlib.ConsoleModule
     {
         InputRecord? ITerminal.ReadInput()
         {
-            return Console.ReadKey(true);
+            if (Console.IsInputRedirected) throw new NoInputException(this);
+            return (InputRecord)Console.ReadKey(true);
         }
 
         void ITerminal.SetupConsole()
