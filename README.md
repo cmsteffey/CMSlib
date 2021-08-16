@@ -1,5 +1,6 @@
 # CMSlib
 CMSlib (Console Module System) is a c# library for making graphical user interfaces, all inside a console window!\
+
 The structure of a standard program goes as follows:\
 ModuleManager instance\
 |-ModulePage instance\
@@ -20,6 +21,10 @@ If you have redirected input, either due to running through a linux `nohup` or f
 Very important note - DO NOT call Console.ReadLine, Console.Read, Console.ReadKey, Console.Write, or Console.WriteLine after you call the ModuleManager constructor.\
 Instead, use BaseModule#AddText on Module instances for writing, and ModuleManager#ReadLineAsync() or InputModule.ReadLineAsync() for reading input.\
 ModuleManager also has LineEntered and KeyEntered events for handling input, if you prefer event based rather than input loops.
+
+The required parameter of ModuleManager's constructor is an object that implements ITerminal - This is what is used to handle all display, I/O, pre-display setup, and other console functions.\
+The library as it is comes with two ITerminals - WinTerminal and StdTerminal. WinTerminal should be used when Windows is being used to run the program. It handles win32 api calls to properly setup the terminal to render line drawing, as well as other changes so that the graphics render properly. It also handles click and mouse events, so if you want mouse interface on Windows, use Winterminal. StdTerminal is a wrapper of the standard System.Console static class - it gets input through Console.ReadKey, and uses Console.Write to handle output. This should be used for all non-Windows applications.
+If someone wants to make a linux specific terminal that uses /dev/input for mouse clicks, or an IOKit terminal to handle mouse input on Macs, feel free, but I'm only supporting Windows mouse input at the moment.
 
 The main members of ModuleManager:\
 Add(ModulePage):\
