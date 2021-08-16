@@ -8,6 +8,7 @@ using CMSlib.CollectionTypes;
 using CMSlib.ConsoleModule;
 using CMSlib.ConsoleModule.InputStates;
 using CMSlib.Extensions;
+using Microsoft.Extensions.Logging;
 
 ModuleManager manager = new(new WinTerminal());
 StandardInputModule input = new("INPUT", 0, 0, Console.WindowWidth / 2, Console.WindowHeight - 2);
@@ -16,7 +17,7 @@ TaskBarModule bar = new("NIU", 0, Console.WindowHeight - 2, Console.WindowWidth,
 LogModule logging = new("LOGGING", 0,0,Console.WindowWidth, Console.WindowHeight - 2);
 ToggleModule toggle = new("TEST1", Math.Max(Console.WindowWidth - 9, 0), 0, 9, 3, true);
 ToggleModule toggle2 = new("TEST2", Math.Max(Console.WindowWidth - 9, 0), 3, 9, 3, true);
-ButtonModule btn = new("Button!", Math.Max(Console.WindowWidth - 9, 0), 6, 9, 3, "inner");
+ButtonModule btn = new("Button!", Math.Max(Console.WindowWidth - 9, 0), 6, 9, 9, "inneeeeeeeeeeeeer");
 
 ModulePage pageOne = new()
 {
@@ -65,5 +66,9 @@ manager.LineEntered += async (sender, args) =>
     
     (sender as BaseModule)?.AddText(builder);
     (sender as BaseModule)?.WriteOutput();
+};
+btn.Clicked += async (sender, args) =>
+{
+    logging.LogInformation("boop :P");
 };
 System.Threading.Tasks.Task.Delay(-1).GetAwaiter().GetResult();
