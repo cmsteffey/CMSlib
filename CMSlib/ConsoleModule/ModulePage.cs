@@ -28,6 +28,10 @@ namespace CMSlib.ConsoleModule
             }
         }
 
+        public ModulePage(string displayName)
+        {
+            this._displayName = displayName;
+        }
         public void RefreshAll(bool clear = true)
         {
             if (parent is null) return;
