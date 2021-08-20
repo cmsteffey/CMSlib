@@ -13,7 +13,7 @@ namespace CMSlib.ConsoleModule
         internal object dictSync = new();
         internal int selected = 0;
         private ModuleManager parent = null;
-        private string _displayName = null;
+        private string _displayName;
         internal Guid id = Guid.NewGuid();
         public string DisplayName
         {
@@ -28,7 +28,7 @@ namespace CMSlib.ConsoleModule
             }
         }
 
-        public ModulePage(string displayName)
+        public ModulePage(string displayName = null)
         {
             this._displayName = displayName;
         }
