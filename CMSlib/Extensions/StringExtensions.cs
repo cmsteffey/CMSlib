@@ -233,6 +233,13 @@ namespace CMSlib.Extensions
             return string.IsNullOrEmpty(str) ? str : System.Text.RegularExpressions.Regex.Replace(str, "[^\u001F-\u007F]+( )*", "");
         }
 
+        public static char? SafeCharAt(this string str, int at)
+        {
+            if (at >= str.Length)
+                return null;
+            return str[at];
+        }
+
 
     }
     
