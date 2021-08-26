@@ -97,13 +97,13 @@ namespace CMSlib.ConsoleModule
             bool enabled = Enabled;
             int internalWidth = Math.Min(Width - 2, Console.WindowWidth - X - 2);
             int internalHeight = Math.Min(Height - 2, Console.WindowHeight - Y - 2);
-            if (internalWidth < 2)
+            if (internalWidth < 0)
                 yield break;
-            string displayTitle = Title.Ellipse(internalWidth);
+            string displayTitle = (DisplayName ?? Title).Ellipse(internalWidth);
             StringBuilder builder = new();
             yield return builder.Append(LineDrawingMode)
                 .Append(UpperLeftCorner)
-                .Append(selected ? Underline(displayTitle) : AsciiMode + displayTitle + LineDrawingMode)
+                .Append(selected ? AsciiMode + Underline(displayTitle) + LineDrawingMode : AsciiMode + displayTitle + LineDrawingMode)
                 .Append(HorizontalLine, internalWidth - displayTitle.Length)
                 .Append(UpperRightCorner).ToString();
             string displayString = enabled ? enabledText : disabledText;
