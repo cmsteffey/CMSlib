@@ -73,7 +73,7 @@ namespace CMSlib.ConsoleModule
         {
             int internalWidth = Math.Min(Width - 2, Console.WindowWidth - X - 2);
             int internalHeight = Math.Min(Height - 2, Console.WindowHeight - Y - 2);
-            if (internalWidth < 2)
+            if (internalWidth < 0)
                 yield break;
             string displayTitle = Title.Ellipse(internalWidth);
             StringBuilder builder = new();
@@ -88,7 +88,7 @@ namespace CMSlib.ConsoleModule
             {
                 if (i < splitInner.Length)
                     yield return builder.Clear().Append(VerticalLine).Append(AsciiMode).Append(splitInner[i])
-                        .Append(new string(' ', internalWidth - splitInner[i].VisibleLength())).Append(emptyLine).Append(VerticalLine).ToString();
+                        .Append(new string(' ', internalWidth - splitInner[i].VisibleLength())).Append(LineDrawingMode).Append(VerticalLine).ToString();
                 else
                     yield return emptyLine;
             }
