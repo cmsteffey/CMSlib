@@ -62,8 +62,7 @@ manager.LineEntered += async (sender, args) =>
     builder.Append(AnsiEscape.LineDrawingMode).Append(AnsiEscape.VerticalLine).Append(AnsiEscape.AsciiMode)
         .Append(args.Line).Append(AnsiEscape.LineDrawingMode).Append(AnsiEscape.VerticalLine).Append('\n');
     builder.Append(AnsiEscape.LineDrawingMode).Append(AnsiEscape.LowerLeftCorner)
-        .Append(AnsiEscape.HorizontalLine, visLen).Append(AnsiEscape.LowerRightCorner).Append('\n');
-    
+        .Append(AnsiEscape.HorizontalLine, visLen).Append(AnsiEscape.LowerRightCorner);
     (sender as BaseModule)?.AddText(builder);
     (sender as BaseModule)?.WriteOutput();
 };

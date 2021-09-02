@@ -59,6 +59,9 @@ namespace CMSlib.Tables
                 }
                 builder.Append('\n');
             }
+
+            if (builder.Length > 0 && builder[^1] is '\n')
+                builder.Remove(builder.Length - 1, 1);
             return builder.ToString();
         }
         public void AddRow(params object[] sectionItems) => rows.Add(new(sectionItems));

@@ -22,12 +22,13 @@ namespace CMSlib.Tables
         public static string TableColumn(this object obj, int innerWidth, ColumnAdjust adjust = ColumnAdjust.Left, bool ellipse = true, bool leftPipe = false, bool rightPipe = false)
         {
             string str = obj.ToString();
-            if (str.Length > innerWidth)
+            int visLen = str.VisibleLength();
+            if (visLen > innerWidth)
             {
                 return ellipse ? (leftPipe ? "|" : string.Empty) + str.Ellipse(innerWidth) + (rightPipe ? "|" : string.Empty)
                     : (leftPipe ? "|" : string.Empty) + str.Substring(0, innerWidth) + (rightPipe ? "|" : string.Empty);
             }
-            int spaces = innerWidth - str.VisibleLength();
+            int spaces = innerWidth - visLen;
             if (adjust == ColumnAdjust.Left)
             {
                 return new StringBuilder().Append(leftPipe ? "|" : null).Append(str).Append(' ', spaces).Append(rightPipe ? '|' : null).ToString();
