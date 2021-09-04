@@ -8,10 +8,10 @@ using CMSlib.CollectionTypes;
 
 namespace CMSlib.ConsoleModule
 {
-    public sealed class LogModule : BaseModule
+    public class LogModule : BaseModule
     {
-        private  readonly List<string> text = new();
-        private  readonly char? borderCharacter;
+        protected readonly List<string> text = new();
+        protected readonly char? borderCharacter;
 
         
 
