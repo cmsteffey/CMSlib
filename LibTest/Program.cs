@@ -36,7 +36,13 @@ pageTwo.Add(toggle);
 pageTwo.Add(toggle2);
 pageTwo.Add(btn);
 pageTwo.Add(bar);
+ModulePage pageThree = new("Logging")
+{
+    new CanvasModule("Logging", 0, 0, Console.WindowWidth, Console.WindowHeight - bar.Height, AnsiEscape.SgrBrightRedBackGround + " "),
+    bar
+};
 manager.Add(pageTwo);
+manager.Add(pageThree);
 manager.RefreshAll();
 int count = 0;
 FifoBuffer<int> ints = new FifoBuffer<int>(10);
@@ -46,6 +52,8 @@ input.MouseInputReceived += async (sender, eventArgs) =>
     {
         ints.Add(count);
         count++;
+        CanvasModule module = pageThree.FirstOrDefault() as CanvasModule;
+        module?.SetCell(count % (module.Width - 2), count / (module.Width - 2), AnsiEscape.SgrBrightRedBackGround + " ");
         StringBuilder builder = new();
         foreach (var t in ints)
             builder.Append(t).Append(' ');
@@ -53,6 +61,7 @@ input.MouseInputReceived += async (sender, eventArgs) =>
         (sender as BaseModule)?.WriteOutput();
     }
 };
+
 manager.LineEntered += async (sender, args) =>
 {
     StringBuilder builder = new();
@@ -65,9 +74,10 @@ manager.LineEntered += async (sender, args) =>
         .Append(AnsiEscape.HorizontalLine, visLen).Append(AnsiEscape.LowerRightCorner);
     (sender as BaseModule)?.AddText(builder);
     (sender as BaseModule)?.WriteOutput();
+    pageThree.First().LogInformation("test?");
 };
 btn.Clicked += async (sender, args) =>
 {
-    logging.LogInformation("boop :P");
+    manager.RefreshAll(false);
 };
 System.Threading.Tasks.Task.Delay(-1).GetAwaiter().GetResult();
