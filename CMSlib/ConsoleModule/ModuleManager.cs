@@ -570,7 +570,8 @@ namespace CMSlib.ConsoleModule
 
         internal void Write(string toWrite)
         {
-            _terminal.Write(toWrite);
+            lock(writeLock)
+                _terminal.Write(toWrite);
         }
 
         public void RingBell(bool immediate = false)
