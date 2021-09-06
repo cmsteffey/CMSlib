@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Dynamic;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Runtime.Loader;
 using System.Text;
 using CMSlib.CollectionTypes;
 using CMSlib.ConsoleModule;
@@ -14,10 +11,8 @@ ModuleManager manager = new(new WinTerminal());
 StandardInputModule input = new("INPUT", 0, 0, Console.WindowWidth / 2, Console.WindowHeight - 2);
 LogModule output = new("OUTPUT", Console.WindowWidth / 2, 0, Console.WindowWidth / 2, Console.WindowHeight - 2);
 TaskBarModule bar = new("NIU", 0, Console.WindowHeight - 2, Console.WindowWidth, 2, 10);
-LogModule logging = new("LOGGING", 0,0,Console.WindowWidth, Console.WindowHeight - 2);
-ToggleModule toggle = new("TEST1", Math.Max(Console.WindowWidth - 9, 0), 0, 9, 3, true);
-ToggleModule toggle2 = new("TEST2", Math.Max(Console.WindowWidth - 9, 0), 3, 9, 3, true);
-ButtonModule btn = new("Button!", Math.Max(Console.WindowWidth - 9, 0), 6, 9, 9, "inneeeeeeeeeeeeer");
+ToggleModule toggle = new("Color", Math.Max(Console.WindowWidth - 12, 0), 0, 12, 3, true, "Green", "Red");
+ButtonModule btn = new("Button!", Math.Max(Console.WindowWidth - 12, 0), 3, 12, 3, "Clear"){DisplayName = ""};
 
 ModulePage pageOne = new()
 {
@@ -27,32 +22,32 @@ pageOne.Add(input);
 pageOne.Add(output); 
 pageOne.Add(bar);
 manager.Add(pageOne);
-ModulePage pageTwo = new()
+ModulePage pageThree = new("Canvas")
 {
-    DisplayName = "1234567890"
+    new CanvasModule("Canvas", 0, 0, Console.WindowWidth, Console.WindowHeight - bar.Height),
+    toggle,
+    btn,
+    bar
 };
-pageTwo.Add(logging);
-pageTwo.Add(toggle);
-pageTwo.Add(toggle2);
-pageTwo.Add(btn);
-pageTwo.Add(bar);
-manager.Add(pageTwo);
+manager.Add(pageThree);
 manager.RefreshAll();
 int count = 0;
 FifoBuffer<int> ints = new FifoBuffer<int>(10);
-input.MouseInputReceived += async (sender, eventArgs) =>
+(int x, int y) cachedCoords = (-1, -1);
+pageThree.First().MouseInputReceived += async (sender, eventArgs) =>
 {
-    if (eventArgs.InputState is ClickInputState)
+    
+    if (eventArgs.InputState is ClickInputState state && state.MouseCoordinates != cachedCoords)
     {
-        ints.Add(count);
+        CanvasModule module = sender as CanvasModule;
+        module?.SetCell(state.MouseCoordinates.X - 1 - module.X, state.MouseCoordinates.Y - 1 - module.Y, toggle.Enabled ? AnsiEscape.SgrBrightGreenBackGround + " " : AnsiEscape.SgrBrightRedBackGround + " ");
+        module?.QuickWriteOutput();
         count++;
-        StringBuilder builder = new();
-        foreach (var t in ints)
-            builder.Append(t).Append(' ');
-        (sender as BaseModule)?.AddText(builder.ToString());
-        (sender as BaseModule)?.WriteOutput();
+        cachedCoords = state.MouseCoordinates;
+        
     }
 };
+
 manager.LineEntered += async (sender, args) =>
 {
     StringBuilder builder = new();
@@ -68,6 +63,7 @@ manager.LineEntered += async (sender, args) =>
 };
 btn.Clicked += async (sender, args) =>
 {
-    logging.LogInformation("boop :P");
+    pageThree.FirstOrDefault()?.As<CanvasModule>()?.Clear();
+    manager.RefreshAll(false);
 };
 System.Threading.Tasks.Task.Delay(-1).GetAwaiter().GetResult();
