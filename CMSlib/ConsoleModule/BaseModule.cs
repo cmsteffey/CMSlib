@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using CMSlib.Tables;
 using ExtensionMethods = CMSlib.Tables.ExtensionMethods;
 using CMSlib.Extensions;
@@ -78,6 +79,49 @@ namespace CMSlib.ConsoleModule
                 await handler(this, args);
             }
         }
+        
+        protected event AsyncEventHandler<KeyEnteredEventArgs> ReadKeyKeyEntered;
+        internal async Task FireReadKeyKeyEntered(KeyEnteredEventArgs args)
+        {
+            var handler = ReadKeyKeyEntered;
+            if (handler is not null)
+            {
+                await handler(this, args);
+            }
+        }
+        /// <summary>
+        /// Reads and returns the next key entered into this module. DO NOT call this method inside a KeyEntered event handler.
+        /// </summary>
+        /// <returns>KeyEnteredEventArgs and a reference to this module</returns>
+        /// <exception cref="TaskCanceledException">Thrown when the cancellation token provided is cancelled</exception>
+        public async Task<KeyEnteredEventArgs> ReadKeyAsync(CancellationToken cancellationToken = default)
+        {
+            KeyEnteredEventArgs result = null;
+            CancellationTokenSource waitCancel = new();
+            CancellationTokenSource combined = CancellationTokenSource.CreateLinkedTokenSource(waitCancel.Token, cancellationToken);
+
+            Task Waiter(object _, KeyEnteredEventArgs args)
+            {
+                result = args;
+                waitCancel.Cancel();
+                return Task.CompletedTask;
+            }
+
+            try
+            {
+                ReadKeyKeyEntered += Waiter;
+                await Task.Delay(-1, combined.Token);
+            }
+            catch (TaskCanceledException e)
+            {
+                
+                ReadKeyKeyEntered -= Waiter;
+                if (cancellationToken.IsCancellationRequested)
+                    throw e;
+            }
+            return result;
+        }
+        
         /// <summary>
         /// Event fired when a key is pressed while this module is focused
         /// </summary>
