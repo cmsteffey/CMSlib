@@ -389,6 +389,7 @@ namespace CMSlib.ConsoleModule
                     selectedModule?.HandleKeyAsync(key);
                     InputModule inputModule = selectedModule as InputModule;
                     AsyncEventHandler<KeyEnteredEventArgs> handler = KeyEntered;
+                    
                     KeyEnteredEventArgs e = new()
                     {
                         Module = selectedModule,
@@ -396,12 +397,11 @@ namespace CMSlib.ConsoleModule
                     };
                     if (handler is not null)
                         await handler(inputModule, e);
-
-                    if (inputModule is not null)
+                    if (selectedModule is not null)
                     {
-                        await inputModule.FireKeyEnteredAsync(e);
+                        await selectedModule?.FireReadKeyKeyEntered(e);
+                        await selectedModule?.FireKeyEnteredAsync(e);
                     }
-
                     await HandleKeyAsync(key, selectedModule, terminal);
                     break;
                 case EventType.Mouse when input.Value.MouseEvent.EventFlags.HasFlag(EventFlags.MouseWheeled):
