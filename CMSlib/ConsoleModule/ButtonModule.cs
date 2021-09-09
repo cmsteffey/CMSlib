@@ -82,15 +82,19 @@ namespace CMSlib.ConsoleModule
                 .Append(selected ? AsciiMode + Underline(displayTitle) + LineDrawingMode : AsciiMode + displayTitle + LineDrawingMode)
                 .Append(HorizontalLine, internalWidth - displayTitle.Length)
                 .Append(UpperRightCorner).ToString();
-            var splitInner = buttonText.SplitOnNonEscapeLength(internalWidth).ToArray();
-            int count = splitInner.Length;
-            for (int i = 0; i < internalHeight; i++)
-            {
-                if (i < splitInner.Length)
-                    yield return builder.Clear().Append(VerticalLine).Append(AsciiMode).Append(splitInner[i])
-                        .Append(new string(' ', internalWidth - splitInner[i].VisibleLength())).Append(LineDrawingMode).Append(VerticalLine).ToString();
-                else
-                    yield return emptyLine;
+            if(butttonText.VisibleLength() <= internalWidth)
+                yield return builder.Clear().Append(VerticalLine).Append(AsciiMode).Append(buttonText.PadToVisibleDivisible(internalWidth)).Append(LineDrawingMode).Append(VerticalLine).ToString();
+            else{
+                var splitInner = buttonText.SplitOnNonEscapeLength(internalWidth).ToArray();
+                int count = splitInner.Length;
+                for (int i = 0; i < internalHeight; i++)
+                {
+                    if (i < splitInner.Length)
+                        yield return builder.Clear().Append(VerticalLine).Append(AsciiMode).Append(splitInner[i])
+                            .Append(new string(' ', internalWidth - splitInner[i].VisibleLength())).Append(LineDrawingMode).Append(VerticalLine).ToString();
+                    else
+                        yield return emptyLine;
+                }
             }
 
             yield return builder.Clear().Append(LowerLeftCorner).Append(HorizontalLine, internalWidth)
