@@ -42,6 +42,15 @@ namespace CMSlib.ConsoleModule
 
             if (refresh) WriteOutput();
         }
+        public void Clear(bool refresh, bool resetScroll){
+            lock(AddTextLock){
+                if(resetScroll){
+                    scrolledLines = 0;
+                }
+                text.Clear();
+            }
+            if (refresh) WriteOutput();
+        }
 
         internal override void Backspace(bool write = true)
         {
