@@ -19,7 +19,7 @@ namespace CMSlib.ConsoleModule
         public int Height { get; protected init;}
         public string Title { get; protected init; }
         public LogLevel MinimumLogLevel { get; set; }
-
+        public int ScrolledLines {get => scrolledLines;}
         /// <summary>
         /// This string is shown at the top of the module. Setting it to null, or not setting it at all, uses the module title as the displayed title.
         /// </summary>
