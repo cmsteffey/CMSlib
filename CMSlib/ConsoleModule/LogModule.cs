@@ -67,7 +67,7 @@ namespace CMSlib.ConsoleModule
             lock (AddTextLock)
             {
                 int before = scrolledLines;
-                scrolledLines = Math.Clamp(scrolledLines + amt, 0, Math.Max(text.Count - Height - 2, 0));
+                scrolledLines = Math.Clamp(scrolledLines + amt, 0, Math.Max(text.Count - (Height - 2), 0));
                 if (before != 0 && scrolledLines == 0)
                     unread = false;
                 if (before != scrolledLines) WriteOutput();
@@ -80,7 +80,7 @@ namespace CMSlib.ConsoleModule
             lock (AddTextLock)
             {
                 int before = scrolledLines;
-                scrolledLines = Math.Clamp(line, 0, Math.Max(text.Count - Height - 2, 0));
+                scrolledLines = Math.Clamp(line, 0, Math.Max(text.Count - (Height - 2), 0));
                 if (before != 0 && scrolledLines == 0)
                     unread = false;
                 if (before != scrolledLines) WriteOutput();
