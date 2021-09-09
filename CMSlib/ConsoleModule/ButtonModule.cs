@@ -82,7 +82,7 @@ namespace CMSlib.ConsoleModule
                 .Append(selected ? AsciiMode + Underline(displayTitle) + LineDrawingMode : AsciiMode + displayTitle + LineDrawingMode)
                 .Append(HorizontalLine, internalWidth - displayTitle.Length)
                 .Append(UpperRightCorner).ToString();
-            if(butttonText.VisibleLength() <= internalWidth)
+            if(buttonText.VisibleLength() <= internalWidth)
                 yield return builder.Clear().Append(VerticalLine).Append(AsciiMode).Append(buttonText.PadToVisibleDivisible(internalWidth)).Append(LineDrawingMode).Append(VerticalLine).ToString();
             else{
                 var splitInner = buttonText.SplitOnNonEscapeLength(internalWidth).ToArray();
