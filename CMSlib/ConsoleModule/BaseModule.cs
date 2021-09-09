@@ -213,6 +213,7 @@ namespace CMSlib.ConsoleModule
         {
             throw new NotImplementedException();
         }
+        public void MarkRead() => unread = false;
 
         /// <summary>
         /// Refreshes this module, showing the latest output.
