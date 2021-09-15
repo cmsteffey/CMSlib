@@ -21,6 +21,7 @@ namespace CMSlib.ConsoleModule
         public LogLevel MinimumLogLevel { get; set; }
         public ModuleManager Parent { get; internal set; } = null;
 
+        public int ScrolledLines {get => scrolledLines;}
         /// <summary>
         /// This string is shown at the top of the module. Setting it to null, or not setting it at all, uses the module title as the displayed title.
         /// </summary>
@@ -213,6 +214,7 @@ namespace CMSlib.ConsoleModule
         {
             throw new NotImplementedException();
         }
+        public void MarkRead() => unread = false;
 
         /// <summary>
         /// Refreshes this module, showing the latest output.
