@@ -28,7 +28,8 @@ namespace CMSlib.ConsoleModule
         }
 
         public void SetCell(int x, int y, string value)
-        {
+        { 
+            if (cells[y][x].Equals(value)) return;
             cells[y][x] = value ?? emptyReset;
             lock(dirty)
                 dirty.Add(new(x, y));
@@ -55,19 +56,21 @@ namespace CMSlib.ConsoleModule
 
         public void QuickWriteOutput()
         {
+            if (this.Parent is null) return;
+            lock (this.Parent.writeLock)
             lock (dirty)
             {
-                parent.Write(AnsiEscape.SgrClear);
+                Parent.Write(AnsiEscape.SgrClear);
                 foreach (Coord c in dirty)
                 {
-                    this.parent.SetCursorPosition(c.X + 1 + this.X, c.Y + 1 + this.Y);
-                    parent.Write(cells[c.Y][c.X]);
+                    this.Parent.SetCursorPosition(c.X + 1 + this.X, c.Y + 1 + this.Y);
+                    Parent.Write(cells[c.Y][c.X]);
                 }
-                parent.Write(AnsiEscape.SgrClear);
+                Parent.Write(AnsiEscape.SgrClear);
                 dirty.Clear();
             }
 
-            parent.Flush();
+            Parent.Flush();
         }
         internal override async System.Threading.Tasks.Task HandleClickAsync(InputRecord record, ButtonState? before)
         {

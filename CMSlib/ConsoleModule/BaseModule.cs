@@ -19,6 +19,7 @@ namespace CMSlib.ConsoleModule
         public int Height { get; protected init;}
         public string Title { get; protected init; }
         public LogLevel MinimumLogLevel { get; set; }
+        public ModuleManager Parent { get; internal set; } = null;
 
         /// <summary>
         /// This string is shown at the top of the module. Setting it to null, or not setting it at all, uses the module title as the displayed title.
@@ -29,7 +30,6 @@ namespace CMSlib.ConsoleModule
         internal  int      scrolledLines = 0;
         internal  bool     unread = false;
         internal  int      lrCursorPos = 0;
-        internal ModuleManager parent = null;
         protected readonly object AddTextLock = new();
         
         internal List<Guid> parentPages = new();
@@ -219,11 +219,11 @@ namespace CMSlib.ConsoleModule
         /// </summary>
         public void WriteOutput(bool flush = true)
         {
-            if (this.parent is null || this.parentPages is null || !this.parentPages.Contains(parent.SelectedPage.id))
+            if (this.Parent is null || this.parentPages is null || !this.parentPages.Contains(Parent.SelectedPage.id))
                 return;
-            lock (this.parent.writeLock)
+            lock (this.Parent.writeLock)
             {
-                parent.Write(AnsiEscape.DisableCursorVisibility);
+                Parent.Write(AnsiEscape.DisableCursorVisibility);
                 var outputLines = this.ToOutputLines();
                 int i = Y - 1;
                 if (this.X >= Console.BufferWidth || this.Y >= Console.BufferHeight)
@@ -234,18 +234,18 @@ namespace CMSlib.ConsoleModule
                     if (++i >= Console.WindowHeight)
                         break;
                     if (line.IsVisible())
-                        parent.SetCursorPosition(X, i);
+                        Parent.SetCursorPosition(X, i);
                     else
                         --i;
-                    parent.Write(line);
-                    parent.Flush();
+                    Parent.Write(line);
+                    Parent.Flush();
                     //TODO REMOVE
                 }
 
-                BaseModule inputModule = parent.InputModule;
+                BaseModule inputModule = Parent.InputModule;
                 if (inputModule is null)
                 {
-                    if(flush)parent.Flush();
+                    if(flush)Parent.Flush();
                     return;
                 }
 
@@ -253,13 +253,13 @@ namespace CMSlib.ConsoleModule
                 int inputCursorX = inputModule.X + 1 + inputModule.lrCursorPos;
                 if (inputCursorY < 0 || inputCursorX < 0)
                 {
-                    if(flush)parent.Flush();
+                    if(flush)Parent.Flush();
                     return;
                 }
-                parent.SetCursorPosition(inputCursorX,
+                Parent.SetCursorPosition(inputCursorX,
                     inputCursorY);
-                parent.Write(AnsiEscape.AsciiMode + AnsiEscape.EnableCursorVisibility);
-                if(flush)parent.Flush();
+                Parent.Write(AnsiEscape.AsciiMode + AnsiEscape.EnableCursorVisibility);
+                if(flush)Parent.Flush();
             }
         }
 
@@ -296,7 +296,7 @@ namespace CMSlib.ConsoleModule
                 output.Append(AnsiEscape.SgrNoUnderline).Append(AnsiEscape.SgrNoBlinking);
             if (borderCharacter is null)
                 output.Append(AnsiEscape.LineDrawingMode);
-            output.Append(borderCharacter??AnsiEscape.HorizontalLine, internalWidth - actingTitle.Length);
+            output.Append(borderCharacter??AnsiEscape.HorizontalLine, internalWidth - actingTitle.VisibleLength());
             output.Append(borderCharacter ?? AnsiEscape.UpperRightCorner);
             yield return output.ToString();
             if (actingHeight == 1)

@@ -45,9 +45,9 @@ namespace CMSlib.ConsoleModule
 
         internal override void Backspace(bool write = true)
         {
-            if (parent is null) return;
+            if (Parent is null) return;
 
-            lock (parent.writeLock)
+            lock (Parent.writeLock)
             {
                 inputString.Remove(inputString.Length - 1, 1);
 
@@ -67,10 +67,10 @@ namespace CMSlib.ConsoleModule
 
         internal override void AddChar(char toAdd)
         {
-            if (parent is null) return;
+            if (Parent is null) return;
             if (toAdd is '\u0000') return;
 
-            lock (parent.writeLock)
+            lock (Parent.writeLock)
             {
                 inputString.Append(toAdd);
 

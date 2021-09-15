@@ -568,7 +568,7 @@ namespace CMSlib.ConsoleModule
             await inputModule.FireReadLineLineEntered(e);
         }
 
-        internal void Write(string toWrite)
+        public void Write(string toWrite)
         {
             lock(writeLock)
                 _terminal.Write(toWrite);

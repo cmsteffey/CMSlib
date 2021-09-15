@@ -55,7 +55,7 @@ namespace CMSlib.ConsoleModule
                 this.parent = parent;
                 foreach (var module in modules.Values)
                 {
-                    module.parent = this.parent;
+                    module.Parent = this.parent;
                     module.parentPages.Add(this.id);
                 }
             }
@@ -67,7 +67,7 @@ namespace CMSlib.ConsoleModule
         {
             lock (dictSync)
             {
-                module.parent = this.parent;
+                module.Parent = this.parent;
                 modules.Add(module.Title, module);
                 dictKeys.Add(module.Title);
                 if (selected == modules.Count - 1)

@@ -21,11 +21,11 @@ namespace CMSlib.ConsoleModule
 
         public override void PageDown()
         {
-            this.parent?.NextPage();
+            this.Parent?.NextPage();
         }
         public override void PageUp()
         {
-            this.parent?.PrevPage();
+            this.Parent?.PrevPage();
         }
 
         public override void ScrollUp(int amt)
@@ -50,7 +50,7 @@ namespace CMSlib.ConsoleModule
         {
             get
             {
-                int pages = parent.Pages.Count;
+                int pages = Parent.Pages.Count;
                 return Math.Min((Width - pages) / pages, internalWidthPer);
             }
         }
@@ -65,14 +65,14 @@ namespace CMSlib.ConsoleModule
         {
             if (!before.HasValue || before.Value == record.MouseEvent.ButtonState) return;
             
-            List<ModulePage> pages = parent.Pages;
+            List<ModulePage> pages = Parent.Pages;
             
             int actingInternalWidthPer = Math.Min((Width - pages.Count) / pages.Count, internalWidthPer);
             int relativeX = record.MouseEvent.MousePosition.X - X;
             if(relativeX < 0 || relativeX % (actingInternalWidthPer + 1) == actingInternalWidthPer) return;
             int target = relativeX / (actingInternalWidthPer + 1);
             if(target < 0 || target >= pages.Count) return;
-            this.parent.ToPage(target);
+            this.Parent.ToPage(target);
         }
 
         internal async override Task HandleKeyAsync(ConsoleKeyInfo info)
@@ -83,9 +83,9 @@ namespace CMSlib.ConsoleModule
         protected override IEnumerable<string> ToOutputLines()
         {
             StringBuilder output = new StringBuilder();
-            if (parent is null) yield break;
+            if (Parent is null) yield break;
             if (Y >= Console.WindowHeight) yield break;
-            List<ModulePage> pages = parent.Pages;
+            List<ModulePage> pages = Parent.Pages;
             int actingInternalWidthPer = Math.Min((Width - pages.Count) / pages.Count, internalWidthPer);
             
             for (int i = 0; i < Math.Min(Height, Console.WindowHeight - Y); i++)
@@ -95,7 +95,7 @@ namespace CMSlib.ConsoleModule
                 for (int j = 0; j < pages.Count; j++)
                 {
                     
-                    output.Append(parent.selected == j ? (this.selected ? AnsiEscape.SgrBlackForeGround + AnsiEscape.SgrWhiteBackGround : AnsiEscape.SgrBlackForeGround + AnsiEscape.SgrBlackBackGround + AnsiEscape.SgrBrightBold + AnsiEscape.SgrNegative) : null);
+                    output.Append(Parent.selected == j ? (this.selected ? AnsiEscape.SgrBlackForeGround + AnsiEscape.SgrWhiteBackGround : AnsiEscape.SgrBlackForeGround + AnsiEscape.SgrBlackBackGround + AnsiEscape.SgrBrightBold + AnsiEscape.SgrNegative) : null);
                     output.Append(i==0 ? (pages[j].DisplayName ?? (j + 1).ToString()).Ellipse(actingInternalWidthPer)
                         .GuaranteeLength(actingInternalWidthPer) : new string(' ', actingInternalWidthPer));
                     output.Append(AnsiEscape.SgrClear);
