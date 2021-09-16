@@ -40,13 +40,19 @@ namespace CMSlib.Tables
 
         public IEnumerable<string> GetOutputRows()
         {
-            foreach(var row in rows)
-            for (var i = 0; i < sections.Count; i++)
-            foreach (var x in sections[i].Columns)
+            StringBuilder builder = new();
+            foreach (var row in rows)
             {
-                object item = x.getter.Invoke(row.SectionItems[i]);
-                yield return (x.column.CustomFormatter?.Invoke(item) ?? item).TableColumn(x.column.InnerWidth,
-                    x.column.Adjust, x.column.Ellipse, x.column.LeftPipe, x.column.RightPipe);
+                builder.Clear();
+                for (var i = 0; i < sections.Count; i++)
+                    foreach (var x in sections[i].Columns)
+                    {
+                        object item = x.getter.Invoke(row.SectionItems[i]);
+                        builder.Append((x.column.CustomFormatter?.Invoke(item) ?? item).TableColumn(x.column.InnerWidth,
+                            x.column.Adjust, x.column.Ellipse, x.column.LeftPipe, x.column.RightPipe));
+                    }
+
+                yield return builder.ToString();
             }
         }
         public override string ToString()

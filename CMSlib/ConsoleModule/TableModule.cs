@@ -8,17 +8,22 @@ using Microsoft.Extensions.Logging;
 using static CMSlib.ConsoleModule.AnsiEscape;
 namespace CMSlib.ConsoleModule
 {
-    public class ListModule : BaseModule
+    public class TableModule : BaseModule
     {
         private string[] lineCache;
         private Table wrapped;
         private string header;
-        public ListModule(string title, int x, int y, int width, int height, Table toWrap, string header = null, 
+        public TableModule(string title, int x, int y, int width, int height, Table toWrap, string header = null, 
             LogLevel logLevel = LogLevel.Information) : base(title, x, y, width, height, logLevel)
         {
             wrapped = toWrap;
             this.header = (header ?? toWrap.GetHeader()).SplitOnNonEscapeLength(width - 2).First().PadToVisibleDivisible(width - 2);
-            lineCache = toWrap.GetOutputRows().ToArray();
+            lineCache = wrapped.GetOutputRows().Select(x =>
+            {
+                if (x.VisibleLength() > Width - 2)
+                    return x.SplitOnNonEscapeLength(Width - 2).First();
+                return x.PadToVisibleDivisible(Width - 2);
+            }).ToArray();
         }
         public override void AddText(string text)
         {
@@ -103,7 +108,7 @@ namespace CMSlib.ConsoleModule
             int spaceCount = internalHeight - lineCount;
             for (int i = 0; i < lineCount; i++)
             {
-                yield return VerticalLine + AsciiMode + lineCache[scrolledLines + lineCount] + LineDrawingMode +
+                yield return VerticalLine + AsciiMode + lineCache[scrolledLines + i] + LineDrawingMode +
                              VerticalLine;
             }
 
