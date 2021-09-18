@@ -8,8 +8,8 @@ namespace CMSlib.Tables
 {
     public class Table
     {
-        private readonly List<TableSection> sections;
-        private readonly List<TableRow> rows;
+        internal readonly List<TableSection> sections;
+        internal readonly List<TableRow> rows;
         public Table(params TableSection[] sections)
         {
             this.sections = new();
@@ -24,7 +24,7 @@ namespace CMSlib.Tables
         public void AddSection(TableSection section) => sections.Add(section);
         public void ClearRows() => rows.Clear();
 
-        public override string ToString()
+        public string GetHeader()
         {
             StringBuilder builder = new();
             foreach(TableSection section in sections)
@@ -34,27 +34,44 @@ namespace CMSlib.Tables
                     builder.Append((column.ColumnTitle ?? column.MemberName).TableColumn(column.InnerWidth, column.Adjust, column.Ellipse, column.LeftPipe, column.RightPipe));
                 }
             }
+
+            return builder.ToString();
+        }
+
+        public IEnumerable<string> GetOutputRows()
+        {
+            StringBuilder builder = new();
+            foreach (var row in rows)
+            {
+                builder.Clear();
+                for (var i = 0; i < sections.Count; i++)
+                    foreach (var x in sections[i].Columns)
+                    {
+                        object item = x.getter.Invoke(row.SectionItems[i]);
+                        builder.Append((x.column.CustomFormatter?.Invoke(item) ?? item).TableColumn(x.column.InnerWidth,
+                            x.column.Adjust, x.column.Ellipse, x.column.LeftPipe, x.column.RightPipe));
+                    }
+
+                yield return builder.ToString();
+            }
+        }
+        public override string ToString()
+        {
+            StringBuilder builder = new();
+            builder.Append(GetHeader());
             builder.Append('\n');
 
-            List<(TableColumn column, ValueGetter getter)> columns = new();
-            foreach(TableSection tableSection in sections)
-            {
-                columns.AddRange(tableSection.Columns);
-            }
             foreach(TableRow row in rows)
             {
                 if ((row.SectionItems?.Length ?? -1) < sections.Count)
                     throw new Exception("Row doesn't have enough items for each section");
                 for(int i = 0; i < sections.Count; i++)
                 {
-                    if(row.SectionItems[i].GetType() == sections[i].type)
+                    for(int j = 0; j < sections[i].Columns.Count; j++)
                     {
-                        for(int j = 0; j < sections[i].Columns.Count; j++)
-                        {
-                            sections[i].Columns[j].column.Deconstruct(out _, out int innerWidth, out _, out bool ellipse, out bool leftPipe, out bool rightPipe, out ExtensionMethods.ColumnAdjust adjust, out CustomStringFormatter formatter);
-                            object item = sections[i].Columns[j].getter.Invoke(row.SectionItems[i]);
-                            builder.Append((formatter?.Invoke(item) ?? item).TableColumn(innerWidth, adjust, ellipse, leftPipe, rightPipe));
-                        }
+                        sections[i].Columns[j].column.Deconstruct(out _, out int innerWidth, out _, out bool ellipse, out bool leftPipe, out bool rightPipe, out ExtensionMethods.ColumnAdjust adjust, out CustomStringFormatter formatter);
+                        object item = sections[i].Columns[j].getter.Invoke(row.SectionItems[i]);
+                        builder.Append((formatter?.Invoke(item) ?? item).TableColumn(innerWidth, adjust, ellipse, leftPipe, rightPipe));
                     }
                 }
                 builder.Append('\n');
@@ -64,7 +81,13 @@ namespace CMSlib.Tables
                 builder.Remove(builder.Length - 1, 1);
             return builder.ToString();
         }
-        public void AddRow(params object[] sectionItems) => rows.Add(new(sectionItems));
+
+        public void AddRow(params object[] sectionItems)
+        {
+            if (sectionItems.Length != sections.Count || sectionItems.Select(x => x.GetType())
+                .Zip(this.sections.Select(x => x.type)).Any(x=>x.First != x.Second)) return;
+            rows.Add(new(sectionItems));
+        }
         public record TableRow(params object[] SectionItems);
     }
 }
