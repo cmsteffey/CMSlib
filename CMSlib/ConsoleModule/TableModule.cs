@@ -69,12 +69,17 @@ namespace CMSlib.ConsoleModule
 
         public void RefreshLineCache()
         {
+	    
+            int before = scrolledLines;
             lineCache = wrapped.GetOutputRows().Select((x, i) =>
             {
                 if (x.VisibleLength() > Width - 2)
                     return (x.SplitOnNonEscapeLength(Width - 2).First(), wrapped[i].SectionItems);
                 return (x.PadToVisibleDivisible(Width - 2), wrapped[i].SectionItems);
             }).ToArray();
+            if (lineCache.Length == 0) return;
+            scrolledLines = Math.Clamp(scrolledLines, 0, Math.Max(0, lineCache.Length - (this.Height - 3)));
+            if (before != scrolledLines) WriteOutput();
         }
 
         internal override async Task HandleClickAsync(InputRecord record, ButtonState? before)
