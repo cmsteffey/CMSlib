@@ -23,7 +23,12 @@ namespace CMSlib.Tables
         }
         public void AddSection(TableSection section) => sections.Add(section);
         public void ClearRows() => rows.Clear();
-
+	public TableRow this[int index]{
+	    get => rows[index];
+	}
+	public int RowCount{
+	    get => rows.Count;
+	}
         public string GetHeader()
         {
             StringBuilder builder = new();
@@ -85,7 +90,7 @@ namespace CMSlib.Tables
         public void AddRow(params object[] sectionItems)
         {
             if (sectionItems.Length != sections.Count || sectionItems.Select(x => x.GetType())
-                .Zip(this.sections.Select(x => x.type)).Any(x=>x.First != x.Second)) return;
+                .Zip(this.sections.Select(x => x.type)).Any(x=>x.First != x.Second && !x.First.IsSubclassOf(x.Second))) return;
             rows.Add(new(sectionItems));
         }
         public record TableRow(params object[] SectionItems);

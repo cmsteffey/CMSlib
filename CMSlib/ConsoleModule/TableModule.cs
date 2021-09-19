@@ -4,13 +4,14 @@ using System.Linq;
 using System.Threading.Tasks;
 using CMSlib.Extensions;
 using CMSlib.Tables;
+using CMSlib.ConsoleModule;
 using Microsoft.Extensions.Logging;
 using static CMSlib.ConsoleModule.AnsiEscape;
 namespace CMSlib.ConsoleModule
 {
     public class TableModule : BaseModule
     {
-        private string[] lineCache;
+        private (string line, object[] rowObjs)[] lineCache;
         private Table wrapped;
         private string header;
         public TableModule(string title, int x, int y, int width, int height, Table toWrap, string header = null, 
@@ -18,11 +19,11 @@ namespace CMSlib.ConsoleModule
         {
             wrapped = toWrap;
             this.header = (header ?? toWrap.GetHeader()).SplitOnNonEscapeLength(width - 2).First().PadToVisibleDivisible(width - 2);
-            lineCache = wrapped.GetOutputRows().Select(x =>
+            lineCache = wrapped.GetOutputRows().Select((x, i) =>
             {
                 if (x.VisibleLength() > Width - 2)
-                    return x.SplitOnNonEscapeLength(Width - 2).First();
-                return x.PadToVisibleDivisible(Width - 2);
+                    return (x.SplitOnNonEscapeLength(Width - 2).First(), wrapped[i].SectionItems);
+                return (x.PadToVisibleDivisible(Width - 2), wrapped[i].SectionItems);
             }).ToArray();
         }
         public override void AddText(string text)
@@ -68,24 +69,43 @@ namespace CMSlib.ConsoleModule
 
         public void RefreshLineCache()
         {
-            lineCache = wrapped.GetOutputRows().Select(x =>
+            lineCache = wrapped.GetOutputRows().Select((x, i) =>
             {
                 if (x.VisibleLength() > Width - 2)
-                    return x.SplitOnNonEscapeLength(Width - 2).First();
-                return x.PadToVisibleDivisible(Width - 2);
+                    return (x.SplitOnNonEscapeLength(Width - 2).First(), wrapped[i].SectionItems);
+                return (x.PadToVisibleDivisible(Width - 2), wrapped[i].SectionItems);
             }).ToArray();
         }
 
         internal override async Task HandleClickAsync(InputRecord record, ButtonState? before)
         {
-            
+	    int relX = (int)record.MouseEvent.MousePosition.X - X;
+	    int relY = (int)record.MouseEvent.MousePosition.Y - Y;
+            long row;
+	    if ((!before.HasValue ||
+	        record.MouseEvent.ButtonState != before) &&
+		relX > 0 && relX < Width - 1 &&
+		relY > 1 && relY < Height - 1 &&
+		(row = relY - 2 + scrolledLines) >= 0 && row < (lineCache.LongLength)){
+			await FireRowClickedAsync(new(){RowObjs = lineCache[row].rowObjs, RowIndex = row});
+	    }	    
         }
 
         internal override async Task HandleKeyAsync(ConsoleKeyInfo info)
         {
             
         }
-
+	public event AsyncEventHandler<RowClickedEventArgs> RowClicked;
+	private async Task FireRowClickedAsync(RowClickedEventArgs e){
+	    var handler = RowClicked;
+	    if(handler is not null)
+		await handler(this, e);
+	}
+	public class RowClickedEventArgs : System.EventArgs{
+	    public object[] RowObjs {get; internal init;}
+	    public long RowIndex {get; internal init;}
+	    internal RowClickedEventArgs(){}
+	}
         protected override IEnumerable<string> ToOutputLines()
         {
             int internalHeight = Height - 3;
@@ -108,7 +128,7 @@ namespace CMSlib.ConsoleModule
             int spaceCount = internalHeight - lineCount;
             for (int i = 0; i < lineCount; i++)
             {
-                yield return VerticalLine + AsciiMode + lineCache[scrolledLines + i] + LineDrawingMode +
+                yield return VerticalLine + AsciiMode + lineCache[scrolledLines + i].line + LineDrawingMode +
                              VerticalLine;
             }
 
