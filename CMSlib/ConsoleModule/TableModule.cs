@@ -88,12 +88,21 @@ namespace CMSlib.ConsoleModule
 	    int relY = (int)record.MouseEvent.MousePosition.Y - Y;
             long row;
 	    if ((!before.HasValue ||
-	        record.MouseEvent.ButtonState != before) &&
-		relX > 0 && relX < Width - 1 &&
-		relY > 1 && relY < Height - 1 &&
-		(row = relY - 2 + scrolledLines) >= 0 && row < (lineCache.LongLength)){
-			await FireRowClickedAsync(new(){RowObjs = lineCache[row].rowObjs, RowIndex = row});
-	    }	    
+	            record.MouseEvent.ButtonState != before) &&
+		    relX > 0 && relX < Width - 1 &&
+		    relY > 1 && relY < Height - 1 &&
+		    (row = relY - 2 + scrolledLines) >= 0 && row < (lineCache.LongLength)){
+		
+		RowClickedEventArgs e = new(){RowObjs = lineCache[row].rowObjs, RowIndex = row};
+		bool left = record.MouseEvent.ButtonState.HasFlag(ButtonState.Left1Pressed);
+		bool right = record.MouseEvent.ButtonState.HasFlag(ButtonState.RightPressed);
+		if(!(left ^ right)) return;
+		if(right){
+		    await FireRowRightClickedAsync(e);
+		    return;
+		}
+		await FireRowClickedAsync(e);
+	    }
         }
 
         internal override async Task HandleKeyAsync(ConsoleKeyInfo info)
@@ -101,8 +110,14 @@ namespace CMSlib.ConsoleModule
             
         }
 	public event AsyncEventHandler<RowClickedEventArgs> RowClicked;
+	public event AsyncEventHandler<RowClickedEventArgs> RowRightClicked;
 	private async Task FireRowClickedAsync(RowClickedEventArgs e){
 	    var handler = RowClicked;
+	    if(handler is not null)
+		await handler(this, e);
+	}
+	private async Task FireRowRightClickedAsync(RowClickedEventArgs e){
+	    var handler = RowRightClicked;
 	    if(handler is not null)
 		await handler(this, e);
 	}
