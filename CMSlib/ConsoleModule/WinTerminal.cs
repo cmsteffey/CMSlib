@@ -57,7 +57,8 @@ namespace CMSlib.ConsoleModule
         {
             _writer = new StreamWriter(Console.OpenStandardOutput());
             _writer.AutoFlush = false;
-            Console.OutputEncoding = Encoding.Unicode;
+            SetConsoleOutputCP(65001);
+            SetConsoleCP(65001);
             IntPtr outputHandle = GetStdHandle(-11); //CONSOLE OUTPUT
             IntPtr inputHandle = GetStdHandle(-10); //CONSOLE INPUT
             GetConsoleMode(outputHandle, out uint outMode);
@@ -169,7 +170,11 @@ namespace CMSlib.ConsoleModule
 
         [DllImport("kernel32.dll", SetLastError = true)]
         private static extern int GlobalSize(IntPtr hmem);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        private static extern int SetConsoleOutputCP(uint cp);
         
-        
+        [DllImport("kernel32.dll", SetLastError = true)]
+        private static extern int SetConsoleCP(uint cp);
     }
 }
