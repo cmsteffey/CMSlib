@@ -21,7 +21,7 @@ namespace CMSlib.Tables
         /// <returns></returns>
         public static string TableColumn(this object obj, int innerWidth, ColumnAdjust adjust = ColumnAdjust.Left, bool ellipse = true, bool leftPipe = false, bool rightPipe = false)
         {
-            string str = obj.ToString();
+            string str = obj?.ToString() ?? "null";
             int visLen = str.VisibleLength();
             if (visLen > innerWidth)
             {

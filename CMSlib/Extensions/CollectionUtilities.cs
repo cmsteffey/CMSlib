@@ -57,6 +57,16 @@ namespace CMSlib.Extensions
 
             yield return ulong.MaxValue;
         }
+	public static T[] Shuffle<T>(this T[] toShuffle, System.Random rgen = null){
+	    rgen ??= new System.Random();
+	    for(int i = toShuffle.Length - 1; i > 0; i--){
+		int j = rgen.Next(0, i + 1);
+		T t = toShuffle[i];
+		toShuffle[i] = toShuffle[j];
+		toShuffle[j] = t;
+	    }
+	    return toShuffle;
+	}
 
         public static string ToReadableString<TKey, TValue>(this Dictionary<TKey, TValue> dict)
         {
