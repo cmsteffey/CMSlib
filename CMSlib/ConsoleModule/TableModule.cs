@@ -14,8 +14,10 @@ namespace CMSlib.ConsoleModule
         private (string line, object[] rowObjs)[] lineCache;
         private Table wrapped;
         private string header;
-        public TableModule(string title, int x, int y, int width, int height, Table toWrap, string header = null, 
-            LogLevel logLevel = LogLevel.Information) : base(title, x, y, width, height, logLevel)
+	private int selected = 0;
+	private object selectedLock = new();
+	public int SelectedLine { get => selected; set{ lock(selectedLock) selected = value;}}
+        public TableModule(string title, int x, int y, int width, int height, Table toWrap, string header = null) : base(title, x, y, width, height, LogLevel.None)
         {
             wrapped = toWrap;
             this.header = (header ?? toWrap.GetHeader()).SplitOnNonEscapeLength(width - 2).First().PadToVisibleDivisible(width - 2);
@@ -36,7 +38,8 @@ namespace CMSlib.ConsoleModule
             if (lineCache.Length == 0) return;
             int before = scrolledLines;
             scrolledLines = Math.Clamp(scrolledLines - amt, 0, Math.Max(0, lineCache.Length - (this.Height - 3)));
-            if (before != scrolledLines) WriteOutput();
+            if (before == scrolledLines) return;
+	    WriteOutput();
         }
 
         public override void ScrollTo(int line)
@@ -44,7 +47,8 @@ namespace CMSlib.ConsoleModule
             if (lineCache.Length == 0) return;
             int before = scrolledLines;
             scrolledLines = Math.Clamp(line, 0, Math.Max(0, lineCache.Length - (this.Height - 3)));
-            if (before != scrolledLines) WriteOutput();
+            if (before == scrolledLines) return;
+	    WriteOutput();
         }
 
         public override void PageUp()
@@ -104,10 +108,44 @@ namespace CMSlib.ConsoleModule
 		await FireRowClickedAsync(e);
 	    }
         }
-
+	
         internal override async Task HandleKeyAsync(ConsoleKeyInfo info)
         {
-            
+	    int internalHeight = Math.Min(Console.WindowHeight - Y, Height) - 4;
+	    bool CorrectScroll(){
+		int before = scrolledLines;
+		if(selected<scrolledLines)
+		    ScrollTo(selected);
+		else if(selected >= scrolledLines + internalHeight){
+		    ScrollTo(selected - internalHeight);
+		}
+		return scrolledLines != before;
+	    }
+	    if(selected<0||lineCache.Length == 0) return;
+	    RowClickedEventArgs e;
+	    switch(info.Key){
+	        case ConsoleKey.UpArrow:
+		    lock(selectedLock) 
+			selected = (selected - 1).Modulus(lineCache.Length);
+		    if(!CorrectScroll())
+			WriteOutput();
+		    break;
+		    
+	    	case ConsoleKey.DownArrow:
+		    lock(selectedLock) 
+			selected = (selected + 1).Modulus(lineCache.Length);
+		    if(!CorrectScroll())
+			WriteOutput();
+		    break;
+		case ConsoleKey.Enter when info.Modifiers.HasFlag(ConsoleModifiers.Control):
+		    e = new(){RowObjs = lineCache[selected].rowObjs, RowIndex = selected};
+		    await FireRowRightClickedAsync(e);
+		    break;
+		case ConsoleKey.Enter:
+		    e = new(){RowObjs = lineCache[selected].rowObjs, RowIndex = selected};
+		    await FireRowClickedAsync(e);
+		    break;
+	    }
         }
 	public event AsyncEventHandler<RowClickedEventArgs> RowClicked;
 	public event AsyncEventHandler<RowClickedEventArgs> RowRightClicked;
@@ -128,7 +166,7 @@ namespace CMSlib.ConsoleModule
 	}
         protected override IEnumerable<string> ToOutputLines()
         {
-            int internalHeight = Height - 3;
+            int internalHeight = Math.Min(Height - 3, Console.WindowHeight - Y - 3);
             int internalWidth = Width - 2;
             if(internalHeight < 2) yield break;
             string displayTitle = DisplayName ?? this.Title;
@@ -138,17 +176,18 @@ namespace CMSlib.ConsoleModule
                 displayTitle = displayTitle.Ellipse(internalWidth);
                 visLen = displayTitle.VisibleLength();
             }
-
+	    int relSelected = selected - scrolledLines;
             yield return LineDrawingMode + UpperLeftCorner + AsciiMode +
-                         (this.selected ? SgrUnderline + SgrBlinking : "") + displayTitle +
-                         (this.selected ? SgrNoUnderline + SgrNoBlinking : "") + LineDrawingMode +
+                         (base.selected ? SgrUnderline + SgrBlinking : "") + displayTitle +
+                         (base.selected ? SgrNoUnderline + SgrNoBlinking : "") + LineDrawingMode +
                          new string(HorizontalLine, internalWidth - visLen) + UpperRightCorner;
             yield return VerticalLine + AsciiMode + header + LineDrawingMode + VerticalLine;
             int lineCount = Math.Min(internalHeight, lineCache.Length);
             int spaceCount = internalHeight - lineCount;
             for (int i = 0; i < lineCount; i++)
             {
-                yield return VerticalLine + AsciiMode + lineCache[scrolledLines + i].line + LineDrawingMode +
+		string start = i != relSelected ? VerticalLine + AsciiMode : AsciiMode + SgrBlackForeGround + SgrBrightYellowBackGround + ">" + AnsiEscape.SgrClear; 
+                yield return start + lineCache[scrolledLines + i].line + LineDrawingMode +
                              VerticalLine;
             }
 

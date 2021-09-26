@@ -89,8 +89,8 @@ namespace CMSlib.Tables
 
         public void AddRow(params object[] sectionItems)
         {
-            if (sectionItems.Length != sections.Count || sectionItems.Select(x => x.GetType())
-                .Zip(this.sections.Select(x => x.type)).Any(x=>x.First != x.Second && !x.First.IsSubclassOf(x.Second))) return;
+            if (sectionItems.Length < sections.Count || sections.Select(x => x.type)
+                .Zip(this.sectionItems.Select(x => x.Gettype())).Any(x=>x.First != x.Second && !x.Second.IsSubclassOf(x.First))) return;
             rows.Add(new(sectionItems));
         }
         public record TableRow(params object[] SectionItems);
