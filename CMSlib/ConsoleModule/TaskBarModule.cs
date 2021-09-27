@@ -77,7 +77,14 @@ namespace CMSlib.ConsoleModule
 
         internal async override Task HandleKeyAsync(ConsoleKeyInfo info)
         {
-            
+            switch(info.Key){
+		case ConsoleKey.RightArrow:
+		    PageDown()
+		    break;
+		case ConsoleKey.LeftArrow:
+		    PageUp();
+		    break;
+	    }
         }
 
         protected override IEnumerable<string> ToOutputLines()
