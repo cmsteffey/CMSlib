@@ -77,7 +77,6 @@ namespace CMSlib.ConsoleModule
             {
                 page.SetParent(this);
                 Pages.Add(page);
-
             }
         }
 
@@ -188,10 +187,6 @@ namespace CMSlib.ConsoleModule
             loggerQueue.Enqueue(module);
             return true;
         }
-
-        /// <summary>
-        /// Adds a module to this manager.
-        /// </summary>
 
 
         /// <summary>
@@ -306,9 +301,11 @@ namespace CMSlib.ConsoleModule
 
         public async Task NextPage()
         {
+	    BaseModule selectedMod = SelectedPage.SelectedModule;
             lock (dictSync)
                 selected = (++selected).Modulus(Pages.Count);
             ModulePage newSelected = SelectedPage;
+	    
             if (newSelected is null)
                 return;
             await newSelected.FirePageSelectedAsync(new PageSelectedEventArgs(newSelected.SelectedModule));

@@ -122,7 +122,7 @@ namespace CMSlib.ConsoleModule
             }
             
         }
-
+	
         public event AsyncEventHandler<PageSelectedEventArgs> PageSelected;
 
         internal async Task FirePageSelectedAsync(PageSelectedEventArgs e)

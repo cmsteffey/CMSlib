@@ -79,7 +79,7 @@ namespace CMSlib.ConsoleModule
         {
             switch(info.Key){
 		case ConsoleKey.RightArrow:
-		    PageDown()
+		    PageDown();
 		    break;
 		case ConsoleKey.LeftArrow:
 		    PageUp();
