@@ -266,6 +266,16 @@ namespace CMSlib.ConsoleModule
         }
 
         protected abstract IEnumerable<string> ToOutputLines();
+	public static bool operator ==(BaseModule a, BaseModule b){
+	    return object.ReferenceEquals(a, b);
+	}
+	public static bool operator !=(BaseModule a, BaseModule b){
+	    return !(a == b);
+	}
+	public override bool Equals(object o){
+	    if(o is not BaseModule b) return false;
+	    return o == this;
+	}
     }
 
     public static class BoxRenderer

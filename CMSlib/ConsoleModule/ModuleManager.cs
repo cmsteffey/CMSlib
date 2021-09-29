@@ -305,20 +305,30 @@ namespace CMSlib.ConsoleModule
             lock (dictSync)
                 selected = (++selected).Modulus(Pages.Count);
             ModulePage newSelected = SelectedPage;
-	    
+	    ulong? index = newSelected.IndexOf<BaseModule>(selectedMod);
             if (newSelected is null)
                 return;
+	    if(index is not null){
+		lock(newSelected.dictSync)
+		    newSelected.selected = (int)index;
+	    }
             await newSelected.FirePageSelectedAsync(new PageSelectedEventArgs(newSelected.SelectedModule));
             RefreshAll();
         }
 
         public async Task PrevPage()
         {
+            BaseModule selectedMod = SelectedPage.SelectedModule;
             lock (dictSync)
                 selected = (--selected).Modulus(Pages.Count);
             ModulePage newSelected = SelectedPage;
+	    ulong? index = newSelected.IndexOf<BaseModule>(selectedMod);
             if (newSelected is null)
                 return;
+	    if(index is not null){
+		lock(newSelected.dictSync)
+		    newSelected.selected = (int)index;
+	    }
             await newSelected.FirePageSelectedAsync(new PageSelectedEventArgs(newSelected.SelectedModule));
             RefreshAll();
         }

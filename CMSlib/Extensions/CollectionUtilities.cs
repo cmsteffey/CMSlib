@@ -81,5 +81,13 @@ namespace CMSlib.Extensions
             }
             return builder.ToString();
         }
+	public static ulong? IndexOf<T>(this IEnumerable<T> haystack, T needle){
+	    ulong i = 0ul;
+	    foreach(T item in haystack){
+		if(item.Equals(needle)) return i;
+		++i;
+	    }
+	    return null;
+	}
     }
 }
