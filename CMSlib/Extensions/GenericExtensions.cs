@@ -4,7 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-
+using CMSlib.Tables;
 namespace CMSlib.Extensions
 {
     public static class GenericExtensions
@@ -60,9 +60,9 @@ namespace CMSlib.Extensions
             return obj as T;
         }
 
-        public static IEnumerable<string> GetMembers<T>(this T _) => GetMembers<T>();
+        public static IEnumerable<string> GetMembers<T>(this T _, bool fullNames = false) => GetMembers<T>(fullNames);
         
-        public static IEnumerable<string> GetMembers<T>()
+        public static IEnumerable<string> GetMembers<T>(bool fullNames = false)
         {
             Type type = typeof(T);
 
@@ -75,7 +75,7 @@ namespace CMSlib.Extensions
                 builder.Append(info.Name);
                 yield return builder.ToString();
             }
-            foreach (var info in type.GetProperties( ))
+            foreach (var info in type.GetProperties())
             {
                 builder.Clear();
                 builder.Append('#');
@@ -92,14 +92,19 @@ namespace CMSlib.Extensions
                 builder.Append('}');
                 yield return builder.ToString();
             }
-            foreach (var info in type.GetMethods())
+            foreach (var info in type.GetMethods().Where(x=>!x.IsSpecialName))
             {
                 builder.Clear();
                 builder.Append(info.IsStatic ? '.' : '#');
                 builder.Append(info.Name);
+		if(info.IsGenericMethodDefinition){	
+		    builder.Append('<');
+		    builder.Append(string.Join(", ", info.GetGenericArguments().Select(x=>(fullNames ? x.FullName : x.Name))));
+		    builder.Append('>');
+		}
                 builder.Append('(');
                 builder.Append(string.Join(", ",
-                    info.GetParameters().Select(x => x.ParameterType.FullName + " " + x.Name)));
+                    info.GetParameters().Select(x => (fullNames ? x.ParameterType.FullName : x.ParameterType.Name) + " " + x.Name)));
                 builder.Append(')');
                 yield return builder.ToString();
             }
