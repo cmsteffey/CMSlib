@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
-
+using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
 namespace CMSlib.ConsoleModule
 {
     /*MAKE PUBLIC, CHANGE CLASS NAME*/ internal class TemplateModule : BaseModule
