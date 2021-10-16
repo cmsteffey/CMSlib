@@ -10,6 +10,7 @@ namespace CMSlib.ConsoleModule
     public sealed class StandardInputModule : InputModule
     {
 
+	public bool TopDown {get; init;} = false;
         private readonly List<string> text = new();
         private readonly char? borderCharacter;
 
@@ -118,7 +119,7 @@ namespace CMSlib.ConsoleModule
 
         protected override IEnumerable<string> ToOutputLines()
         {
-            return BoxRenderer.Render(Title, borderCharacter, X, Y, Width, Height, scrolledLines, text, selected, DisplayName, true, unread, inputString);
+            return BoxRenderer.Render(Title, borderCharacter, X, Y, Width, Height, scrolledLines, text, selected, DisplayName, true, unread, inputString, TopDown);
         }
 
         public override void ScrollUp(int amt)

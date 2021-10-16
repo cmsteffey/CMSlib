@@ -12,7 +12,7 @@ namespace CMSlib.ConsoleModule
     {
         protected readonly List<string> text = new();
         protected readonly char? borderCharacter;
-
+	public bool TopDown {get; init;} = false;
         
 
         public LogModule(string title, int x, int y, int width, int height,
@@ -58,7 +58,7 @@ namespace CMSlib.ConsoleModule
         protected override IEnumerable<string> ToOutputLines()
         {
             return BoxRenderer.Render(Title, borderCharacter, X, Y, Width, Height, scrolledLines, text, selected, DisplayName,
-                false, unread, null);
+                false, unread, null, TopDown);
         }
 
         public override void ScrollUp(int amt)

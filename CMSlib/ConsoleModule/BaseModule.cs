@@ -280,7 +280,7 @@ namespace CMSlib.ConsoleModule
 
     public static class BoxRenderer
     {
-        internal static IEnumerable<string> Render(string Title, char? borderCharacter, int X, int Y, int Width, int Height, int scrolledLines, List<string> text, bool selected, string DisplayName, bool isInput, bool unread, StringBuilder inputString)
+        internal static IEnumerable<string> Render(string Title, char? borderCharacter, int X, int Y, int Width, int Height, int scrolledLines, List<string> text, bool selected, string DisplayName, bool isInput, bool unread, StringBuilder inputString, bool topDown)
         {
             int actingHeight = Math.Min(Height, Console.WindowHeight - Y);
             int internalHeight = actingHeight - 2;
@@ -318,6 +318,9 @@ namespace CMSlib.ConsoleModule
             int spaceCount =
                 Math.Min(internalHeight - text.Count - inputDifferential + scrolledLines,
                     internalHeight - inputDifferential);
+	    if(topDown) goto Lines;
+	    Spaces:
+
             for (int i = 0; i < spaceCount; i++)
             {
                 output.Append(borderCharacter?.ToString()??(unread && i > internalHeight - (4 + inputDifferential) ? AnsiEscape.AsciiMode + AnsiEscape.SgrRedForeGround + AnsiEscape.SgrBrightBold + "V" + AnsiEscape.SgrClear : AnsiEscape.LineDrawingMode + AnsiEscape.VerticalLine.ToString()));
@@ -327,10 +330,11 @@ namespace CMSlib.ConsoleModule
                 yield return output.ToString();
                 output.Clear();
             }
+	    if(topDown) goto EndLines;
+	    Lines:
             int index = Math.Clamp(text.Count - (internalHeight - inputDifferential) - scrolledLines, 0, text.Count == 0 ? 0 : text.Count - 1);
             
             List<string> toPrint = text.GetRange(index, lineCount);
-            
             
             for(int i = 0; i < toPrint.Count; i++)
             {
@@ -348,6 +352,8 @@ namespace CMSlib.ConsoleModule
                 yield return output.ToString();
                 output.Clear();
             }
+	    if(topDown) goto Spaces;
+	    EndLines:
             if(borderCharacter is null)
                 output.Append(AnsiEscape.LineDrawingMode).Append(isInput ? AnsiEscape.VerticalWithRight : AnsiEscape.LowerLeftCorner).Append(AnsiEscape.HorizontalLine, internalWidth).Append(isInput ? AnsiEscape.VerticalWithLeft : AnsiEscape.LowerRightCorner);
             else
