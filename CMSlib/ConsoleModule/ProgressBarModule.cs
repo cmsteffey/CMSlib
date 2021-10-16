@@ -47,7 +47,7 @@ namespace CMSlib.ConsoleModule
 	    int internalWidth = Width - 2;
 	    long currPos = ToInternalFullX(current);
 	    int len = (int)(currPos / 2);
-	    yield return sb.Append(AnsiEscape.LineDrawingMode).Append(AnsiEscape.UpperLeftCorner).Append(displayTitleLen > internalWidth ? displayTitle.Ellipse(internalWidth) : displayTitle).Append(AnsiEscape.LineDrawingMode).Append(AnsiEscape.HorizontalLine, Math.Max(0, Width - 2 - displayTitleLen)).Append(AnsiEscape.UpperRightCorner).ToString();
+	    yield return sb.Append(AnsiEscape.LineDrawingMode).Append(AnsiEscape.UpperLeftCorner).Append(AnsiEscape.AsciiMode).Append(displayTitleLen > internalWidth ? displayTitle.Ellipse(internalWidth) : displayTitle).Append(AnsiEscape.LineDrawingMode).Append(AnsiEscape.HorizontalLine, Math.Max(0, Width - 2 - displayTitleLen)).Append(AnsiEscape.UpperRightCorner).ToString();
 	    for(int i = 0; i < Height - 2; ++i){
 		yield return sb.Clear().Append(AnsiEscape.VerticalLine).Append(AnsiEscape.AsciiMode).Append(filler).Append('█',len).Append(len == internalWidth ? "" : fillers[currPos%2].ToString()).Append(AnsiEscape.SgrClear).Append(len < internalWidth ? new string(' ', internalWidth - len - 1) : "").Append(AnsiEscape.LineDrawingMode).Append(AnsiEscape.VerticalLine).ToString();
 	    }
