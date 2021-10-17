@@ -9,6 +9,8 @@ namespace CMSlib.ConsoleModule
     {
         private uint prevIn;
         private uint prevOut;
+	private uint prevInCP;
+	private uint prevOutCP;
         private StreamWriter _writer = null;
         InputRecord? ITerminal.ReadInput()
         {
@@ -57,6 +59,8 @@ namespace CMSlib.ConsoleModule
         {
             _writer = new StreamWriter(Console.OpenStandardOutput());
             _writer.AutoFlush = false;
+	    prevInCP = GetConsoleCP();
+	    prevOutCP = GetConsoleOutputCP();
             SetConsoleOutputCP(65001);
             SetConsoleCP(65001);
             IntPtr outputHandle = GetStdHandle(-11); //CONSOLE OUTPUT
@@ -102,12 +106,14 @@ namespace CMSlib.ConsoleModule
         /// <summary>
         /// Quits the app, properly returning to the main buffer and clearing all possible cursor/format options.
         /// </summary>
-        void ITerminal.QuitApp(Exception e)
+        void ITerminal.QuitApp(Exception e = null)
         {
             _writer?.Write(AnsiEscape.MainScreenBuffer);
             _writer?.Write(AnsiEscape.SoftReset);
             _writer?.Write(AnsiEscape.EnableCursorBlink);
             _writer?.Flush();
+	    SetConsoleCP(prevInCP);
+	    SetConsoleOutputCP(prevOutCP);
             SetConsoleMode(GetStdHandle(-10), prevIn);
             SetConsoleMode(GetStdHandle(-11), prevOut);
             _writer?.WriteLine(
@@ -176,5 +182,11 @@ namespace CMSlib.ConsoleModule
         
         [DllImport("kernel32.dll", SetLastError = true)]
         private static extern int SetConsoleCP(uint cp);
+	
+	[DllImport("kernel32.dll", SetLastError = true)]
+        private static extern uint GetConsoleOutputCP();
+
+	[DllImport("kernel32.dll", SetLastError = true)]
+        private static extern uint GetConsoleCP();
     }
 }
