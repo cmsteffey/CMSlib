@@ -70,24 +70,24 @@ namespace CMSlib.ConsoleModule
         /// <summary>
         /// Event fired when a key is pressed while this module is focused
         /// </summary>
-        public event AsyncEventHandler<KeyEnteredEventArgs> KeyEntered;
+        public event EventHandler<KeyEnteredEventArgs> KeyEntered;
         
-        internal async Task FireKeyEnteredAsync(KeyEnteredEventArgs args)
+        internal void FireKeyEntered(KeyEnteredEventArgs args)
         {
             var handler = KeyEntered;
             if (handler is not null)
             {
-                await handler(this, args);
+                handler(this, args);
             }
         }
         
-        protected event AsyncEventHandler<KeyEnteredEventArgs> ReadKeyKeyEntered;
-        internal async Task FireReadKeyKeyEntered(KeyEnteredEventArgs args)
+        protected event EventHandler<KeyEnteredEventArgs> ReadKeyKeyEntered;
+        internal void FireReadKeyKeyEntered(KeyEnteredEventArgs args)
         {
             var handler = ReadKeyKeyEntered;
             if (handler is not null)
             {
-                await handler(this, args);
+                handler(this, args);
             }
         }
         /// <summary>
@@ -101,39 +101,29 @@ namespace CMSlib.ConsoleModule
             CancellationTokenSource waitCancel = new();
             CancellationTokenSource combined = CancellationTokenSource.CreateLinkedTokenSource(waitCancel.Token, cancellationToken);
 
-            Task Waiter(object _, KeyEnteredEventArgs args)
+            void Waiter(object _, KeyEnteredEventArgs args)
             {
                 result = args;
                 waitCancel.Cancel();
-                return Task.CompletedTask;
             }
-
-            try
-            {
-                ReadKeyKeyEntered += Waiter;
-                await Task.Delay(-1, combined.Token);
-            }
-            catch (TaskCanceledException e)
-            {
-                
-                ReadKeyKeyEntered -= Waiter;
-                if (cancellationToken.IsCancellationRequested)
-                    throw e;
-            }
+            ReadKeyKeyEntered += Waiter;
+            combined.Token.WaitHandle.WaitOne();
+            ReadKeyKeyEntered -= Waiter;
+            
             return result;
         }
         
         /// <summary>
         /// Event fired when a key is pressed while this module is focused
         /// </summary>
-        public event AsyncEventHandler<MouseInputReceivedEventArgs> MouseInputReceived;
+        public event EventHandler<MouseInputReceivedEventArgs> MouseInputReceived;
         
-        internal async Task FireMouseInputReceived(MouseInputReceivedEventArgs args)
+        internal void FireMouseInputReceived(MouseInputReceivedEventArgs args)
         {
             var handler = MouseInputReceived;
             if (handler is not null)
             {
-                await handler(this, args);
+                handler(this, args);
             }
         }
 

@@ -102,10 +102,10 @@ namespace CMSlib.ConsoleModule
 		bool right = record.MouseEvent.ButtonState.HasFlag(ButtonState.RightPressed);
 		if(!(left ^ right)) return;
 		if(right){
-		    await FireRowRightClickedAsync(e);
+		    FireRowRightClicked(e);
 		    return;
 		}
-		await FireRowClickedAsync(e);
+		FireRowClicked(e);
 	    }
         }
 	
@@ -139,25 +139,25 @@ namespace CMSlib.ConsoleModule
 		    break;
 		case ConsoleKey.Enter when info.Modifiers.HasFlag(ConsoleModifiers.Control):
 		    e = new(){RowObjs = lineCache[selected].rowObjs, RowIndex = selected};
-		    await FireRowRightClickedAsync(e);
+		    FireRowRightClicked(e);
 		    break;
 		case ConsoleKey.Enter:
 		    e = new(){RowObjs = lineCache[selected].rowObjs, RowIndex = selected};
-		    await FireRowClickedAsync(e);
+		    FireRowClicked(e);
 		    break;
 	    }
         }
-	public event AsyncEventHandler<RowClickedEventArgs> RowClicked;
-	public event AsyncEventHandler<RowClickedEventArgs> RowRightClicked;
-	private async Task FireRowClickedAsync(RowClickedEventArgs e){
+	public event EventHandler<RowClickedEventArgs> RowClicked;
+	public event EventHandler<RowClickedEventArgs> RowRightClicked;
+	private void FireRowClicked(RowClickedEventArgs e){
 	    var handler = RowClicked;
 	    if(handler is not null)
-		await handler(this, e);
+		handler(this, e);
 	}
-	private async Task FireRowRightClickedAsync(RowClickedEventArgs e){
+	private void FireRowRightClicked(RowClickedEventArgs e){
 	    var handler = RowRightClicked;
 	    if(handler is not null)
-		await handler(this, e);
+		handler(this, e);
 	}
 	public class RowClickedEventArgs : System.EventArgs{
 	    public object[] RowObjs {get; internal init;}

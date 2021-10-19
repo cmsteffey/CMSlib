@@ -45,26 +45,26 @@ namespace CMSlib.ConsoleModule
         /// <summary>
         /// Event fired when a line is entered into this module
         /// </summary>
-        public event AsyncEventHandler<LineEnteredEventArgs> LineEntered;
+        public event EventHandler<LineEnteredEventArgs> LineEntered;
         
         
-        internal async Task FireLineEnteredAsync(LineEnteredEventArgs args)
+        internal void FireLineEntered(LineEnteredEventArgs args)
         {
             var handler = LineEntered;
             if (handler is not null)
             {
-                await handler(this, args);
+                handler(this, args);
             }
         }
 
         
-        protected event AsyncEventHandler<LineEnteredEventArgs> ReadLineLineEntered;
-        internal async Task FireReadLineLineEntered(LineEnteredEventArgs args)
+        protected event EventHandler<LineEnteredEventArgs> ReadLineLineEntered;
+        internal void FireReadLineLineEntered(LineEnteredEventArgs args)
         {
             var handler = ReadLineLineEntered;
             if (handler is not null)
             {
-                await handler(this, args);
+                handler(this, args);
             }
         }
         /// <summary>
@@ -78,25 +78,17 @@ namespace CMSlib.ConsoleModule
             CancellationTokenSource waitCancel = new();
             CancellationTokenSource combined = CancellationTokenSource.CreateLinkedTokenSource(waitCancel.Token, cancellationToken);
 
-            Task Waiter(object _, LineEnteredEventArgs args)
+            void Waiter(object _, LineEnteredEventArgs args)
             {
                 result = args;
                 waitCancel.Cancel();
-                return Task.CompletedTask;
             }
 
-            try
-            {
-                ReadLineLineEntered += Waiter;
-                await Task.Delay(-1, combined.Token);
-            }
-            catch (TaskCanceledException e)
-            {
-                
-                ReadLineLineEntered -= Waiter;
-                if (cancellationToken.IsCancellationRequested)
-                    throw e;
-            }
+            
+            ReadLineLineEntered += Waiter;
+            combined.Token.WaitHandle.WaitOne();
+            ReadLineLineEntered -= Waiter;
+            
             return result;
         }
         

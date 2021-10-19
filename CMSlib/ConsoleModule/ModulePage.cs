@@ -123,13 +123,13 @@ namespace CMSlib.ConsoleModule
             
         }
 	
-        public event AsyncEventHandler<PageSelectedEventArgs> PageSelected;
+        public event EventHandler<PageSelectedEventArgs> PageSelected;
 
-        internal async Task FirePageSelectedAsync(PageSelectedEventArgs e)
+        internal void FirePageSelected(PageSelectedEventArgs e)
         {
-            AsyncEventHandler<PageSelectedEventArgs> handler = PageSelected;
+            var handler = PageSelected;
             if (handler is not null)
-                await handler(this, e);
+                handler(this, e);
         }
         
         

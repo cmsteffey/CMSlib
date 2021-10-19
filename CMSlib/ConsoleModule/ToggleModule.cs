@@ -37,7 +37,7 @@ namespace CMSlib.ConsoleModule
             
         }
 
-        private async Task FlipToggleAsync()
+        private void FlipToggle()
         {
             bool newState;
             lock (toggleLock)
@@ -48,13 +48,13 @@ namespace CMSlib.ConsoleModule
 
             var handler = ToggleFlipped;
             if (handler is not null)
-                await handler(this, new ToggleFlippedEventArgs(newState));
+                handler(this, new ToggleFlippedEventArgs(newState));
             this.WriteOutput();
         }
         internal override async Task HandleKeyAsync(ConsoleKeyInfo info)
         {
             if(info.Key == ConsoleKey.Enter)
-                await FlipToggleAsync();
+                FlipToggle();
                 
         }
         
@@ -62,7 +62,7 @@ namespace CMSlib.ConsoleModule
         {
             
             if (before.HasValue && before.Value != record.MouseEvent.ButtonState) 
-                await FlipToggleAsync();
+                FlipToggle();
         }
         
 
@@ -91,7 +91,7 @@ namespace CMSlib.ConsoleModule
             
         }
 
-        public event AsyncEventHandler<ToggleFlippedEventArgs> ToggleFlipped;
+        public event EventHandler<ToggleFlippedEventArgs> ToggleFlipped;
         protected override IEnumerable<string> ToOutputLines()
         {
             bool enabled = Enabled;

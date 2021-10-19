@@ -50,23 +50,23 @@ namespace CMSlib.ConsoleModule
         internal async override Task HandleClickAsync(InputRecord record, ButtonState? before)
         {
             if (before.HasValue && before.Value != record.MouseEvent.ButtonState) 
-                await HandleClickAsync();
+                HandleClick();
         }
 
-        private async Task HandleClickAsync()
+        private void HandleClick()
         {
             
             var eventHandler = Clicked;
             if(eventHandler is not null)
-                await eventHandler(this, new ClickEventArgs());
+                eventHandler(this, new ClickEventArgs());
         }
 
-        public event AsyncEventHandler<ClickEventArgs> Clicked; 
+        public event EventHandler<ClickEventArgs> Clicked; 
 
         internal async override Task HandleKeyAsync(ConsoleKeyInfo info)
         {
             if (info.Key is ConsoleKey.Enter)
-                await HandleClickAsync();
+                HandleClick();
         }
 
         protected override IEnumerable<string> ToOutputLines()

@@ -208,17 +208,17 @@ namespace CMSlib.ConsoleModule
         /// <summary>
         /// Event fired when a line is entered in any module.
         /// </summary>
-        public event AsyncEventHandler<LineEnteredEventArgs> LineEntered;
+        public event EventHandler<LineEnteredEventArgs> LineEntered;
 
         /// <summary>
         /// Event fired when input is received.
         /// </summary>
-        public event AsyncEventHandler<InputReceivedEventArgs> InputReceived;
+        public event EventHandler<InputReceivedEventArgs> InputReceived;
 
         /// <summary>
         /// Event fired when input is received.
         /// </summary>
-        public event AsyncEventHandler<KeyEnteredEventArgs> KeyEntered;
+        public event EventHandler<KeyEnteredEventArgs> KeyEntered;
 
         //TODO add event for when the window is focused/defocused
 
@@ -299,7 +299,7 @@ namespace CMSlib.ConsoleModule
                 currentPage[newSelected].WriteOutput();
         }
 
-        public async Task NextPage()
+        public void NextPage()
         {
 	    BaseModule selectedMod = SelectedPage.SelectedModule;
             lock (dictSync)
@@ -312,11 +312,11 @@ namespace CMSlib.ConsoleModule
 		lock(newSelected.dictSync)
 		    newSelected.selected = (int)index;
 	    }
-            await newSelected.FirePageSelectedAsync(new PageSelectedEventArgs(newSelected.SelectedModule));
+            newSelected.FirePageSelected(new PageSelectedEventArgs(newSelected.SelectedModule));
             RefreshAll();
         }
 
-        public async Task PrevPage()
+        public void PrevPage()
         {
             BaseModule selectedMod = SelectedPage.SelectedModule;
             lock (dictSync)
@@ -329,7 +329,7 @@ namespace CMSlib.ConsoleModule
 		lock(newSelected.dictSync)
 		    newSelected.selected = (int)index;
 	    }
-            await newSelected.FirePageSelectedAsync(new PageSelectedEventArgs(newSelected.SelectedModule));
+            newSelected.FirePageSelected(new PageSelectedEventArgs(newSelected.SelectedModule));
             RefreshAll();
         }
 
@@ -395,7 +395,7 @@ namespace CMSlib.ConsoleModule
                     ConsoleKeyInfo key = input.Value;
                     selectedModule?.HandleKeyAsync(key);
                     InputModule inputModule = selectedModule as InputModule;
-                    AsyncEventHandler<KeyEnteredEventArgs> handler = KeyEntered;
+                    EventHandler<KeyEnteredEventArgs> handler = KeyEntered;
                     
                     KeyEnteredEventArgs e = new()
                     {
@@ -403,11 +403,11 @@ namespace CMSlib.ConsoleModule
                         KeyInfo = key
                     };
                     if (handler is not null)
-                        await handler(inputModule, e);
+                        handler(inputModule, e);
                     if (selectedModule is not null)
                     {
-                        await selectedModule?.FireReadKeyKeyEntered(e);
-                        await selectedModule?.FireKeyEnteredAsync(e);
+                        selectedModule.FireReadKeyKeyEntered(e);
+                        selectedModule.FireKeyEntered(e);
                     }
                     await HandleKeyAsync(key, selectedModule, terminal);
                     break;
@@ -426,7 +426,7 @@ namespace CMSlib.ConsoleModule
                     if (page is null) return;
                     foreach (var module in page.Where(x => input.Value.MouseEvent.MousePosition.Inside(x)))
                     {
-                        await module.FireMouseInputReceived(new MouseInputReceivedEventArgs()
+                        module.FireMouseInputReceived(new MouseInputReceivedEventArgs()
                             {InputState = new ClickInputState(input.Value)});
                         await module.HandleClickAsync(input.Value, cached);
                     }
@@ -520,10 +520,10 @@ namespace CMSlib.ConsoleModule
                     break;
 
                 case ConsoleKey.Enter when mods[Shift]:
-                    await EnterLineAsync(inputModule, false);
+                    EnterLine(inputModule, false);
                     break;
                 case ConsoleKey.Enter:
-                    await EnterLineAsync(inputModule, true);
+                    EnterLine(inputModule, true);
                     return;
                 case ConsoleKey.Backspace when inputModule?.inputString.Length.Equals(0) ?? false:
                     return;
@@ -542,12 +542,12 @@ namespace CMSlib.ConsoleModule
             }
         }
 
-        private async Task EnterLineAsync(BaseModule selected, bool scrollToBottom)
+        private void EnterLine(BaseModule selected, bool scrollToBottom)
         {
 
             if (selected is not ConsoleModule.InputModule inputModule) return;
             string line;
-            AsyncEventHandler<LineEnteredEventArgs> handler;
+            EventHandler<LineEnteredEventArgs> handler;
             lock (this.writeLock)
             {
                 handler = LineEntered;
@@ -570,9 +570,9 @@ namespace CMSlib.ConsoleModule
             };
             inputModule.WriteOutput();
             if (handler != null)
-                await handler(inputModule, e);
-            await inputModule.FireLineEnteredAsync(e);
-            await inputModule.FireReadLineLineEntered(e);
+                handler(inputModule, e);
+            inputModule.FireLineEntered(e);
+            inputModule.FireReadLineLineEntered(e);
         }
 
         public void Write(string toWrite)
@@ -661,5 +661,5 @@ namespace CMSlib.ConsoleModule
         }
     }
     
-    public delegate Task AsyncEventHandler<in T>(object sender, T eventArgs) where T : System.EventArgs;
+    public delegate void EventHandler<in T>(object sender, T eventArgs) where T : System.EventArgs;
 }
