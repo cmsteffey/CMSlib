@@ -1,9 +1,10 @@
 ﻿using System;
-
+using System.IO;
 namespace CMSlib.ConsoleModule
 {
     public class StdTerminal : ITerminal
     {
+	StreamWriter _writer = null;
         InputRecord? ITerminal.ReadInput()
         {
             if (Console.IsInputRedirected) throw new NoInputException(this);
@@ -12,12 +13,12 @@ namespace CMSlib.ConsoleModule
 
         void ITerminal.SetupConsole()
         {
-            
+            _writer = new StreamWriter(Console.OpenStandardOutput());
         }
 
         void ITerminal.Write(string toWrite)
         {
-            Console.Write(toWrite);
+            _writer.Write(toWrite);
         }
 
         void ITerminal.SetCursorPosition(int x, int y)
@@ -27,12 +28,12 @@ namespace CMSlib.ConsoleModule
 
         void ITerminal.SetConsoleTitle(string title)
         {
-            Console.Write(AnsiEscape.WindowTitle(title[..Math.Min(256, title.Length)]));
+            _writer.Write(AnsiEscape.WindowTitle(title[..Math.Min(256, title.Length)]));
         }
 
         void ITerminal.Flush()
         {
-            
+            _writer.Flush();
         }
 
         string ITerminal.GetClipboard()
@@ -45,12 +46,14 @@ namespace CMSlib.ConsoleModule
         /// </summary>
         void ITerminal.QuitApp(Exception e)
         {
-            Console.Write(AnsiEscape.MainScreenBuffer);
-            Console.Write(AnsiEscape.SoftReset);
-            Console.Write(AnsiEscape.EnableCursorBlink);
-            Console.WriteLine(
+            _writer?.Write(AnsiEscape.MainScreenBuffer);
+            _writer?.Write(AnsiEscape.SoftReset);
+            _writer?.Write(AnsiEscape.EnableCursorBlink);
+            _writer?.WriteLine(
                 e is not null ? $"CMSlib gracefully exited with an exception:\n{e}" : $"[CMSlib] Exiting gracefully.");
-            System.Diagnostics.Process.GetCurrentProcess().Kill();
+	    _writer.Close();
+	    _writer.Dispose();
+            System.Environment.Exit(0);
         }
 
         void ITerminal.FlashWindow(FlashFlags flags, uint times, int milliDelay)

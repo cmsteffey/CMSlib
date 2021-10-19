@@ -56,8 +56,8 @@ namespace CMSlib.ConsoleModule
             _writer.Flush();
         }
         void ITerminal.SetupConsole()
-        {
-            _writer = new StreamWriter(Console.OpenStandardOutput());
+        { 
+	    _writer = new(Console.OpenStandardOutput());
             _writer.AutoFlush = false;
 	    prevInCP = GetConsoleCP();
 	    prevOutCP = GetConsoleOutputCP();
@@ -119,7 +119,7 @@ namespace CMSlib.ConsoleModule
             _writer?.WriteLine(
                 e is not null ? $"CMSlib gracefully exited with an exception:\n{e}" : $"[CMSlib] Exiting gracefully.");
             _writer?.Dispose();
-            System.Diagnostics.Process.GetCurrentProcess().Kill();
+            System.Environment.Exit(0);
         }
 
         void ITerminal.FlashWindow(FlashFlags flags, uint times, int milliDelay)
