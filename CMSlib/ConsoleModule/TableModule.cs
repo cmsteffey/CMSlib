@@ -15,7 +15,9 @@ namespace CMSlib.ConsoleModule
         private Table wrapped;
         private string header;
 	private int selected = 0;
+	private object lineCacheLock = new();
 	private object selectedLock = new();
+	public object[] SelectedRowObjs { get => lineCache[selected].rowObjs; }
 	public int SelectedLine { get => selected; set{ lock(selectedLock) selected = value;}}
         public TableModule(string title, int x, int y, int width, int height, Table toWrap, string header = null) : base(title, x, y, width, height, LogLevel.None)
         {
@@ -41,6 +43,8 @@ namespace CMSlib.ConsoleModule
             if (before == scrolledLines) return;
 	    WriteOutput();
         }
+
+
 
         public override void ScrollTo(int line)
         {
@@ -75,7 +79,8 @@ namespace CMSlib.ConsoleModule
         {
 	    
             int before = scrolledLines;
-            lineCache = wrapped.GetOutputRows().Select((x, i) =>
+            lock(lineCacheLock)
+	    lineCache = wrapped.GetOutputRows().Select((x, i) =>
             {
                 if (x.VisibleLength() > Width - 2)
                     return (x.SplitOnNonEscapeLength(Width - 2).First(), wrapped[i].SectionItems);
@@ -85,6 +90,8 @@ namespace CMSlib.ConsoleModule
             scrolledLines = Math.Clamp(scrolledLines, 0, Math.Max(0, lineCache.Length - (this.Height - 3)));
             if (before != scrolledLines) WriteOutput();
         }
+
+	
 
         internal override async Task HandleClickAsync(InputRecord record, ButtonState? before)
         {
