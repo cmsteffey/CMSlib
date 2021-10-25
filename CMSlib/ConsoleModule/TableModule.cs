@@ -17,7 +17,7 @@ namespace CMSlib.ConsoleModule
 	private int selected = 0;
 	private object lineCacheLock = new();
 	private object selectedLock = new();
-	public object[] SelectedRowObjs { get => lineCache[selected].rowObjs; }
+	public object[] SelectedRowObjs { get => selected < 0 || selected >= lineCache.Length ? null : lineCache[selected].rowObjs; }
 	public int SelectedLine { get => selected; set{ lock(selectedLock) selected = value;}}
         public TableModule(string title, int x, int y, int width, int height, Table toWrap, string header = null) : base(title, x, y, width, height, LogLevel.None)
         {

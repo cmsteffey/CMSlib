@@ -102,7 +102,7 @@ namespace CMSlib.ConsoleModule
                 for (int j = 0; j < pages.Count; j++)
                 {
                     
-                    output.Append(Parent.selected == j ? (this.selected ? AnsiEscape.SgrBlackForeGround + AnsiEscape.SgrWhiteBackGround : AnsiEscape.SgrBlackForeGround + AnsiEscape.SgrBlackBackGround + AnsiEscape.SgrBrightBold + AnsiEscape.SgrNegative) : null);
+                    output.Append(Parent.selected == j ? (this.selected ? AnsiEscape.SgrBlackForeGround + AnsiEscape.SgrWhiteBackGround : AnsiEscape.SgrBlackForeGround + AnsiEscape.SgrBrightBlackBackGround) : AnsiEscape.SgrWhiteForeGround + AnsiEscape.SgrBlackBackGround);
                     output.Append(i==0 ? (pages[j].DisplayName ?? (j + 1).ToString()).Ellipse(actingInternalWidthPer)
                         .GuaranteeLength(actingInternalWidthPer) : new string(' ', actingInternalWidthPer));
                     output.Append(AnsiEscape.SgrClear);
