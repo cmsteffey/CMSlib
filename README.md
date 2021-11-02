@@ -1,18 +1,20 @@
 # CMSlib
 CMSlib (Console Module System) is a c# library for making graphical user interfaces, all inside a console window!\
 
-The structure of a standard program goes as follows:\
-ModuleManager instance\
-|-ModulePage instance\
-|-BaseModule instance\
-  |-...\
-  |-BaseModule instance\
-  |-TaskBarModule instance\
-|-ModulePage instance\
-  |-BaseModule instance\
-  |-...\
-  |-BaseModule instance\
-  |-TaskBarModule instance (same reference as in the first ModulePage)\
+The structure of a standard program goes as follows:
+```
+ModuleManager instance
+|-ModulePage instance
+|-BaseModule instance
+  |-...
+  |-BaseModule instance
+  |-TaskBarModule instance
+|-ModulePage instance
+  |-BaseModule instance
+  |-...
+  |-BaseModule instance
+  |-TaskBarModule instance (same reference as in the first ModulePage)
+```
  
 ModuleManager is what controls all drawing, and it is what handles input.\
 Only call its constructor *once* in your program, and before you need to do any graphics.\
