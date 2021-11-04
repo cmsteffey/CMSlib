@@ -1,7 +1,9 @@
-﻿namespace CMSlib.ConsoleModule
+﻿using System;
+
+namespace CMSlib.ConsoleModule
 {
-    public interface CategoricalModule
+    public interface ICategoricalModule
     {
-        internal System.Type GetCategoryType();
+        internal Type GetCategoryType();
     }
 }

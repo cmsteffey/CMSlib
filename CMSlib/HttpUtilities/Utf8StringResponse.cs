@@ -1,7 +1,9 @@
 ﻿using System.IO;
 using System.Net.Http;
+using System.Text;
+using System.Text.Json;
 
-namespace CMSlib
+namespace CMSlib.HttpUtilities
 {
     public class Utf8StringResponse
     {
@@ -20,7 +22,7 @@ namespace CMSlib
             return new Utf8StringResponse()
             {
                 Base = @base,
-                Content = System.Text.Encoding.UTF8.GetString(bytes)
+                Content = Encoding.UTF8.GetString(bytes)
             };
         }
 
@@ -30,15 +32,16 @@ namespace CMSlib
 
     public static class Utf8StringResponseExtensions
     {
-        public static Utf8StringResponse AsStringResponse(this HttpResponseMessage resp) => resp; 
+        public static Utf8StringResponse AsStringResponse(this HttpResponseMessage resp) => resp;
+
         public static T? ParseAsJson<T>(this string obj)
         {
-            return System.Text.Json.JsonSerializer.Deserialize<T>(obj);
+            return JsonSerializer.Deserialize<T>(obj);
         }
+
         public static T? ParseAsJson<T>(this HttpResponseMessage resp)
         {
             return resp.AsStringResponse().Content.ParseAsJson<T>();
         }
-        
     }
 }

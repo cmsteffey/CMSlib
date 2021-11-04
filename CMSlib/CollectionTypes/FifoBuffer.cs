@@ -49,16 +49,14 @@ namespace CMSlib.CollectionTypes
         public FifoBuffer<T> GetRange(int startIndex, int count)
         {
             FifoBuffer<T> returns = new FifoBuffer<T>(count);
-            
+
             return returns;
         }
 
         public int Count => _count;
 
-        public int Capacity
-        {
-            get => _buffer.Length;
-        }
+        public int Capacity => _buffer.Length;
+
         public void Clear()
         {
             lock (lockObj)
@@ -67,10 +65,12 @@ namespace CMSlib.CollectionTypes
                 _count = 0;
             }
         }
+
         IEnumerator<T> IEnumerable<T>.GetEnumerator()
         {
             return new FifoBufferIterator<T>(this);
         }
+
         IEnumerator IEnumerable.GetEnumerator()
         {
             return new FifoBufferIterator<T>(this);
@@ -78,9 +78,9 @@ namespace CMSlib.CollectionTypes
 
         private class FifoBufferIterator<TItemType> : IEnumerator<TItemType>
         {
-            private TItemType[] _buffer;
-            private int itemPointer;
-            
+            private readonly TItemType[] _buffer;
+            private int _itemPointer;
+
             internal FifoBufferIterator(FifoBuffer<TItemType> buffer)
             {
                 _buffer = new TItemType[buffer._count];
@@ -96,21 +96,21 @@ namespace CMSlib.CollectionTypes
                     Array.Copy(buffer._buffer, buffer._offset, _buffer, 0, buffer._count);
                 }
             }
-            
+
             bool IEnumerator.MoveNext()
             {
-                itemPointer++;
-                return itemPointer < _buffer.Length;
+                _itemPointer++;
+                return _itemPointer < _buffer.Length;
             }
 
             void IEnumerator.Reset()
             {
-                itemPointer = -1;
+                _itemPointer = -1;
             }
 
-            TItemType IEnumerator<TItemType>.Current => _buffer[itemPointer];
+            TItemType IEnumerator<TItemType>.Current => _buffer[_itemPointer];
 
-            object IEnumerator.Current => _buffer[itemPointer];
+            object IEnumerator.Current => _buffer[_itemPointer];
 
             void IDisposable.Dispose()
             {

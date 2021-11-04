@@ -6,15 +6,17 @@
         /// Represents the state of shift, ctrl, and alt at the time of the click
         /// </summary>
         public ControlKeyState ControlKeyState { get; }
+
         /// <summary>
         /// Represents which buttons on the mouse were down at the time of this click
         /// </summary>
         public ButtonState ButtonState { get; }
+
         /// <summary>
         /// The coordinates in console cells at the time of this click
         /// </summary>
         public (int X, int Y) MouseCoordinates { get; }
-        
+
         /// <summary>
         /// Constructs a ClickInputState from the MouseEvent of an InputRecord
         /// </summary>

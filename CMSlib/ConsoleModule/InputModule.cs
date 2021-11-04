@@ -9,45 +9,46 @@ namespace CMSlib.ConsoleModule
 {
     public abstract class InputModule : BaseModule
     {
-        internal StringBuilder inputString = new();
-        private FifoReverseBuffer<string> prevInput = new(50);
-        private int historyPointer = -1;
-        internal bool usingHistory = false;
-        protected InputModule(string title, int x, int y, int width, int height, LogLevel minimumLogLevel) : base(title, x, y, width, height, minimumLogLevel)
+        internal readonly StringBuilder InputString = new();
+        private readonly FifoReverseBuffer<string> _prevInput = new(50);
+        private int _historyPointer = -1;
+        internal bool UsingHistory;
+
+        protected InputModule(string title, int x, int y, int width, int height, LogLevel minimumLogLevel) : base(title,
+            x, y, width, height, minimumLogLevel)
         {
-            
         }
 
         internal void AddToHistory(string line)
         {
-            prevInput.Add(line);
-            if (usingHistory)
-                historyPointer++;
+            _prevInput.Add(line);
+            if (UsingHistory)
+                _historyPointer++;
             else
-                historyPointer = -1;
+                _historyPointer = -1;
         }
 
         internal void ScrollHistory(int amt)
         {
-            usingHistory = true;
-            int before = historyPointer;
-            historyPointer = Math.Clamp(historyPointer + amt, 0, prevInput.Count == 0 ? 0 : prevInput.Count - 1);
-            if (before == historyPointer || historyPointer < 0 || historyPointer >= prevInput.Count) return;
-            inputString.Append(prevInput[historyPointer]);
-            lrCursorPos = Math.Min(prevInput[historyPointer].Length, Width - 3);
+            UsingHistory = true;
+            int before = _historyPointer;
+            _historyPointer = Math.Clamp(_historyPointer + amt, 0, _prevInput.Count == 0 ? 0 : _prevInput.Count - 1);
+            if (before == _historyPointer || _historyPointer < 0 || _historyPointer >= _prevInput.Count) return;
+            InputString.Append(_prevInput[_historyPointer]);
+            LrCursorPos = Math.Min(_prevInput[_historyPointer].Length, Width - 3);
             this.WriteOutput();
         }
-        
+
 
         internal abstract void AddChar(char toAdd);
         internal abstract void Backspace(bool write = true);
-        
+
         /// <summary>
         /// Event fired when a line is entered into this module
         /// </summary>
         public event EventHandler<LineEnteredEventArgs> LineEntered;
-        
-        
+
+
         internal void FireLineEntered(LineEnteredEventArgs args)
         {
             var handler = LineEntered;
@@ -57,8 +58,9 @@ namespace CMSlib.ConsoleModule
             }
         }
 
-        
+
         protected event EventHandler<LineEnteredEventArgs> ReadLineLineEntered;
+
         internal void FireReadLineLineEntered(LineEnteredEventArgs args)
         {
             var handler = ReadLineLineEntered;
@@ -67,6 +69,7 @@ namespace CMSlib.ConsoleModule
                 handler(this, args);
             }
         }
+
         /// <summary>
         /// Reads and returns the next line entered into this module. DO NOT call this method inside a LineEntered event handler.
         /// </summary>
@@ -76,7 +79,8 @@ namespace CMSlib.ConsoleModule
         {
             LineEnteredEventArgs result = null;
             CancellationTokenSource waitCancel = new();
-            CancellationTokenSource combined = CancellationTokenSource.CreateLinkedTokenSource(waitCancel.Token, cancellationToken);
+            CancellationTokenSource combined =
+                CancellationTokenSource.CreateLinkedTokenSource(waitCancel.Token, cancellationToken);
 
             void Waiter(object _, LineEnteredEventArgs args)
             {
@@ -84,13 +88,12 @@ namespace CMSlib.ConsoleModule
                 waitCancel.Cancel();
             }
 
-            
+
             ReadLineLineEntered += Waiter;
             combined.Token.WaitHandle.WaitOne();
             ReadLineLineEntered -= Waiter;
-            
+
             return result;
         }
-        
     }
 }

@@ -1,26 +1,23 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace CMSlib.ConsoleModule
 {
     public class ModulePage : IEnumerable<BaseModule>
     {
         //TODO add page selected event, to modules too 
-        private Dictionary<string, BaseModule> modules = new();
-        private List<string> dictKeys = new();
-        internal object dictSync = new();
-        internal int selected = 0;
-        private ModuleManager parent = null;
+        private readonly Dictionary<string, BaseModule> _modules = new();
+        private readonly List<string> _dictKeys = new();
+        internal readonly object DictSync = new();
+        internal int Selected = 0;
+        private ModuleManager _parent;
         private string _displayName;
-        internal Guid id = Guid.NewGuid();
+        internal Guid Id = Guid.NewGuid();
+
         public string DisplayName
         {
-            get
-            {
-                return _displayName;
-            }
+            get { return _displayName; }
             set
             {
                 _displayName = value;
@@ -30,48 +27,50 @@ namespace CMSlib.ConsoleModule
 
         public ModulePage(string displayName = null)
         {
-            this._displayName = displayName;
+            _displayName = displayName;
         }
+
         public void RefreshAll(bool clear = true)
         {
-            if (parent is null) return;
-            lock (parent.writeLock)
+            if (_parent is null) return;
+            lock (_parent.WriteLock)
             {
-                if(clear)System.Console.Clear();
+                if (clear) Console.Clear();
                 Dictionary<string, BaseModule>.ValueCollection modules;
-                lock(dictSync)
-                    modules = this.modules.Values;
+                lock (DictSync)
+                    modules = _modules.Values;
                 foreach (var modulesValue in modules)
                 {
                     modulesValue.WriteOutput(false);
                 }
-                parent.Flush();
+
+                _parent.Flush();
             }
         }
 
         internal void SetParent(ModuleManager parent)
         {
-            lock (dictSync){
-                this.parent = parent;
-                foreach (var module in modules.Values)
+            lock (DictSync)
+            {
+                _parent = parent;
+                foreach (var module in _modules.Values)
                 {
-                    module.Parent = this.parent;
-                    module.parentPages.Add(this.id);
+                    module.Parent = this._parent;
+                    module.parentPages.Add(this.Id);
                 }
             }
         }
-        
-       
+
 
         public void Add(BaseModule module)
         {
-            lock (dictSync)
+            lock (DictSync)
             {
-                module.Parent = this.parent;
-                modules.Add(module.Title, module);
-                dictKeys.Add(module.Title);
-                if (selected == modules.Count - 1)
-                    module.selected = true;
+                module.Parent = this._parent;
+                _modules.Add(module.Title, module);
+                _dictKeys.Add(module.Title);
+                if (Selected == _modules.Count - 1)
+                    module.Selected = true;
                 module.WriteOutput();
             }
         }
@@ -80,20 +79,21 @@ namespace CMSlib.ConsoleModule
         {
             get
             {
-                lock (dictSync)
+                lock (DictSync)
                 {
-                    if (!modules.ContainsKey(title)) return null;
-                    return modules[title];
+                    if (!_modules.ContainsKey(title)) return null;
+                    return _modules[title];
                 }
             }
         }
+
         public BaseModule this[int index]
         {
             get
             {
-                lock (dictSync)
+                lock (DictSync)
                 {
-                    return modules[dictKeys[index]];
+                    return _modules[_dictKeys[index]];
                 }
             }
         }
@@ -102,27 +102,26 @@ namespace CMSlib.ConsoleModule
         {
             get
             {
-                lock (dictSync)
-                    return modules.Count;
+                lock (DictSync)
+                    return _modules.Count;
             }
         }
 
         internal bool ContainsTitle(string title)
         {
-            lock (dictSync)
-                return modules.ContainsKey(title);
+            lock (DictSync)
+                return _modules.ContainsKey(title);
         }
 
         internal BaseModule SelectedModule
         {
             get
             {
-                lock(dictSync)
-                    return selected == -1 ? null : modules[dictKeys[selected]];
+                lock (DictSync)
+                    return Selected == -1 ? null : _modules[_dictKeys[Selected]];
             }
-            
         }
-	
+
         public event EventHandler<PageSelectedEventArgs> PageSelected;
 
         internal void FirePageSelected(PageSelectedEventArgs e)
@@ -131,20 +130,18 @@ namespace CMSlib.ConsoleModule
             if (handler is not null)
                 handler(this, e);
         }
-        
-        
+
 
         public IEnumerator<BaseModule> GetEnumerator()
         {
-            lock(dictSync)
-                return modules.Values.GetEnumerator();
+            lock (DictSync)
+                return _modules.Values.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
         }
-
     }
 
     public class PageSelectedEventArgs : EventArgs

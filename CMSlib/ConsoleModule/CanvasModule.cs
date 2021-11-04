@@ -1,7 +1,6 @@
-﻿using CMSlib.ConsoleModule;
-using System;
-using Microsoft.Extensions.Logging.Abstractions;
+﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using CMSlib.Extensions;
 using Microsoft.Extensions.Logging;
 
@@ -9,30 +8,32 @@ namespace CMSlib.ConsoleModule
 {
     public class CanvasModule : BaseModule
     {
-        string[][] cells;
-        private const string emptyReset = AnsiEscape.SgrClear + " ";
-        private List<Coord> dirty = new();
+        string[][] _cells;
+        private const string EmptyReset = AnsiEscape.SgrClear + " ";
+        private List<Coord> _dirty = new();
+
         private CanvasModule()
         {
         }
 
-        public CanvasModule(string title, int x, int y, int width, int height, string fill = emptyReset) : base(title, x, y, width, height,
+        public CanvasModule(string title, int x, int y, int width, int height, string fill = EmptyReset) : base(title,
+            x, y, width, height,
             LogLevel.None)
         {
-            cells = new string[height - 2][];
-            for (int i = 0; i < cells.Length; i++)
+            _cells = new string[height - 2][];
+            for (int i = 0; i < _cells.Length; i++)
             {
-                cells[i] = new string[width - 2];
-                Array.Fill(cells[i], fill);
+                _cells[i] = new string[width - 2];
+                Array.Fill(_cells[i], fill);
             }
         }
 
         public void SetCell(int x, int y, string value)
-        { 
-            if (cells[y][x].Equals(value)) return;
-            cells[y][x] = value ?? emptyReset;
-            lock(dirty)
-                dirty.Add(new(x, y));
+        {
+            if (_cells[y][x].Equals(value)) return;
+            _cells[y][x] = value ?? EmptyReset;
+            lock (_dirty)
+                _dirty.Add(new(x, y));
         }
 
         protected override IEnumerable<string> ToOutputLines()
@@ -41,12 +42,14 @@ namespace CMSlib.ConsoleModule
             int innerWidth = Math.Min(this.Width - 2, +Console.WindowWidth - this.X - 2);
             string displayName = this.DisplayName ?? this.Title;
             yield return AnsiEscape.LineDrawingMode + AnsiEscape.UpperLeftCorner + AnsiEscape.AsciiMode +
-                         (selected ? AnsiEscape.Underline(displayName.Ellipse(innerWidth)) : displayName.Ellipse(innerWidth)) + AnsiEscape.LineDrawingMode +
+                         (Selected
+                             ? AnsiEscape.Underline(displayName.Ellipse(innerWidth))
+                             : displayName.Ellipse(innerWidth)) + AnsiEscape.LineDrawingMode +
                          new string(AnsiEscape.HorizontalLine, innerWidth - displayName.VisibleLength()) +
                          AnsiEscape.UpperRightCorner;
             for (int i = 0; i < Math.Min(this.Height - 2, Y + Console.WindowHeight - 2); i++)
             {
-                yield return AnsiEscape.VerticalLine + AnsiEscape.AsciiMode + string.Concat(cells[i]) +
+                yield return AnsiEscape.VerticalLine + AnsiEscape.AsciiMode + string.Concat(_cells[i]) +
                              AnsiEscape.SgrClear + AnsiEscape.LineDrawingMode + AnsiEscape.VerticalLine;
             }
 
@@ -57,26 +60,28 @@ namespace CMSlib.ConsoleModule
         public void QuickWriteOutput()
         {
             if (this.Parent is null) return;
-            lock (this.Parent.writeLock)
-            lock (dirty)
+            lock (this.Parent.WriteLock)
+            lock (_dirty)
             {
                 Parent.Write(AnsiEscape.SgrClear);
-                foreach (Coord c in dirty)
+                foreach (Coord c in _dirty)
                 {
                     this.Parent.SetCursorPosition(c.X + 1 + this.X, c.Y + 1 + this.Y);
-                    Parent.Write(cells[c.Y][c.X]);
+                    Parent.Write(_cells[c.Y][c.X]);
                 }
+
                 Parent.Write(AnsiEscape.SgrClear);
-                dirty.Clear();
+                _dirty.Clear();
             }
 
             Parent.Flush();
         }
-        internal override async System.Threading.Tasks.Task HandleClickAsync(InputRecord record, ButtonState? before)
+
+        internal override async Task HandleClickAsync(InputRecord record, ButtonState? before)
         {
         }
 
-        internal override async System.Threading.Tasks.Task HandleKeyAsync(ConsoleKeyInfo info)
+        internal override async Task HandleKeyAsync(ConsoleKeyInfo info)
         {
         }
 
@@ -102,11 +107,12 @@ namespace CMSlib.ConsoleModule
 
         public override void Clear(bool refresh = true)
         {
-            foreach (var line in cells)
+            foreach (var line in _cells)
             {
-                System.Array.Fill(line, emptyReset);
+                Array.Fill(line, EmptyReset);
             }
-            if(refresh)
+
+            if (refresh)
                 this.WriteOutput();
         }
 

@@ -3,22 +3,24 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using CMSlib.Extensions;
-using Microsoft.VisualBasic;
+using Microsoft.Extensions.Logging;
 using static CMSlib.ConsoleModule.AnsiEscape;
+
 namespace CMSlib.ConsoleModule
 {
     public class ButtonModule : BaseModule
     {
-        private string emptyLine;
-        private string buttonText;
+        private readonly string _emptyLine;
+        private readonly string _buttonText;
+
         public ButtonModule(string title, int x, int y, int width, int height, string buttonText = "") : base(title, x,
             y, width, height,
             LogLevel.None)
         {
-            this.buttonText = buttonText;
-            emptyLine = string.Concat(LineDrawingMode, VerticalLine, AsciiMode, new string(' ', width - 2), LineDrawingMode, VerticalLine);
+            _buttonText = buttonText;
+            _emptyLine = string.Concat(LineDrawingMode, VerticalLine, AsciiMode, new string(' ', width - 2),
+                LineDrawingMode, VerticalLine);
         }
 
         public override void AddText(string text)
@@ -43,25 +45,24 @@ namespace CMSlib.ConsoleModule
 
         public override void Clear(bool refresh = true)
         {
-            if(refresh)
-                this.WriteOutput();
+            if (refresh)
+                WriteOutput();
         }
 
         internal async override Task HandleClickAsync(InputRecord record, ButtonState? before)
         {
-            if (before.HasValue && before.Value != record.MouseEvent.ButtonState) 
+            if (before.HasValue && before.Value != record.MouseEvent.ButtonState)
                 HandleClick();
         }
 
         private void HandleClick()
         {
-            
             var eventHandler = Clicked;
-            if(eventHandler is not null)
+            if (eventHandler is not null)
                 eventHandler(this, new ClickEventArgs());
         }
 
-        public event EventHandler<ClickEventArgs> Clicked; 
+        public event EventHandler<ClickEventArgs> Clicked;
 
         internal async override Task HandleKeyAsync(ConsoleKeyInfo info)
         {
@@ -79,21 +80,26 @@ namespace CMSlib.ConsoleModule
             StringBuilder builder = new();
             yield return builder.Append(LineDrawingMode)
                 .Append(UpperLeftCorner)
-                .Append(selected ? AsciiMode + Underline(displayTitle) + LineDrawingMode : AsciiMode + displayTitle + LineDrawingMode)
+                .Append(Selected
+                    ? AsciiMode + Underline(displayTitle) + LineDrawingMode
+                    : AsciiMode + displayTitle + LineDrawingMode)
                 .Append(HorizontalLine, internalWidth - displayTitle.Length)
                 .Append(UpperRightCorner).ToString();
-            if(buttonText.VisibleLength() <= internalWidth)
-                yield return builder.Clear().Append(VerticalLine).Append(AsciiMode).Append(buttonText.PadToVisibleDivisible(internalWidth)).Append(LineDrawingMode).Append(VerticalLine).ToString();
-            else{
-                var splitInner = buttonText.SplitOnNonEscapeLength(internalWidth).ToArray();
-                int count = splitInner.Length;
+            if (_buttonText.VisibleLength() <= internalWidth)
+                yield return builder.Clear().Append(VerticalLine).Append(AsciiMode)
+                    .Append(_buttonText.PadToVisibleDivisible(internalWidth)).Append(LineDrawingMode)
+                    .Append(VerticalLine).ToString();
+            else
+            {
+                var splitInner = _buttonText.SplitOnNonEscapeLength(internalWidth).ToArray();
                 for (int i = 0; i < internalHeight; i++)
                 {
                     if (i < splitInner.Length)
                         yield return builder.Clear().Append(VerticalLine).Append(AsciiMode).Append(splitInner[i])
-                            .Append(new string(' ', internalWidth - splitInner[i].VisibleLength())).Append(LineDrawingMode).Append(VerticalLine).ToString();
+                            .Append(new string(' ', internalWidth - splitInner[i].VisibleLength()))
+                            .Append(LineDrawingMode).Append(VerticalLine).ToString();
                     else
-                        yield return emptyLine;
+                        yield return _emptyLine;
                 }
             }
 
@@ -101,8 +107,8 @@ namespace CMSlib.ConsoleModule
                 .Append(LowerRightCorner).ToString();
         }
     }
+
     public class ClickEventArgs : EventArgs
     {
-        
     }
 }
