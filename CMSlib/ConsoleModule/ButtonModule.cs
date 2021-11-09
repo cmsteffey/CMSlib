@@ -49,8 +49,13 @@ namespace CMSlib.ConsoleModule
 
         internal async override Task HandleClickAsync(InputRecord record, ButtonState? before)
         {
-            if (before.HasValue && before.Value != record.MouseEvent.ButtonState) 
-                HandleClick();
+            if (before.HasValue && before.Value != record.MouseEvent.ButtonState)
+            {
+                if ((record.MouseEvent.ButtonState & ButtonState.RightPressed) != 0)
+                    HandleRightClick();
+                else
+                    HandleClick();
+            } 
         }
 
         private void HandleClick()
@@ -60,9 +65,16 @@ namespace CMSlib.ConsoleModule
             if(eventHandler is not null)
                 eventHandler(this, new ClickEventArgs());
         }
+        private void HandleRightClick()
+        {
+            
+            var eventHandler = RightClicked;
+            if(eventHandler is not null)
+                eventHandler(this, new ClickEventArgs());
+        }
 
         public event EventHandler<ClickEventArgs> Clicked; 
-
+        public event EventHandler<ClickEventArgs> RightClicked; 
         internal async override Task HandleKeyAsync(ConsoleKeyInfo info)
         {
             if (info.Key is ConsoleKey.Enter)
