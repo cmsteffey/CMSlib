@@ -1,6 +1,6 @@
 using System;
 
-namespace TermiosLib.TermiosEnums
+namespace CMSlib.ConsoleModule.Termios.TermiosEnums
 {
     [Flags] 
     public enum OutputFlags : ulong

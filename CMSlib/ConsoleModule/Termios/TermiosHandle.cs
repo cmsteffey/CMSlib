@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
-using TermiosLib.TermiosEnums;
+using CMSlib.ConsoleModule.Termios.TermiosEnums;
 
 // TODO: Complete documentation in before next commit
-namespace TermiosLib
+namespace CMSlib.ConsoleModule.Termios
 {
     public class MacHandle
     {

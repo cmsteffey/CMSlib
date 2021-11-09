@@ -1,8 +1,8 @@
 using System.Runtime.InteropServices;
 using System.Text;
-using TermiosLib.TermiosEnums;
+using CMSlib.ConsoleModule.Termios.TermiosEnums;
 
-namespace TermiosLib
+namespace CMSlib.ConsoleModule.Termios
 {
     /// <summary>
     /// A managed struct meant for passing backing and forth between the C Termios API and this managed C# wrapper.
