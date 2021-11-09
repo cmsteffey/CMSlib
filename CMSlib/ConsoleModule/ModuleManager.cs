@@ -91,7 +91,6 @@ namespace CMSlib.ConsoleModule
         }
 
 
-
         /// <summary>
         /// The currently selected module. Returns null if there is no module currently selected;
         /// </summary>
@@ -171,7 +170,6 @@ namespace CMSlib.ConsoleModule
             }
             return success;
             */
-
         }
 
 
@@ -228,7 +226,6 @@ namespace CMSlib.ConsoleModule
         /// <param name="categoryName"></param>
         /// <returns></returns>
         /// <exception cref="Exception">Thrown when there are no modules created yet, and none in the queue.</exception>
-
         ILogger ILoggerFactory.CreateLogger(string categoryName)
         {
             lock (dictSync)
@@ -301,17 +298,19 @@ namespace CMSlib.ConsoleModule
 
         public void NextPage()
         {
-	    BaseModule selectedMod = SelectedPage.SelectedModule;
+            BaseModule selectedMod = SelectedPage.SelectedModule;
             lock (dictSync)
                 selected = (++selected).Modulus(Pages.Count);
             ModulePage newSelected = SelectedPage;
-	    ulong? index = newSelected.IndexOf<BaseModule>(selectedMod);
+            ulong? index = newSelected.IndexOf<BaseModule>(selectedMod);
             if (newSelected is null)
                 return;
-	    if(index is not null){
-		lock(newSelected.dictSync)
-		    newSelected.selected = (int)index;
-	    }
+            if (index is not null)
+            {
+                lock (newSelected.dictSync)
+                    newSelected.selected = (int) index;
+            }
+
             newSelected.FirePageSelected(new PageSelectedEventArgs(newSelected.SelectedModule));
             RefreshAll();
         }
@@ -322,20 +321,21 @@ namespace CMSlib.ConsoleModule
             lock (dictSync)
                 selected = (--selected).Modulus(Pages.Count);
             ModulePage newSelected = SelectedPage;
-	    ulong? index = newSelected.IndexOf<BaseModule>(selectedMod);
+            ulong? index = newSelected.IndexOf<BaseModule>(selectedMod);
             if (newSelected is null)
                 return;
-	    if(index is not null){
-		lock(newSelected.dictSync)
-		    newSelected.selected = (int)index;
-	    }
+            if (index is not null)
+            {
+                lock (newSelected.dictSync)
+                    newSelected.selected = (int) index;
+            }
+
             newSelected.FirePageSelected(new PageSelectedEventArgs(newSelected.SelectedModule));
             RefreshAll();
         }
 
         public void ToPage(int page)
         {
-
             lock (dictSync)
             {
                 if (page == selected) return;
@@ -396,7 +396,7 @@ namespace CMSlib.ConsoleModule
                     selectedModule?.HandleKeyAsync(key);
                     InputModule inputModule = selectedModule as InputModule;
                     EventHandler<KeyEnteredEventArgs> handler = KeyEntered;
-                    
+
                     KeyEnteredEventArgs e = new()
                     {
                         Module = selectedModule,
@@ -409,6 +409,7 @@ namespace CMSlib.ConsoleModule
                         selectedModule.FireReadKeyKeyEntered(e);
                         selectedModule.FireKeyEntered(e);
                     }
+
                     await HandleKeyAsync(key, selectedModule, terminal);
                     break;
                 case EventType.Mouse when input.Value.MouseEvent.EventFlags.HasFlag(EventFlags.MouseWheeled):
@@ -430,6 +431,7 @@ namespace CMSlib.ConsoleModule
                             {InputState = new ClickInputState(input.Value)});
                         await module.HandleClickAsync(input.Value, cached);
                     }
+
                     //TODO Allow all modules to handle all input types
                     break;
                 case EventType.WindowBufferSize:
@@ -445,13 +447,11 @@ namespace CMSlib.ConsoleModule
                         RefreshAll();
                     break;
             }
-
         }
 
 
         private async Task HandleKeyAsync(ConsoleKeyInfo key, BaseModule selectedModule, ITerminal terminal)
         {
-
             Dictionary<string, bool> mods = key.Modifiers.ToStringDictionary<ConsoleModifiers>();
             if (mods[Alt])
                 return;
@@ -544,7 +544,6 @@ namespace CMSlib.ConsoleModule
 
         private void EnterLine(BaseModule selected, bool scrollToBottom)
         {
-
             if (selected is not ConsoleModule.InputModule inputModule) return;
             string line;
             EventHandler<LineEnteredEventArgs> handler;
@@ -577,7 +576,7 @@ namespace CMSlib.ConsoleModule
 
         public void Write(string toWrite)
         {
-            lock(writeLock)
+            lock (writeLock)
                 _terminal.Write(toWrite);
         }
 
@@ -591,14 +590,14 @@ namespace CMSlib.ConsoleModule
         public void SetWindowTitle(string title, bool immediate = false)
         {
             _terminal.SetConsoleTitle(title);
-            if(immediate)
+            if (immediate)
                 _terminal.Flush();
         }
 
         public void SetCursorPosition(int x, int y, bool immediate = false)
         {
             _terminal.SetCursorPosition(x, y);
-            if(immediate)
+            if (immediate)
                 _terminal.Flush();
         }
 
@@ -612,23 +611,33 @@ namespace CMSlib.ConsoleModule
             _terminal.FlashWindow(flags, times, milliDelay);
         }
     }
+
     /// <summary>
     /// EventArgs for the LineEntered Event
     /// </summary>
-    public class LineEnteredEventArgs : EventArgs{
-        internal LineEnteredEventArgs(){}
+    public class LineEnteredEventArgs : EventArgs
+    {
+        internal LineEnteredEventArgs()
+        {
+        }
+
         /// <summary>
         /// The line that was inputted.
         /// </summary>
         public string Line { get; internal init; }
-        
+
         public InputModule Module { get; internal init; }
     }
+
     /// <summary>
     /// EventArgs for the InputReceived Event
     /// </summary>
-    public class InputReceivedEventArgs : EventArgs{
-        internal InputReceivedEventArgs(){}
+    public class InputReceivedEventArgs : EventArgs
+    {
+        internal InputReceivedEventArgs()
+        {
+        }
+
         /// <summary>
         /// Info about the input.
         /// </summary>
@@ -640,15 +649,21 @@ namespace CMSlib.ConsoleModule
         internal MouseInputReceivedEventArgs()
         {
         }
+
         public BaseInputState InputState { get; internal init; }
     }
-    public class KeyEnteredEventArgs : EventArgs {
-        internal KeyEnteredEventArgs(){}
+
+    public class KeyEnteredEventArgs : EventArgs
+    {
+        internal KeyEnteredEventArgs()
+        {
+        }
+
         /// <summary>
         /// Info about the input.
         /// </summary>
         public ConsoleKeyInfo? KeyInfo { get; internal init; }
-        
+
         public BaseModule Module { get; internal init; }
 
         public int? InputLineLength
@@ -660,6 +675,6 @@ namespace CMSlib.ConsoleModule
             }
         }
     }
-    
+
     public delegate void EventHandler<in T>(object sender, T eventArgs) where T : System.EventArgs;
 }

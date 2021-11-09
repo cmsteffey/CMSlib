@@ -42,13 +42,14 @@ namespace CMSlib.Extensions
 
             return result;
         }
+
         public static Dictionary<string, bool> ToStringDictionary<T>(this T @enum) where T : Enum
         {
             Type tType = typeof(T);
             T[] values = (T[]) tType.GetEnumValues();
             string[] names = tType.GetEnumNames();
             Dictionary<string, bool> result = new();
-            for(int i = 0; i < values.Length; i++)
+            for (int i = 0; i < values.Length; i++)
                 result[names[i]] = @enum.HasFlag(values[i]);
             return result;
         }

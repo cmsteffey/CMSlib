@@ -49,7 +49,7 @@ namespace CMSlib.CollectionTypes
         public FifoBuffer<T> GetRange(int startIndex, int count)
         {
             FifoBuffer<T> returns = new FifoBuffer<T>(count);
-            
+
             return returns;
         }
 
@@ -59,6 +59,7 @@ namespace CMSlib.CollectionTypes
         {
             get => _buffer.Length;
         }
+
         public void Clear()
         {
             lock (lockObj)
@@ -67,10 +68,12 @@ namespace CMSlib.CollectionTypes
                 _count = 0;
             }
         }
+
         IEnumerator<T> IEnumerable<T>.GetEnumerator()
         {
             return new FifoBufferIterator<T>(this);
         }
+
         IEnumerator IEnumerable.GetEnumerator()
         {
             return new FifoBufferIterator<T>(this);
@@ -80,7 +83,7 @@ namespace CMSlib.CollectionTypes
         {
             private TItemType[] _buffer;
             private int itemPointer;
-            
+
             internal FifoBufferIterator(FifoBuffer<TItemType> buffer)
             {
                 _buffer = new TItemType[buffer._count];
@@ -96,7 +99,7 @@ namespace CMSlib.CollectionTypes
                     Array.Copy(buffer._buffer, buffer._offset, _buffer, 0, buffer._count);
                 }
             }
-            
+
             bool IEnumerator.MoveNext()
             {
                 itemPointer++;

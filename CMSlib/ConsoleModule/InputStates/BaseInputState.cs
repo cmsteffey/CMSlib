@@ -10,11 +10,12 @@
         /// </summary>
         public enum InputType
         {
-            Click, 
+            Click,
             Key,
             WindowResize,
             MouseMove
         }
+
         /// <summary>
         /// The type of this input state
         /// </summary>

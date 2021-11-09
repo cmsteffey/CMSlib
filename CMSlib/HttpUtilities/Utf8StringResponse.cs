@@ -30,15 +30,16 @@ namespace CMSlib
 
     public static class Utf8StringResponseExtensions
     {
-        public static Utf8StringResponse AsStringResponse(this HttpResponseMessage resp) => resp; 
+        public static Utf8StringResponse AsStringResponse(this HttpResponseMessage resp) => resp;
+
         public static T? ParseAsJson<T>(this string obj)
         {
             return System.Text.Json.JsonSerializer.Deserialize<T>(obj);
         }
+
         public static T? ParseAsJson<T>(this HttpResponseMessage resp)
         {
             return resp.AsStringResponse().Content.ParseAsJson<T>();
         }
-        
     }
 }

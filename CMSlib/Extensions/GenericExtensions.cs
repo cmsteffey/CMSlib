@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using CMSlib.Tables;
+
 namespace CMSlib.Extensions
 {
     public static class GenericExtensions
@@ -19,20 +20,22 @@ namespace CMSlib.Extensions
         /// <returns></returns>
         public static T[] RunOnEach<T>(this T[] array, Func<T, T> function)
         {
-            for(int i = 0; i < array.Length; i++)
+            for (int i = 0; i < array.Length; i++)
             {
                 array[i] = function(array[i]);
             }
+
             return array;
         }
+
         public static T[] RunOnEach<T>(this T[] array, Func<T, T> function, T[] toDiscard)
         {
             List<T> newArray = new List<T>();
-            for(int i = 0; i < array.Length; i++)
+            for (int i = 0; i < array.Length; i++)
             {
                 T item = function(array[i]);
                 bool isValid = true;
-                for(int j = 0; j < toDiscard.Length; j++)
+                for (int j = 0; j < toDiscard.Length; j++)
                 {
                     if (item.Equals(toDiscard[j]))
                     {
@@ -40,18 +43,22 @@ namespace CMSlib.Extensions
                         break;
                     }
                 }
+
                 if (isValid)
                     newArray.Add(item);
             }
+
             return newArray.ToArray();
         }
+
         public static int FindFirst<T>(this T[] array, T item)
         {
-            for(int i = 0; i < array.Length; i++)
+            for (int i = 0; i < array.Length; i++)
             {
                 if (array[i].Equals(item))
                     return i;
             }
+
             return -1;
         }
 
@@ -61,13 +68,13 @@ namespace CMSlib.Extensions
         }
 
         public static IEnumerable<string> GetMembers<T>(this T _, bool fullNames = false) => GetMembers<T>(fullNames);
-        
+
         public static IEnumerable<string> GetMembers<T>(bool fullNames = false)
         {
             Type type = typeof(T);
 
             StringBuilder builder = new();
-            
+
             foreach (var info in type.GetFields())
             {
                 builder.Clear();
@@ -75,6 +82,7 @@ namespace CMSlib.Extensions
                 builder.Append(info.Name);
                 yield return builder.ToString();
             }
+
             foreach (var info in type.GetProperties())
             {
                 builder.Clear();
@@ -92,23 +100,27 @@ namespace CMSlib.Extensions
                 builder.Append('}');
                 yield return builder.ToString();
             }
-            foreach (var info in type.GetMethods().Where(x=>!x.IsSpecialName))
+
+            foreach (var info in type.GetMethods().Where(x => !x.IsSpecialName))
             {
                 builder.Clear();
                 builder.Append(info.IsStatic ? '.' : '#');
                 builder.Append(info.Name);
-		if(info.IsGenericMethodDefinition){	
-		    builder.Append('<');
-		    builder.Append(string.Join(", ", info.GetGenericArguments().Select(x=>(fullNames ? x.FullName : x.Name))));
-		    builder.Append('>');
-		}
+                if (info.IsGenericMethodDefinition)
+                {
+                    builder.Append('<');
+                    builder.Append(string.Join(", ",
+                        info.GetGenericArguments().Select(x => (fullNames ? x.FullName : x.Name))));
+                    builder.Append('>');
+                }
+
                 builder.Append('(');
                 builder.Append(string.Join(", ",
-                    info.GetParameters().Select(x => (fullNames ? x.ParameterType.FullName : x.ParameterType.Name) + " " + x.Name)));
+                    info.GetParameters().Select(x =>
+                        (fullNames ? x.ParameterType.FullName : x.ParameterType.Name) + " " + x.Name)));
                 builder.Append(')');
                 yield return builder.ToString();
             }
         }
-
     }
 }
