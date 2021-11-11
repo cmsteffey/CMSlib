@@ -8,6 +8,7 @@ namespace CMSlib.ConsoleModule
     public class ProgressBarModule : BaseModule
     {
 	object statLock = new();
+	int cachedQuickLen = -1;
 	long current;
 	long max;
 	public long Current{get => current; set {lock(statLock) current = Math.Clamp(value, 0, max);}}
@@ -28,6 +29,8 @@ namespace CMSlib.ConsoleModule
 	    int internalWidth = Width - 2;
 	    long currPos = ToInternalFullX(current);
 	    int len = (int)(currPos / 2);
+	    if(cachedQuickLen == len) return;
+	    cachedQuickLen = len;
 	    for(int i = 0; i < Height - 2; ++i){
 		Parent.SetCursorPosition(this.X+1, this.Y + 1 + i);
 		Parent.Write(filler + new string('█',len) + (len == internalWidth ? "" : fillers[currPos%2].ToString()) + AnsiEscape.SgrClear + (len < internalWidth ? new string(' ', internalWidth - len - 1) : ""));

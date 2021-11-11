@@ -597,6 +597,7 @@ namespace CMSlib.ConsoleModule
 
         public void SetCursorPosition(int x, int y, bool immediate = false)
         {
+	    lock(writeLock)
             _terminal.SetCursorPosition(x, y);
             if(immediate)
                 _terminal.Flush();
