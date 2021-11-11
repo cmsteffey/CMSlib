@@ -230,7 +230,6 @@ namespace CMSlib.ConsoleModule
                     else
                         --i;
                     Parent.Write(line);
-                    Parent.Flush();
                     //TODO REMOVE
                 }
 
@@ -303,6 +302,8 @@ namespace CMSlib.ConsoleModule
             yield return output.ToString();
             if (actingHeight == 1)
                 yield break;
+	    if (isInput && Height == 3) 
+		goto Input;
             output.Clear();
             int lineCount = Math.Clamp(text.Count - scrolledLines, 0, internalHeight - inputDifferential);
             int spaceCount =
@@ -350,6 +351,7 @@ namespace CMSlib.ConsoleModule
                 output.Append(borderCharacter.Value, internalWidth + 2);
             yield return output.ToString();
             if (!isInput) yield break;
+	    Input:
             output.Clear();
             string inputStringToDisplay = inputString.ToString()
                 .Substring(Math.Clamp(inputString.Length - internalWidth + 1, 0, inputString.Length == 0 ? 0 : inputString.Length - 1)).GuaranteeLength(internalWidth);
