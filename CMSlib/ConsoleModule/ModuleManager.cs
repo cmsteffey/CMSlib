@@ -424,12 +424,36 @@ namespace CMSlib.ConsoleModule
                 case EventType.Mouse when input.Value.MouseEvent.ButtonState != 0:
                     ModulePage page = SelectedPage;
                     if (page is null) return;
-                    foreach (var module in page.Where(x => input.Value.MouseEvent.MousePosition.Inside(x)))
+                    int i = 0;
+                    int index = 0;
+                    BaseModule clicked = null;
+                    foreach (var bm in page)
                     {
-                        module.FireMouseInputReceived(new MouseInputReceivedEventArgs()
-                            {InputState = new ClickInputState(input.Value)});
-                        await module.HandleClickAsync(input.Value, cached);
+                        if (input.Value.MouseEvent.MousePosition.Inside(bm))
+                        {
+                            clicked = bm;
+                            index = i;
+                        }
+
+                        ++i;
                     }
+                    if (clicked is null) return;
+                    clicked.FireMouseInputReceived(new MouseInputReceivedEventArgs()
+                        {InputState = new ClickInputState(input.Value)});
+                    await clicked.HandleClickAsync(input.Value, cached);
+
+                    if (clicked is InputModule)
+                    {
+                        BaseModule prevSelected = page.SelectedModule;
+                        
+                        lock (page.dictSync)
+                            page.selected = index;
+                        prevSelected.selected = false;
+                        clicked.selected = true;
+                        prevSelected.WriteOutput();
+                        clicked.WriteOutput();
+                    }
+                        
                     //TODO Allow all modules to handle all input types
                     break;
                 case EventType.WindowBufferSize:
