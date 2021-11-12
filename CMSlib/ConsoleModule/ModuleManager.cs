@@ -301,17 +301,17 @@ namespace CMSlib.ConsoleModule
 
         public void NextPage()
         {
-	    BaseModule selectedMod = SelectedPage.SelectedModule;
+            BaseModule selectedMod = SelectedPage.SelectedModule;
             lock (dictSync)
                 selected = (++selected).Modulus(Pages.Count);
             ModulePage newSelected = SelectedPage;
-	    ulong? index = newSelected.IndexOf<BaseModule>(selectedMod);
+            ulong? index = newSelected.IndexOf<BaseModule>(selectedMod);
             if (newSelected is null)
                 return;
-	    if(index is not null){
-		lock(newSelected.dictSync)
-		    newSelected.selected = (int)index;
-	    }
+            if(index is not null){
+                lock(newSelected.dictSync)
+                    newSelected.selected = (int)index;
+            }
             newSelected.FirePageSelected(new PageSelectedEventArgs(newSelected.SelectedModule));
             RefreshAll();
         }
@@ -322,13 +322,13 @@ namespace CMSlib.ConsoleModule
             lock (dictSync)
                 selected = (--selected).Modulus(Pages.Count);
             ModulePage newSelected = SelectedPage;
-	    ulong? index = newSelected.IndexOf<BaseModule>(selectedMod);
+            ulong? index = newSelected.IndexOf<BaseModule>(selectedMod);
             if (newSelected is null)
                 return;
-	    if(index is not null){
-		lock(newSelected.dictSync)
-		    newSelected.selected = (int)index;
-	    }
+            if(index is not null){
+                lock(newSelected.dictSync)
+                    newSelected.selected = (int)index;
+            }
             newSelected.FirePageSelected(new PageSelectedEventArgs(newSelected.SelectedModule));
             RefreshAll();
         }
@@ -590,15 +590,16 @@ namespace CMSlib.ConsoleModule
 
         public void SetWindowTitle(string title, bool immediate = false)
         {
-            _terminal.SetConsoleTitle(title);
+            lock(writeLock)
+                _terminal.SetConsoleTitle(title);
             if(immediate)
                 _terminal.Flush();
         }
 
         public void SetCursorPosition(int x, int y, bool immediate = false)
         {
-	    lock(writeLock)
-            _terminal.SetCursorPosition(x, y);
+            lock(writeLock)
+                _terminal.SetCursorPosition(x, y);
             if(immediate)
                 _terminal.Flush();
         }
