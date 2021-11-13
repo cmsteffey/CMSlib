@@ -12,16 +12,15 @@ namespace CMSlib.ConsoleModule
     {
         protected readonly List<string> text = new();
         protected readonly char? borderCharacter;
-        public bool TopDown { get; init; } = false;
-
+	public bool TopDown {get; init;} = false;
+        
 
         public LogModule(string title, int x, int y, int width, int height,
-            char? borderCharacter = null, LogLevel minimumLogLevel = LogLevel.Information) : base(title, x, y, width,
-            height, minimumLogLevel)
+            char? borderCharacter = null, LogLevel minimumLogLevel = LogLevel.Information) : base(title, x, y, width, height, minimumLogLevel)
         {
             this.borderCharacter = borderCharacter;
         }
-
+        
         public override void Clear(bool refresh = true)
         {
             lock (AddTextLock)
@@ -29,38 +28,36 @@ namespace CMSlib.ConsoleModule
                 scrolledLines = 0;
                 text.Clear();
             }
-
-            if (refresh)
+            if(refresh)
                 WriteOutput();
         }
-
         /// <summary>
         /// Adds line(s) of text to this module. This supports \n, and \n will properly add text to the next line.
         /// </summary>
         /// <param name="text">The text to add</param>
         public override void AddText(string text)
         {
+            
             lock (AddTextLock)
             {
                 int before = this.text.Count;
-                this.text.AddRange(text.Replace("\t", "        ").Replace("\r\n", "\n").Split('\n')
-                    .SelectMany(x => x.PadToVisibleDivisible(Width - 2).SplitOnNonEscapeLength(Width - 2)));
+                this.text.AddRange(text.Replace("\t", "        ").Replace("\r\n", "\n").Split('\n').SelectMany(x=>x.PadToVisibleDivisible(Width - 2).SplitOnNonEscapeLength(Width - 2)));
                 if (scrolledLines != 0)
                 {
                     scrolledLines += this.text.Count - before;
                     unread = true;
                 }
+                
             }
         }
-
+        
         /// <summary>
         /// Gets the string representation of this Module.
         /// </summary>
         /// <returns>The string representation of this module.</returns>
         protected override IEnumerable<string> ToOutputLines()
         {
-            return BoxRenderer.Render(Title, borderCharacter, X, Y, Width, Height, scrolledLines, text, selected,
-                DisplayName,
+            return BoxRenderer.Render(Title, borderCharacter, X, Y, Width, Height, scrolledLines, text, selected, DisplayName,
                 false, unread, null, TopDown);
         }
 
@@ -92,10 +89,12 @@ namespace CMSlib.ConsoleModule
 
         internal async override Task HandleClickAsync(InputRecord record, ButtonState? before)
         {
+            
         }
 
         internal async override Task HandleKeyAsync(ConsoleKeyInfo info)
         {
+            
         }
 
         public override void PageDown()
@@ -108,4 +107,7 @@ namespace CMSlib.ConsoleModule
             ScrollUp(Height - 2);
         }
     }
+
+    
+    
 }

@@ -3,6 +3,7 @@ using System;
 
 namespace CMSlib.ConsoleModule
 {
+    
     [StructLayout(LayoutKind.Explicit, CharSet = CharSet.Unicode)]
     public struct KeyEventRecord
     {
@@ -17,11 +18,13 @@ namespace CMSlib.ConsoleModule
 
         [FieldOffset(8), MarshalAs(UnmanagedType.U2)]
         public ushort wVirtualScanCode;
-
+        
         [FieldOffset(12), MarshalAs(UnmanagedType.U4)]
         public ControlKeyState dwControlKeyState;
 
         [FieldOffset(10)] public char UnicodeChar;
+
+        
     }
 
     [StructLayout(LayoutKind.Explicit)]
@@ -32,20 +35,16 @@ namespace CMSlib.ConsoleModule
         [FieldOffset(8)] public ControlKeyState ControlKeyState;
         [FieldOffset(12)] public EventFlags EventFlags;
     }
-
     [Flags]
-    public enum ButtonState
-    {
+    public enum ButtonState {
         Left1Pressed = 1,
         RightPressed = 2,
         Left2Pressed = 4,
         Left3Pressed = 8,
         Left4Pressed = 16,
     }
-
     [Flags]
-    public enum EventFlags
-    {
+    public enum EventFlags {
         MouseMoved = 1,
         DoubleClick = 2,
         MouseWheeled = 4,
@@ -54,8 +53,7 @@ namespace CMSlib.ConsoleModule
 
 
     [Flags]
-    public enum ControlKeyState : uint
-    {
+    public enum ControlKeyState : uint {
         RightAltPressed = 1,
         LeftAltPressed = 2,
         RightControlPressed = 4,
@@ -66,40 +64,33 @@ namespace CMSlib.ConsoleModule
         CapslockOn = 128,
         EnhancedKey = 256
     }
-
-    public enum EventType : ushort
-    {
+    public enum EventType : ushort {
         Focus = 0x0010,
         Key = 0x0001,
         Menu = 0x0008,
         Mouse = 0x0002,
         WindowBufferSize = 0x0004
     }
-
-    [StructLayout(LayoutKind.Sequential)]
-    public struct MenuEventRecord
-    {
+    [StructLayout (LayoutKind.Sequential)]
+    public struct MenuEventRecord {
         public uint dwCommandId;
     }
 
-    [StructLayout(LayoutKind.Sequential)]
-    public struct FocusEventRecord
-    {
+    [StructLayout (LayoutKind.Sequential)]
+    public struct FocusEventRecord {
         public uint bSetFocus;
     }
-
-    [StructLayout(LayoutKind.Sequential)]
-    public struct Coord
-    {
+    [StructLayout (LayoutKind.Sequential)]
+    public struct Coord {
         public short X;
         public short Y;
 
-        public Coord(short X, short Y)
+        public Coord (short X, short Y)
         {
             this.X = X;
             this.Y = Y;
         }
-
+        
 
         public static bool operator ==(Coord a, Coord b)
         {
@@ -110,7 +101,6 @@ namespace CMSlib.ConsoleModule
         {
             return !a.Equals(b);
         }
-
         public override bool Equals(object? obj)
         {
             if (obj is null)
@@ -129,21 +119,18 @@ namespace CMSlib.ConsoleModule
         {
             int xDiff = X - module.X;
             int yDiff = Y - module.Y;
-            return xDiff >= 0 && xDiff < module.Width && yDiff >= 0 && yDiff < module.Height;
+            return xDiff >= 0 && xDiff < module.Width && yDiff >= 0 && yDiff< module.Height;
         }
     };
-
-    [StructLayout(LayoutKind.Sequential)]
-    public struct WindowBufferSizeRecord
-    {
+    [StructLayout (LayoutKind.Sequential)]
+    public struct WindowBufferSizeRecord {
         public Coord size;
-
-        public WindowBufferSizeRecord(short x, short y)
+        public WindowBufferSizeRecord (short x, short y)
         {
-            this.size = new Coord(x, y);
+            this.size = new Coord (x, y);
         }
     }
-
+    
     [StructLayout(LayoutKind.Explicit)]
     public struct InputRecord
     {
@@ -198,7 +185,6 @@ namespace CMSlib.ConsoleModule
         public uint uCount;
         public int dwTimeOut;
     }
-
     //cast 0 to enum to stop flash
     [Flags]
     public enum FlashFlags : int
@@ -207,25 +193,23 @@ namespace CMSlib.ConsoleModule
         /// Flash caption
         /// </summary>
         FlashCaption = 0x00000001,
-
         /// <summary>
         /// Flash taskbar icon
         /// </summary>
         FlashTray = 0x00000002,
-
         /// <summary>
         /// Flash taskbar icon & caption
         /// </summary>
         FlashAll = 0x00000003,
-
         /// <summary>
         /// Flash until window enum-casted 0 is called
         /// </summary>
         FlashTimer = 0x00000004,
-
         /// <summary>
         /// Flash until the window comes to the foreground
         /// </summary>
         FlashNoTimer = 0x0000000C
+        
     }
+
 }

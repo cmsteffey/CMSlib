@@ -13,10 +13,9 @@ namespace CMSlib.ConsoleModule
         private FifoReverseBuffer<string> prevInput = new(50);
         private int historyPointer = -1;
         internal bool usingHistory = false;
-
-        protected InputModule(string title, int x, int y, int width, int height, LogLevel minimumLogLevel) : base(title,
-            x, y, width, height, minimumLogLevel)
+        protected InputModule(string title, int x, int y, int width, int height, LogLevel minimumLogLevel) : base(title, x, y, width, height, minimumLogLevel)
         {
+            
         }
 
         internal void AddToHistory(string line)
@@ -38,17 +37,17 @@ namespace CMSlib.ConsoleModule
             lrCursorPos = Math.Min(prevInput[historyPointer].Length, Width - 3);
             this.WriteOutput();
         }
-
+        
 
         internal abstract void AddChar(char toAdd);
         internal abstract void Backspace(bool write = true);
-
+        
         /// <summary>
         /// Event fired when a line is entered into this module
         /// </summary>
         public event EventHandler<LineEnteredEventArgs> LineEntered;
-
-
+        
+        
         internal void FireLineEntered(LineEnteredEventArgs args)
         {
             var handler = LineEntered;
@@ -58,9 +57,8 @@ namespace CMSlib.ConsoleModule
             }
         }
 
-
+        
         protected event EventHandler<LineEnteredEventArgs> ReadLineLineEntered;
-
         internal void FireReadLineLineEntered(LineEnteredEventArgs args)
         {
             var handler = ReadLineLineEntered;
@@ -69,7 +67,6 @@ namespace CMSlib.ConsoleModule
                 handler(this, args);
             }
         }
-
         /// <summary>
         /// Reads and returns the next line entered into this module. DO NOT call this method inside a LineEntered event handler.
         /// </summary>
@@ -79,8 +76,7 @@ namespace CMSlib.ConsoleModule
         {
             LineEnteredEventArgs result = null;
             CancellationTokenSource waitCancel = new();
-            CancellationTokenSource combined =
-                CancellationTokenSource.CreateLinkedTokenSource(waitCancel.Token, cancellationToken);
+            CancellationTokenSource combined = CancellationTokenSource.CreateLinkedTokenSource(waitCancel.Token, cancellationToken);
 
             void Waiter(object _, LineEnteredEventArgs args)
             {
@@ -88,12 +84,13 @@ namespace CMSlib.ConsoleModule
                 waitCancel.Cancel();
             }
 
-
+            
             ReadLineLineEntered += Waiter;
             combined.Token.WaitHandle.WaitOne();
             ReadLineLineEntered -= Waiter;
-
+            
             return result;
         }
+        
     }
 }

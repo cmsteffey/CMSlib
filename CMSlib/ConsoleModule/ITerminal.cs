@@ -18,11 +18,10 @@ namespace CMSlib.ConsoleModule
     public class NoInputException : Exception
     {
         public ITerminal Terminal { get; }
-
         private NoInputException()
         {
+            
         }
-
         public NoInputException(ITerminal t)
         {
             Terminal = t;

@@ -16,10 +16,8 @@ namespace CMSlib.Extensions
             {
                 sb.Append(ts[i].ToString()).Append(", ");
             }
-
             return sb.Append(ts[ts.Length - 1]).Append(']').ToString();
         }
-
         public static int[] ParseAll(this string[] list)
         {
             int[] ints = new int[list.Length];
@@ -27,10 +25,8 @@ namespace CMSlib.Extensions
             {
                 ints[i] = int.Parse(list[i]);
             }
-
             return ints;
         }
-
         public static string[] ToStringAll<T>(this T[] ts)
         {
             string[] strings = new string[ts.Length];
@@ -38,7 +34,6 @@ namespace CMSlib.Extensions
             {
                 strings[i] = ts[i].ToString();
             }
-
             return strings;
         }
 
@@ -62,20 +57,16 @@ namespace CMSlib.Extensions
 
             yield return ulong.MaxValue;
         }
-
-        public static T[] Shuffle<T>(this T[] toShuffle, System.Random rgen = null)
-        {
-            rgen ??= new System.Random();
-            for (int i = toShuffle.Length - 1; i > 0; i--)
-            {
-                int j = rgen.Next(0, i + 1);
-                T t = toShuffle[i];
-                toShuffle[i] = toShuffle[j];
-                toShuffle[j] = t;
-            }
-
-            return toShuffle;
-        }
+	public static T[] Shuffle<T>(this T[] toShuffle, System.Random rgen = null){
+	    rgen ??= new System.Random();
+	    for(int i = toShuffle.Length - 1; i > 0; i--){
+		int j = rgen.Next(0, i + 1);
+		T t = toShuffle[i];
+		toShuffle[i] = toShuffle[j];
+		toShuffle[j] = t;
+	    }
+	    return toShuffle;
+	}
 
         public static string ToReadableString<TKey, TValue>(this Dictionary<TKey, TValue> dict)
         {
@@ -88,20 +79,15 @@ namespace CMSlib.Extensions
                 builder.Append(pair.Value.ToString());
                 builder.Append('}');
             }
-
             return builder.ToString();
         }
-
-        public static ulong? IndexOf<T>(this IEnumerable<T> haystack, T needle)
-        {
-            ulong i = 0ul;
-            foreach (T item in haystack)
-            {
-                if (item.Equals(needle)) return i;
-                ++i;
-            }
-
-            return null;
-        }
+	public static ulong? IndexOf<T>(this IEnumerable<T> haystack, T needle){
+	    ulong i = 0ul;
+	    foreach(T item in haystack){
+		if(item.Equals(needle)) return i;
+		++i;
+	    }
+	    return null;
+	}
     }
 }

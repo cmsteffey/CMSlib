@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using CMSlib.Extensions;
 using Microsoft.Extensions.Logging;
 using static CMSlib.ConsoleModule.AnsiEscape;
-
 namespace CMSlib.ConsoleModule
 {
     public class ToggleModule : BaseModule
@@ -14,7 +13,6 @@ namespace CMSlib.ConsoleModule
         private bool _enabled;
         private string enabledText;
         private string disabledText;
-
         public bool Enabled
         {
             get
@@ -27,17 +25,16 @@ namespace CMSlib.ConsoleModule
             }
         }
 
-        public ToggleModule(string title, int x, int y, int width, int height, bool defaultEnabled,
-            string enabledText = "On", string disabledText = "Off") : base(title, x, y, width, height,
+        public ToggleModule(string title, int x, int y, int width, int height, bool defaultEnabled, string enabledText = "On", string disabledText = "Off") : base(title, x, y, width, height,
             LogLevel.None)
         {
             _enabled = defaultEnabled;
             this.enabledText = enabledText;
             this.disabledText = disabledText;
         }
-
         public override void AddText(string text)
         {
+            
         }
 
         private void FlipToggle()
@@ -54,42 +51,47 @@ namespace CMSlib.ConsoleModule
                 handler(this, new ToggleFlippedEventArgs(newState));
             this.WriteOutput();
         }
-
         internal override async Task HandleKeyAsync(ConsoleKeyInfo info)
         {
-            if (info.Key == ConsoleKey.Enter)
+            if(info.Key == ConsoleKey.Enter)
                 FlipToggle();
+                
         }
-
+        
         internal override async Task HandleClickAsync(InputRecord record, ButtonState? before)
         {
-            if (before.HasValue && before.Value != record.MouseEvent.ButtonState)
+            
+            if (before.HasValue && before.Value != record.MouseEvent.ButtonState) 
                 FlipToggle();
         }
-
+        
 
         public override void ScrollTo(int line)
         {
+            
         }
 
         public override void ScrollUp(int amt)
         {
+            
         }
 
         public override void PageDown()
         {
+            
         }
 
         public override void Clear(bool refresh = true)
         {
+            
         }
 
         public override void PageUp()
         {
+            
         }
 
         public event EventHandler<ToggleFlippedEventArgs> ToggleFlipped;
-
         protected override IEnumerable<string> ToOutputLines()
         {
             bool enabled = Enabled;
@@ -101,9 +103,7 @@ namespace CMSlib.ConsoleModule
             StringBuilder builder = new();
             yield return builder.Append(LineDrawingMode)
                 .Append(UpperLeftCorner)
-                .Append(selected
-                    ? AsciiMode + Underline(displayTitle) + LineDrawingMode
-                    : AsciiMode + displayTitle + LineDrawingMode)
+                .Append(selected ? AsciiMode + Underline(displayTitle) + LineDrawingMode : AsciiMode + displayTitle + LineDrawingMode)
                 .Append(HorizontalLine, internalWidth - displayTitle.Length)
                 .Append(UpperRightCorner).ToString();
             string displayString = enabled ? enabledText : disabledText;
@@ -112,23 +112,18 @@ namespace CMSlib.ConsoleModule
                 builder.Clear().Append(VerticalLine);
                 builder.Append(AsciiMode);
                 builder.Append(enabled
-                    ? SgrGreenForeGround + SgrNegative + SgrWhiteBackGround + '\u0020' + SgrClear + SgrWhiteBackGround +
-                      '\u0020'
-                    : SgrWhiteBackGround + '\u0020' + SgrClear + SgrRedForeGround + SgrNegative + SgrWhiteBackGround +
-                      '\u0020');
+                    ? SgrGreenForeGround  +  SgrNegative +   SgrWhiteBackGround + '\u0020' + SgrClear + SgrWhiteBackGround + '\u0020'
+                    : SgrWhiteBackGround + '\u0020' + SgrClear + SgrRedForeGround +  SgrNegative + SgrWhiteBackGround + '\u0020');
                 builder.Append(SgrClear);
                 if (internalWidth != 2)
                 {
                     builder.Append(' ');
-                    builder.Append(displayString[..Math.Min(internalWidth - 3, displayString.Length)]
-                        .GuaranteeLength(internalWidth - 3));
+                    builder.Append(displayString[..Math.Min(internalWidth - 3, displayString.Length)].GuaranteeLength(internalWidth - 3));
                 }
-
                 builder.Append(LineDrawingMode);
                 builder.Append(VerticalLine);
                 yield return builder.ToString();
             }
-
             for (int i = 1; i < internalHeight; i++)
             {
                 builder.Clear().Append(VerticalLine);
@@ -144,21 +139,18 @@ namespace CMSlib.ConsoleModule
                 builder.Append(VerticalLine);
                 yield return builder.ToString();
             }
-
             builder.Clear().Append(LowerLeftCorner);
             builder.Append(HorizontalLine, internalWidth);
             builder.Append(LowerRightCorner);
             yield return builder.ToString();
         }
+        
     }
 
     public class ToggleFlippedEventArgs : EventArgs
     {
         public bool ToggleState { get; }
-
-        internal ToggleFlippedEventArgs()
-        {
-        }
+        internal ToggleFlippedEventArgs(){}
 
         internal ToggleFlippedEventArgs(bool toggle)
         {

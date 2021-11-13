@@ -15,10 +15,12 @@ namespace CMSlib.ConsoleModule
         private ModuleManager parent = null;
         private string _displayName;
         internal Guid id = Guid.NewGuid();
-
         public string DisplayName
         {
-            get { return _displayName; }
+            get
+            {
+                return _displayName;
+            }
             set
             {
                 _displayName = value;
@@ -30,29 +32,26 @@ namespace CMSlib.ConsoleModule
         {
             this._displayName = displayName;
         }
-
         public void RefreshAll(bool clear = true)
         {
             if (parent is null) return;
             lock (parent.writeLock)
             {
-                if (clear) System.Console.Clear();
+                if(clear)System.Console.Clear();
                 Dictionary<string, BaseModule>.ValueCollection modules;
-                lock (dictSync)
+                lock(dictSync)
                     modules = this.modules.Values;
                 foreach (var modulesValue in modules)
                 {
                     modulesValue.WriteOutput(false);
                 }
-
                 parent.Flush();
             }
         }
 
         internal void SetParent(ModuleManager parent)
         {
-            lock (dictSync)
-            {
+            lock (dictSync){
                 this.parent = parent;
                 foreach (var module in modules.Values)
                 {
@@ -61,7 +60,8 @@ namespace CMSlib.ConsoleModule
                 }
             }
         }
-
+        
+       
 
         public void Add(BaseModule module)
         {
@@ -87,7 +87,6 @@ namespace CMSlib.ConsoleModule
                 }
             }
         }
-
         public BaseModule this[int index]
         {
             get
@@ -118,11 +117,12 @@ namespace CMSlib.ConsoleModule
         {
             get
             {
-                lock (dictSync)
+                lock(dictSync)
                     return selected == -1 ? null : modules[dictKeys[selected]];
             }
+            
         }
-
+	
         public event EventHandler<PageSelectedEventArgs> PageSelected;
 
         internal void FirePageSelected(PageSelectedEventArgs e)
@@ -131,11 +131,12 @@ namespace CMSlib.ConsoleModule
             if (handler is not null)
                 handler(this, e);
         }
-
+        
+        
 
         public IEnumerator<BaseModule> GetEnumerator()
         {
-            lock (dictSync)
+            lock(dictSync)
                 return modules.Values.GetEnumerator();
         }
 
@@ -143,6 +144,7 @@ namespace CMSlib.ConsoleModule
         {
             return GetEnumerator();
         }
+
     }
 
     public class PageSelectedEventArgs : EventArgs

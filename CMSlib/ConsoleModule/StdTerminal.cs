@@ -1,16 +1,14 @@
 ﻿using System;
 using System.IO;
-
 namespace CMSlib.ConsoleModule
 {
     public class StdTerminal : ITerminal
     {
-        StreamWriter _writer = null;
-
+	StreamWriter _writer = null;
         InputRecord? ITerminal.ReadInput()
         {
             if (Console.IsInputRedirected) throw new NoInputException(this);
-            return (InputRecord) Console.ReadKey(true);
+            return (InputRecord)Console.ReadKey(true);
         }
 
         void ITerminal.SetupConsole()
@@ -53,13 +51,14 @@ namespace CMSlib.ConsoleModule
             _writer?.Write(AnsiEscape.EnableCursorBlink);
             _writer?.WriteLine(
                 e is not null ? $"CMSlib gracefully exited with an exception:\n{e}" : $"[CMSlib] Exiting gracefully.");
-            _writer.Close();
-            _writer.Dispose();
+	    _writer.Close();
+	    _writer.Dispose();
             System.Environment.Exit(0);
         }
 
         void ITerminal.FlashWindow(FlashFlags flags, uint times, int milliDelay)
         {
+            
         }
     }
 }

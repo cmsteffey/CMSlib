@@ -5,8 +5,7 @@
         /// <summary>
         /// The new coordinates of the mouse 
         /// </summary>
-        public (int X, int Y) MouseCoordinates { get; }
-
+        public (int X, int Y)  MouseCoordinates { get; }
         /// <summary>
         /// Constructs a MouseMoveInputState from the MouseEvent of an InputRecord
         /// </summary>

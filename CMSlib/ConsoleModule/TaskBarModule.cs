@@ -11,17 +11,18 @@ namespace CMSlib.ConsoleModule
     {
         public override void AddText(string text)
         {
+            
         }
 
         public override void Clear(bool refresh = true)
         {
+            
         }
 
         public override void PageDown()
         {
             this.Parent?.NextPage();
         }
-
         public override void PageUp()
         {
             this.Parent?.PrevPage();
@@ -42,6 +43,7 @@ namespace CMSlib.ConsoleModule
 
         public override void ScrollTo(int line)
         {
+            
         }
 
         private int TabWidth
@@ -52,9 +54,7 @@ namespace CMSlib.ConsoleModule
                 return Math.Min((Width - pages) / pages, internalWidthPer);
             }
         }
-
         private readonly int internalWidthPer;
-
         public TaskBarModule(string title, int x, int y, int width, int height, int internalWidthPer) : base(title, x,
             y, width, height, LogLevel.None)
         {
@@ -64,28 +64,27 @@ namespace CMSlib.ConsoleModule
         internal async override Task HandleClickAsync(InputRecord record, ButtonState? before)
         {
             if (!before.HasValue || before.Value == record.MouseEvent.ButtonState) return;
-
+            
             List<ModulePage> pages = Parent.Pages;
-
+            
             int actingInternalWidthPer = Math.Min((Width - pages.Count) / pages.Count, internalWidthPer);
             int relativeX = record.MouseEvent.MousePosition.X - X;
-            if (relativeX < 0 || relativeX % (actingInternalWidthPer + 1) == actingInternalWidthPer) return;
+            if(relativeX < 0 || relativeX % (actingInternalWidthPer + 1) == actingInternalWidthPer) return;
             int target = relativeX / (actingInternalWidthPer + 1);
-            if (target < 0 || target >= pages.Count) return;
+            if(target < 0 || target >= pages.Count) return;
             this.Parent.ToPage(target);
         }
 
         internal async override Task HandleKeyAsync(ConsoleKeyInfo info)
         {
-            switch (info.Key)
-            {
-                case ConsoleKey.RightArrow:
-                    PageDown();
-                    break;
-                case ConsoleKey.LeftArrow:
-                    PageUp();
-                    break;
-            }
+            switch(info.Key){
+		case ConsoleKey.RightArrow:
+		    PageDown();
+		    break;
+		case ConsoleKey.LeftArrow:
+		    PageUp();
+		    break;
+	    }
         }
 
         protected override IEnumerable<string> ToOutputLines()
@@ -95,26 +94,20 @@ namespace CMSlib.ConsoleModule
             if (Y >= Console.WindowHeight) yield break;
             List<ModulePage> pages = Parent.Pages;
             int actingInternalWidthPer = Math.Min((Width - pages.Count) / pages.Count, internalWidthPer);
-
+            
             for (int i = 0; i < Math.Min(Height, Console.WindowHeight - Y); i++)
             {
                 output.Clear().Append(AnsiEscape.AsciiMode);
                 int lineWidth = 0;
                 for (int j = 0; j < pages.Count; j++)
                 {
-                    output.Append(Parent.selected == j
-                        ? (this.selected
-                            ? AnsiEscape.SgrBlackForeGround + AnsiEscape.SgrWhiteBackGround
-                            : AnsiEscape.SgrBlackForeGround + AnsiEscape.SgrBrightBlackBackGround)
-                        : AnsiEscape.SgrWhiteForeGround + AnsiEscape.SgrBlackBackGround);
-                    output.Append(i == 0
-                        ? (pages[j].DisplayName ?? (j + 1).ToString()).Ellipse(actingInternalWidthPer)
-                        .GuaranteeLength(actingInternalWidthPer)
-                        : new string(' ', actingInternalWidthPer));
+                    
+                    output.Append(Parent.selected == j ? (this.selected ? AnsiEscape.SgrBlackForeGround + AnsiEscape.SgrWhiteBackGround : AnsiEscape.SgrBlackForeGround + AnsiEscape.SgrBrightBlackBackGround) : AnsiEscape.SgrWhiteForeGround + AnsiEscape.SgrBlackBackGround);
+                    output.Append(i==0 ? (pages[j].DisplayName ?? (j + 1).ToString()).Ellipse(actingInternalWidthPer)
+                        .GuaranteeLength(actingInternalWidthPer) : new string(' ', actingInternalWidthPer));
                     output.Append(AnsiEscape.SgrClear);
                     lineWidth += actingInternalWidthPer;
-                    output.Append(AnsiEscape.LineDrawingMode).Append(AnsiEscape.VerticalLine)
-                        .Append(AnsiEscape.AsciiMode);
+                    output.Append(AnsiEscape.LineDrawingMode).Append(AnsiEscape.VerticalLine).Append(AnsiEscape.AsciiMode);
                     lineWidth++;
                 }
 

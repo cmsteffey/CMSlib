@@ -19,41 +19,32 @@ namespace CMSlib.Tables
         /// <param name="leftPipe">Set to true to append | to the left side of the column</param>
         /// <param name="rightPipe">Set to true to append | to the right side of the column</param>
         /// <returns></returns>
-        public static string TableColumn(this object obj, int innerWidth, ColumnAdjust adjust = ColumnAdjust.Left,
-            bool ellipse = true, bool leftPipe = false, bool rightPipe = false)
+        public static string TableColumn(this object obj, int innerWidth, ColumnAdjust adjust = ColumnAdjust.Left, bool ellipse = true, bool leftPipe = false, bool rightPipe = false)
         {
             string str = obj?.ToString() ?? "null";
             int visLen = str.VisibleLength();
             if (visLen > innerWidth)
             {
-                return ellipse
-                    ? (leftPipe ? "|" : string.Empty) + str.Ellipse(innerWidth) + (rightPipe ? "|" : string.Empty)
+                return ellipse ? (leftPipe ? "|" : string.Empty) + str.Ellipse(innerWidth) + (rightPipe ? "|" : string.Empty)
                     : (leftPipe ? "|" : string.Empty) + str.Substring(0, innerWidth) + (rightPipe ? "|" : string.Empty);
             }
-
             int spaces = innerWidth - visLen;
             if (adjust == ColumnAdjust.Left)
             {
-                return new StringBuilder().Append(leftPipe ? "|" : null).Append(str).Append(' ', spaces)
-                    .Append(rightPipe ? '|' : null).ToString();
+                return new StringBuilder().Append(leftPipe ? "|" : null).Append(str).Append(' ', spaces).Append(rightPipe ? '|' : null).ToString();
             }
             else if (adjust == ColumnAdjust.Right)
             {
-                return new StringBuilder().Append(leftPipe ? "|" : null).Append(' ', spaces).Append(str)
-                    .Append(rightPipe ? '|' : null).ToString();
+                return new StringBuilder().Append(leftPipe ? "|" : null).Append(' ', spaces).Append(str).Append(rightPipe ? '|' : null).ToString();
             }
             else
             {
-                return new StringBuilder().Append(leftPipe ? "|" : null).Append(' ', spaces / 2).Append(str)
-                    .Append(' ', spaces / 2 + spaces % 2).Append(rightPipe ? '|' : null).ToString();
+                return new StringBuilder().Append(leftPipe ? "|" : null).Append(' ', spaces / 2).Append(str).Append(' ', spaces / 2 + spaces % 2).Append(rightPipe ? '|' : null).ToString();
             }
         }
-
         public enum ColumnAdjust
         {
-            Left,
-            Right,
-            Center
+            Left, Right, Center
         }
     }
 }

@@ -12,13 +12,11 @@ namespace CMSlib.ConsoleModule
         string[][] cells;
         private const string emptyReset = AnsiEscape.SgrClear + " ";
         private List<Coord> dirty = new();
-
         private CanvasModule()
         {
         }
 
-        public CanvasModule(string title, int x, int y, int width, int height, string fill = emptyReset) : base(title,
-            x, y, width, height,
+        public CanvasModule(string title, int x, int y, int width, int height, string fill = emptyReset) : base(title, x, y, width, height,
             LogLevel.None)
         {
             cells = new string[height - 2][];
@@ -30,10 +28,10 @@ namespace CMSlib.ConsoleModule
         }
 
         public void SetCell(int x, int y, string value)
-        {
+        { 
             if (cells[y][x].Equals(value)) return;
             cells[y][x] = value ?? emptyReset;
-            lock (dirty)
+            lock(dirty)
                 dirty.Add(new(x, y));
         }
 
@@ -43,9 +41,7 @@ namespace CMSlib.ConsoleModule
             int innerWidth = Math.Min(this.Width - 2, +Console.WindowWidth - this.X - 2);
             string displayName = this.DisplayName ?? this.Title;
             yield return AnsiEscape.LineDrawingMode + AnsiEscape.UpperLeftCorner + AnsiEscape.AsciiMode +
-                         (selected
-                             ? AnsiEscape.Underline(displayName.Ellipse(innerWidth))
-                             : displayName.Ellipse(innerWidth)) + AnsiEscape.LineDrawingMode +
+                         (selected ? AnsiEscape.Underline(displayName.Ellipse(innerWidth)) : displayName.Ellipse(innerWidth)) + AnsiEscape.LineDrawingMode +
                          new string(AnsiEscape.HorizontalLine, innerWidth - displayName.VisibleLength()) +
                          AnsiEscape.UpperRightCorner;
             for (int i = 0; i < Math.Min(this.Height - 2, Y + Console.WindowHeight - 2); i++)
@@ -70,14 +66,12 @@ namespace CMSlib.ConsoleModule
                     this.Parent.SetCursorPosition(c.X + 1 + this.X, c.Y + 1 + this.Y);
                     Parent.Write(cells[c.Y][c.X]);
                 }
-
                 Parent.Write(AnsiEscape.SgrClear);
                 dirty.Clear();
             }
 
             Parent.Flush();
         }
-
         internal override async System.Threading.Tasks.Task HandleClickAsync(InputRecord record, ButtonState? before)
         {
         }
@@ -112,8 +106,7 @@ namespace CMSlib.ConsoleModule
             {
                 System.Array.Fill(line, emptyReset);
             }
-
-            if (refresh)
+            if(refresh)
                 this.WriteOutput();
         }
 

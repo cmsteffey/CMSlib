@@ -9,39 +9,35 @@ using CMSlib.Tables;
 using ExtensionMethods = CMSlib.Tables.ExtensionMethods;
 using CMSlib.Extensions;
 using System.Threading.Tasks;
-
 namespace CMSlib.ConsoleModule
 {
     public abstract class BaseModule : ILogger
     {
-        public int X { get; protected init; }
-        public int Y { get; protected init; }
-        public int Width { get; protected init; }
-        public int Height { get; protected init; }
+        public int X { get; protected init;}
+        public int Y { get; protected init;}
+        public int Width { get; protected init;}
+        public int Height { get; protected init;}
         public string Title { get; protected init; }
         public LogLevel MinimumLogLevel { get; set; }
         public ModuleManager Parent { get; internal set; } = null;
 
-        public int ScrolledLines
-        {
-            get => scrolledLines;
-        }
-
+        public int ScrolledLines {get => scrolledLines;}
         /// <summary>
         /// This string is shown at the top of the module. Setting it to null, or not setting it at all, uses the module title as the displayed title.
         /// </summary>
         public string DisplayName { get; set; } = null;
 
-        internal bool selected = false;
-        internal int scrolledLines = 0;
-        internal bool unread = false;
-        internal int lrCursorPos = 0;
+        internal bool      selected = false;
+        internal  int      scrolledLines = 0;
+        internal  bool     unread = false;
+        internal  int      lrCursorPos = 0;
         protected readonly object AddTextLock = new();
-
+        
         internal List<Guid> parentPages = new();
 
         protected BaseModule()
         {
+            
         }
 
         protected BaseModule(string title, int x, int y, int width, int height, LogLevel minimumLogLevel)
@@ -61,24 +57,21 @@ namespace CMSlib.ConsoleModule
         {
             ScrollUp(-amt);
         }
-
         public abstract void ScrollTo(int line);
         public abstract void PageUp();
         public abstract void PageDown();
-
         /// <summary>
         /// Clears all lines from this module, as well as optionally refreshing.
         /// </summary>
         /// <param name="refresh">Whether to refresh after clearing out the text</param>
         public abstract void Clear(bool refresh = true);
-
         public void AddText(object obj) => AddText(obj.ToString());
-
+        
         /// <summary>
         /// Event fired when a key is pressed while this module is focused
         /// </summary>
         public event EventHandler<KeyEnteredEventArgs> KeyEntered;
-
+        
         internal void FireKeyEntered(KeyEnteredEventArgs args)
         {
             var handler = KeyEntered;
@@ -87,9 +80,8 @@ namespace CMSlib.ConsoleModule
                 handler(this, args);
             }
         }
-
+        
         protected event EventHandler<KeyEnteredEventArgs> ReadKeyKeyEntered;
-
         internal void FireReadKeyKeyEntered(KeyEnteredEventArgs args)
         {
             var handler = ReadKeyKeyEntered;
@@ -98,7 +90,6 @@ namespace CMSlib.ConsoleModule
                 handler(this, args);
             }
         }
-
         /// <summary>
         /// Reads and returns the next key entered into this module. DO NOT call this method inside a KeyEntered event handler.
         /// </summary>
@@ -108,27 +99,25 @@ namespace CMSlib.ConsoleModule
         {
             KeyEnteredEventArgs result = null;
             CancellationTokenSource waitCancel = new();
-            CancellationTokenSource combined =
-                CancellationTokenSource.CreateLinkedTokenSource(waitCancel.Token, cancellationToken);
+            CancellationTokenSource combined = CancellationTokenSource.CreateLinkedTokenSource(waitCancel.Token, cancellationToken);
 
             void Waiter(object _, KeyEnteredEventArgs args)
             {
                 result = args;
                 waitCancel.Cancel();
             }
-
             ReadKeyKeyEntered += Waiter;
             combined.Token.WaitHandle.WaitOne();
             ReadKeyKeyEntered -= Waiter;
-
+            
             return result;
         }
-
+        
         /// <summary>
         /// Event fired when a key is pressed while this module is focused
         /// </summary>
         public event EventHandler<MouseInputReceivedEventArgs> MouseInputReceived;
-
+        
         internal void FireMouseInputReceived(MouseInputReceivedEventArgs args)
         {
             var handler = MouseInputReceived;
@@ -140,8 +129,9 @@ namespace CMSlib.ConsoleModule
 
         internal abstract Task HandleClickAsync(InputRecord record, ButtonState? before);
         internal abstract Task HandleKeyAsync(ConsoleKeyInfo info);
-
-
+        
+        
+        
         /// <summary>
         /// Logs a message to this module.
         /// </summary>
@@ -151,8 +141,7 @@ namespace CMSlib.ConsoleModule
         /// <param name="exception">The exception to log.</param>
         /// <param name="formatter">The formatter to format the log message.</param>
         /// <typeparam name="TState">The type of the state</typeparam>
-        void ILogger.Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception,
-            Func<TState, Exception, string> formatter)
+        void ILogger.Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {
             if (!this.ShouldLog(logLevel))
                 return;
@@ -163,6 +152,7 @@ namespace CMSlib.ConsoleModule
             int logLevelInt = (int) logLevel;
             string shortName = logLevelInt >= 0 && logLevelInt < shortNames.Length ? shortNames[(int) logLevel] : "???";
             string colorScheme =
+
                 logLevel switch
                 {
                     LogLevel.Trace => $"{AnsiEscape.SgrCyanForeGround}",
@@ -176,8 +166,7 @@ namespace CMSlib.ConsoleModule
                 };
             output.Append($"{colorScheme}");
             output.Append(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
-            output.Append(
-                $"|{eventId.Id.ToString().TableColumn(5, ExtensionMethods.ColumnAdjust.Right)}:{shortName}|{(this is CategoricalModule cm ? cm.GetCategoryType().FullName : null)}{eventId.Name?.GuaranteeLength(Width - 32)}{AnsiEscape.SgrClear}");
+            output.Append($"|{eventId.Id.ToString().TableColumn(5, ExtensionMethods.ColumnAdjust.Right)}:{shortName}|{(this is CategoricalModule cm ? cm.GetCategoryType().FullName : null)}{eventId.Name?.GuaranteeLength(Width - 32)}{AnsiEscape.SgrClear}");
             lock (AddTextLock)
             {
                 this.AddText(output
@@ -196,14 +185,14 @@ namespace CMSlib.ConsoleModule
             {
                 this.WriteOutput();
             }
+            
         }
-
         bool ILogger.IsEnabled(LogLevel logLevel) =>
             ShouldLog(logLevel);
 
         private bool ShouldLog(LogLevel logLevel) =>
             logLevel >= MinimumLogLevel;
-
+        
         /// <summary>
         /// NOT IMPL'D
         /// </summary>
@@ -215,7 +204,6 @@ namespace CMSlib.ConsoleModule
         {
             throw new NotImplementedException();
         }
-
         public void MarkRead() => unread = false;
 
         /// <summary>
@@ -232,7 +220,7 @@ namespace CMSlib.ConsoleModule
                 int i = Y - 1;
                 if (this.X >= Console.BufferWidth || this.Y >= Console.BufferHeight)
                     return;
-
+                
                 foreach (var line in outputLines)
                 {
                     if (++i >= Console.WindowHeight)
@@ -249,7 +237,7 @@ namespace CMSlib.ConsoleModule
                 BaseModule inputModule = Parent.InputModule;
                 if (inputModule is null)
                 {
-                    if (flush) Parent.Flush();
+                    if(flush)Parent.Flush();
                     return;
                 }
 
@@ -257,72 +245,60 @@ namespace CMSlib.ConsoleModule
                 int inputCursorX = inputModule.X + 1 + inputModule.lrCursorPos;
                 if (inputCursorY < 0 || inputCursorX < 0)
                 {
-                    if (flush) Parent.Flush();
+                    if(flush)Parent.Flush();
                     return;
                 }
-
                 Parent.SetCursorPosition(inputCursorX,
                     inputCursorY);
                 Parent.Write(AnsiEscape.AsciiMode + AnsiEscape.EnableCursorVisibility);
-                if (flush) Parent.Flush();
+                if(flush)Parent.Flush();
             }
         }
 
         protected abstract IEnumerable<string> ToOutputLines();
-
-        public static bool operator ==(BaseModule a, BaseModule b)
-        {
-            return object.ReferenceEquals(a, b);
-        }
-
-        public static bool operator !=(BaseModule a, BaseModule b)
-        {
-            return !(a == b);
-        }
-
-        public override bool Equals(object o)
-        {
-            if (o is not BaseModule b) return false;
-            return o == this;
-        }
+	public static bool operator ==(BaseModule a, BaseModule b){
+	    return object.ReferenceEquals(a, b);
+	}
+	public static bool operator !=(BaseModule a, BaseModule b){
+	    return !(a == b);
+	}
+	public override bool Equals(object o){
+	    if(o is not BaseModule b) return false;
+	    return o == this;
+	}
     }
 
     public static class BoxRenderer
     {
-        internal static IEnumerable<string> Render(string Title, char? borderCharacter, int X, int Y, int Width,
-            int Height, int scrolledLines, List<string> text, bool selected, string DisplayName, bool isInput,
-            bool unread, StringBuilder inputString, bool topDown)
+        internal static IEnumerable<string> Render(string Title, char? borderCharacter, int X, int Y, int Width, int Height, int scrolledLines, List<string> text, bool selected, string DisplayName, bool isInput, bool unread, StringBuilder inputString, bool topDown)
         {
             int actingHeight = Math.Min(Height, Console.WindowHeight - Y);
             int internalHeight = actingHeight - 2;
             int internalWidth = Math.Min(Width - 2, Console.WindowWidth - X - 2);
             if (internalHeight < 0 || internalWidth < 0) yield break;
             string actingTitle = (DisplayName ?? Title).Ellipse(internalWidth);
-            StringBuilder output = borderCharacter is not null
-                ? new((internalWidth + 2) * (internalHeight + 2) + AnsiEscape.AsciiMode.Length +
-                      AnsiEscape.SgrUnderline.Length * 2)
-                : new();
+            StringBuilder output = borderCharacter is not null ? new((internalWidth + 2) * (internalHeight + 2) + AnsiEscape.AsciiMode.Length + AnsiEscape.SgrUnderline.Length * 2) : new();
             int inputDifferential = isInput ? 2 : 0;
-
+            
             if (actingHeight <= 0) yield break;
-
+            
             if (borderCharacter is null)
                 output.Append(AnsiEscape.LineDrawingMode);
             else
                 output.Append(AnsiEscape.AsciiMode);
-            output.Append(borderCharacter ?? AnsiEscape.UpperLeftCorner);
+            output.Append(borderCharacter??AnsiEscape.UpperLeftCorner);
             if (borderCharacter is null)
                 output.Append(AnsiEscape.AsciiMode);
-
+            
             if (selected)
                 output.Append(AnsiEscape.SgrUnderline).Append(AnsiEscape.SgrBlinking);
             output.Append(actingTitle);
-
+            
             if (selected)
                 output.Append(AnsiEscape.SgrNoUnderline).Append(AnsiEscape.SgrNoBlinking);
             if (borderCharacter is null)
                 output.Append(AnsiEscape.LineDrawingMode);
-            output.Append(borderCharacter ?? AnsiEscape.HorizontalLine, internalWidth - actingTitle.VisibleLength());
+            output.Append(borderCharacter??AnsiEscape.HorizontalLine, internalWidth - actingTitle.VisibleLength());
             output.Append(borderCharacter ?? AnsiEscape.UpperRightCorner);
             yield return output.ToString();
             if (actingHeight == 1)
@@ -332,66 +308,51 @@ namespace CMSlib.ConsoleModule
             int spaceCount =
                 Math.Min(internalHeight - text.Count - inputDifferential + scrolledLines,
                     internalHeight - inputDifferential);
-            if (topDown) goto Lines;
-            Spaces:
+	    if(topDown) goto Lines;
+	    Spaces:
 
             for (int i = 0; i < spaceCount; i++)
             {
-                output.Append(borderCharacter?.ToString() ?? (unread && i > internalHeight - (4 + inputDifferential)
-                    ? AnsiEscape.AsciiMode + AnsiEscape.SgrRedForeGround + AnsiEscape.SgrBrightBold + "V" +
-                      AnsiEscape.SgrClear
-                    : AnsiEscape.LineDrawingMode + AnsiEscape.VerticalLine.ToString()));
+                output.Append(borderCharacter?.ToString()??(unread && i > internalHeight - (4 + inputDifferential) ? AnsiEscape.AsciiMode + AnsiEscape.SgrRedForeGround + AnsiEscape.SgrBrightBold + "V" + AnsiEscape.SgrClear : AnsiEscape.LineDrawingMode + AnsiEscape.VerticalLine.ToString()));
                 output.Append('\x20', internalWidth);
                 output.Append(AnsiEscape.SgrClear);
-                output.Append(borderCharacter?.ToString() ?? AnsiEscape.LineDrawingMode + AnsiEscape.VerticalLine);
+                output.Append(borderCharacter?.ToString()??AnsiEscape.LineDrawingMode + AnsiEscape.VerticalLine);
                 yield return output.ToString();
                 output.Clear();
             }
-
-            if (topDown) goto EndLines;
-            Lines:
-            int index = Math.Clamp(text.Count - (internalHeight - inputDifferential) - scrolledLines, 0,
-                text.Count == 0 ? 0 : text.Count - 1);
-
+	    if(topDown) goto EndLines;
+	    Lines:
+            int index = Math.Clamp(text.Count - (internalHeight - inputDifferential) - scrolledLines, 0, text.Count == 0 ? 0 : text.Count - 1);
+            
             List<string> toPrint = text.GetRange(index, lineCount);
-
-            for (int i = 0; i < toPrint.Count; i++)
+            
+            for(int i = 0; i < toPrint.Count; i++)
             {
-                output.Append(borderCharacter?.ToString() ??
-                              (unread && i + Math.Max(spaceCount, 0) > internalHeight - (4 + inputDifferential)
-                                  ? AnsiEscape.SgrRedForeGround + AnsiEscape.SgrBrightBold + "V" + AnsiEscape.SgrClear
-                                  : AnsiEscape.VerticalLine.ToString()));
+                output.Append(borderCharacter?.ToString()??(unread && i + Math.Max(spaceCount, 0) > internalHeight - (4 + inputDifferential) ? AnsiEscape.SgrRedForeGround + AnsiEscape.SgrBrightBold + "V" + AnsiEscape.SgrClear: AnsiEscape.VerticalLine.ToString()));
                 if (borderCharacter is null) output.Append(AnsiEscape.AsciiMode);
                 output.Append(toPrint[i].GuaranteeLength(internalWidth));
-                bool dot = borderCharacter is null &&
-                           i + Math.Max(spaceCount, 0) > internalHeight - (2 + inputDifferential) && scrolledLines != 0;
+                bool dot = borderCharacter is null && i + Math.Max(spaceCount, 0) > internalHeight - (2 + inputDifferential) && scrolledLines != 0;
                 if (dot)
                 {
                     output.Append(AnsiEscape.SgrGreenForeGround + AnsiEscape.SgrBrightBold + "." + AnsiEscape.SgrClear);
                 }
-
                 if (borderCharacter is null) output.Append(AnsiEscape.LineDrawingMode);
-                output.Append(borderCharacter?.ToString() ?? (dot ? "" : AnsiEscape.VerticalLine.ToString()));
+                output.Append(borderCharacter?.ToString()??(dot?"":AnsiEscape.VerticalLine.ToString()));
                 output.Append(AnsiEscape.SgrClear);
                 yield return output.ToString();
                 output.Clear();
             }
-
-            if (topDown) goto Spaces;
-            EndLines:
-            if (borderCharacter is null)
-                output.Append(AnsiEscape.LineDrawingMode)
-                    .Append(isInput ? AnsiEscape.VerticalWithRight : AnsiEscape.LowerLeftCorner)
-                    .Append(AnsiEscape.HorizontalLine, internalWidth)
-                    .Append(isInput ? AnsiEscape.VerticalWithLeft : AnsiEscape.LowerRightCorner);
+	    if(topDown) goto Spaces;
+	    EndLines:
+            if(borderCharacter is null)
+                output.Append(AnsiEscape.LineDrawingMode).Append(isInput ? AnsiEscape.VerticalWithRight : AnsiEscape.LowerLeftCorner).Append(AnsiEscape.HorizontalLine, internalWidth).Append(isInput ? AnsiEscape.VerticalWithLeft : AnsiEscape.LowerRightCorner);
             else
                 output.Append(borderCharacter.Value, internalWidth + 2);
             yield return output.ToString();
             if (!isInput) yield break;
             output.Clear();
             string inputStringToDisplay = inputString.ToString()
-                .Substring(Math.Clamp(inputString.Length - internalWidth + 1, 0,
-                    inputString.Length == 0 ? 0 : inputString.Length - 1)).GuaranteeLength(internalWidth);
+                .Substring(Math.Clamp(inputString.Length - internalWidth + 1, 0, inputString.Length == 0 ? 0 : inputString.Length - 1)).GuaranteeLength(internalWidth);
             if (borderCharacter is null)
             {
                 output
@@ -406,6 +367,7 @@ namespace CMSlib.ConsoleModule
                     .Append(AnsiEscape.HorizontalLine, internalWidth)
                     .Append(AnsiEscape.LowerRightCorner)
                     .Append(AnsiEscape.AsciiMode).ToString();
+                
             }
 
             else

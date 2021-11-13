@@ -9,22 +9,24 @@ namespace CMSlib.ConsoleModule
 {
     public sealed class StandardInputModule : InputModule
     {
-        public bool TopDown { get; init; } = false;
+
+	public bool TopDown {get; init;} = false;
         private readonly List<string> text = new();
         private readonly char? borderCharacter;
 
-        public StandardInputModule(string title, int x, int y, int width, int height, char? borderCharacter = null,
-            LogLevel minimumLogLevel = LogLevel.Information) : base(title, x, y, width, height, minimumLogLevel)
+        public StandardInputModule(string title, int x, int y, int width, int height, char? borderCharacter = null, LogLevel minimumLogLevel = LogLevel.Information) : base(title, x, y, width, height, minimumLogLevel)
         {
             this.borderCharacter = borderCharacter;
         }
 
         internal async override Task HandleClickAsync(InputRecord record, ButtonState? before)
         {
+
         }
 
         internal async override Task HandleKeyAsync(ConsoleKeyInfo info)
         {
+
         }
 
         /// <summary>
@@ -41,19 +43,13 @@ namespace CMSlib.ConsoleModule
 
             if (refresh) WriteOutput();
         }
-
-        public void Clear(bool refresh, bool resetScroll)
-        {
-            lock (AddTextLock)
-            {
-                if (resetScroll)
-                {
+        public void Clear(bool refresh, bool resetScroll){
+            lock(AddTextLock){
+                if(resetScroll){
                     scrolledLines = 0;
                 }
-
                 text.Clear();
             }
-
             if (refresh) WriteOutput();
         }
 
@@ -110,8 +106,7 @@ namespace CMSlib.ConsoleModule
             {
                 int before = this.text.Count;
 
-                this.text.AddRange(text.Replace("\t", "        ").Replace("\r\n", "\n").Split('\n')
-                    .SelectMany(x => x.PadToVisibleDivisible(Width - 2).SplitOnNonEscapeLength(Width - 2)));
+                this.text.AddRange(text.Replace("\t", "        ").Replace("\r\n", "\n").Split('\n').SelectMany(x => x.PadToVisibleDivisible(Width - 2).SplitOnNonEscapeLength(Width - 2)));
 
                 if (scrolledLines != 0)
                 {
@@ -124,8 +119,7 @@ namespace CMSlib.ConsoleModule
 
         protected override IEnumerable<string> ToOutputLines()
         {
-            return BoxRenderer.Render(Title, borderCharacter, X, Y, Width, Height, scrolledLines, text, selected,
-                DisplayName, true, unread, inputString, TopDown);
+            return BoxRenderer.Render(Title, borderCharacter, X, Y, Width, Height, scrolledLines, text, selected, DisplayName, true, unread, inputString, TopDown);
         }
 
         public override void ScrollUp(int amt)
@@ -167,3 +161,4 @@ namespace CMSlib.ConsoleModule
         }
     }
 }
+
