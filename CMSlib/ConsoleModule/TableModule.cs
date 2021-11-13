@@ -175,7 +175,7 @@ namespace CMSlib.ConsoleModule
         {
             int internalHeight = Math.Min(Height - 3, Console.WindowHeight - Y - 3);
             int internalWidth = Width - 2;
-            if(internalHeight < 2) yield break;
+            if(internalHeight < 0) yield break;
             string displayTitle = DisplayName ?? this.Title;
             int visLen = displayTitle.VisibleLength();
             if (visLen > internalWidth)
