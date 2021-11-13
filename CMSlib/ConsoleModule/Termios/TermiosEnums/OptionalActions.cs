@@ -1,4 +1,4 @@
-namespace CMSlib.ConsoleModule.Termios.TermiosEnums
+namespace TermiosLib.TermiosEnums
 {
     public enum OptionalActions
     {

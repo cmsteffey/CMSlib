@@ -1,6 +1,6 @@
 using System;
 
-namespace CMSlib.ConsoleModule.Termios.TermiosEnums
+namespace TermiosLib.TermiosEnums
 {
     [Flags]
     public enum ControlFlags
