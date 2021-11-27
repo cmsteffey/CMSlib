@@ -4,7 +4,7 @@ namespace CMSlib.ConsoleModule
 {
     public class StdTerminal : ITerminal
     {
-	StreamWriter _writer = null;
+	//StreamWriter _writer = null;
         InputRecord? ITerminal.ReadInput()
         {
             if (Console.IsInputRedirected) throw new NoInputException(this);
@@ -13,12 +13,12 @@ namespace CMSlib.ConsoleModule
 
         void ITerminal.SetupConsole()
         {
-            _writer = new StreamWriter(Console.OpenStandardOutput());
+            //_writer = new StreamWriter(Console.OpenStandardOutput());
         }
 
         void ITerminal.Write(string toWrite)
         {
-            _writer.Write(toWrite);
+            Console.Write(toWrite); //_writer.Write(toWrite);
         }
 
         void ITerminal.SetCursorPosition(int x, int y)
@@ -28,31 +28,31 @@ namespace CMSlib.ConsoleModule
 
         void ITerminal.SetConsoleTitle(string title)
         {
-            _writer.Write(AnsiEscape.WindowTitle(title[..Math.Min(256, title.Length)]));
+            Console.Write(AnsiEscape.WindowTitle(title[..Math.Min(256, title.Length)])); //_writer.Write
         }
 
         void ITerminal.Flush()
         {
-            _writer.Flush();
+            //_writer.Flush();
         }
 
         string ITerminal.GetClipboard()
         {
             return string.Empty;
         }
-
+    
         /// <summary>
         /// Quits the app, properly returning to the main buffer and clearing all possible cursor/format options.
         /// </summary>
         void ITerminal.QuitApp(Exception e)
         {
-            _writer?.Write(AnsiEscape.MainScreenBuffer);
-            _writer?.Write(AnsiEscape.SoftReset);
-            _writer?.Write(AnsiEscape.EnableCursorBlink);
-            _writer?.WriteLine(
+            Console.Write(AnsiEscape.MainScreenBuffer);
+            Console.Write(AnsiEscape.SoftReset);
+            Console.Write(AnsiEscape.EnableCursorBlink);
+            Console.WriteLine(
                 e is not null ? $"CMSlib gracefully exited with an exception:\n{e}" : $"[CMSlib] Exiting gracefully.");
-	    _writer.Close();
-	    _writer.Dispose();
+	    //_writer.Close();
+	    //_writer.Dispose();
             System.Environment.Exit(0);
         }
 

@@ -33,7 +33,7 @@ namespace CMSlib.ConsoleModule
 	    cachedQuickLen = len;
 	    for(int i = 0; i < Height - 2; ++i){
 		Parent.SetCursorPosition(this.X+1, this.Y + 1 + i);
-		Parent.Write(filler + new string('█',len) + (len == internalWidth ? "" : fillers[currPos%2].ToString()) + AnsiEscape.SgrClear + (len < internalWidth ? new string(' ', internalWidth - len - 1) : ""));
+		Parent.Write((filler) + new string('█',len) + (len == internalWidth ? "" : fillers[currPos%2].ToString()) + (AnsiEscape.SgrClear) + (len < internalWidth ? new string(' ', internalWidth - len - 1) : ""));
 	    }
 	    Parent.Flush();
 	}
