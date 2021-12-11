@@ -4,7 +4,7 @@ namespace CMSlib.ConsoleModule
 {
     public class StdTerminal : ITerminal
     {
-	    StreamWriter _writer = null;
+        private StreamWriter _writer;
         InputRecord? ITerminal.ReadInput()
         {
             if (Console.IsInputRedirected) throw new NoInputException(this);
