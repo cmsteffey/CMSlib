@@ -28,9 +28,10 @@ namespace CMSlib.ConsoleModule
 	public void QuickWriteOutput(){
 	    int internalWidth = Width - 2;
 	    long currPos = ToInternalFullX(current);
-	    int len = (int)(currPos / 2);
+	    int len = (int)(currPos);
 	    if(cachedQuickLen == len) return;
 	    cachedQuickLen = len;
+            len /= 2;
 	    for(int i = 0; i < Height - 2; ++i){
 		Parent.SetCursorPosition(this.X+1, this.Y + 1 + i);
 		Parent.Write((filler) + new string('█',len) + (len == internalWidth ? "" : fillers[currPos%2].ToString()) + (AnsiEscape.SgrClear) + (len < internalWidth ? new string(' ', internalWidth - len - 1) : ""));

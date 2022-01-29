@@ -63,7 +63,7 @@ namespace CMSlib.ConsoleModule
                 Parent.Write(AnsiEscape.SgrClear);
                 foreach (Coord c in dirty)
                 {
-                    this.Parent.SetCursorPosition(c.X + 1 + this.X, c.Y + 1 + this.Y);
+                    this.Parent.SetCursorPosition(c.X + 1 + this.X, c.Y + 1 + this.Y, false);
                     Parent.Write(cells[c.Y][c.X]);
                 }
                 Parent.Write(AnsiEscape.SgrClear);
