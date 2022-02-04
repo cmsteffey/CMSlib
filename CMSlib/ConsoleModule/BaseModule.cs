@@ -226,7 +226,7 @@ namespace CMSlib.ConsoleModule
                     if (++i >= Console.WindowHeight)
                         break;
                     if (line.IsVisible())
-                        Parent.SetCursorPosition(X, i);
+                        Parent.SetCursorPosition(X, i, false);
                     else
                         --i;
                     Parent.Write(line);
