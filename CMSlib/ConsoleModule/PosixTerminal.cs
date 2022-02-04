@@ -1,19 +1,19 @@
-﻿using System;
+using System;
 using System.IO;
 namespace CMSlib.ConsoleModule
 {
-    public class StdTerminal : ITerminal
+    public class PosixTerminal : ITerminal
     {
         private StreamWriter _writer;
         InputRecord? ITerminal.ReadInput()
         {
-            if (Console.IsInputRedirected) throw new NoInputException(this);
-            return (InputRecord)Console.ReadKey(true);
+            return null;
         }
 
         void ITerminal.SetupConsole()
         {
             _writer = new StreamWriter(Console.OpenStandardOutput());
+            
         }
 
         void ITerminal.Write(string toWrite)

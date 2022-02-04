@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace CMSlib.ConsoleModule
 {
@@ -7,7 +8,7 @@ namespace CMSlib.ConsoleModule
         public InputRecord? ReadInput();
         public void SetupConsole();
         public string GetClipboard();
-        public void QuitApp(Exception e);
+        [DoesNotReturn]public void QuitApp(Exception e);
         internal void Write(string toWrite);
         internal void SetCursorPosition(int x, int y);
         internal void FlashWindow(FlashFlags flags, uint times, int milliDelay);

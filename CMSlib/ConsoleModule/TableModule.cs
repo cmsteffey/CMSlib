@@ -193,7 +193,7 @@ namespace CMSlib.ConsoleModule
             int spaceCount = internalHeight - lineCount;
             for (int i = 0; i < lineCount; i++)
             {
-		string start = i != relSelected ? VerticalLine + AsciiMode : AsciiMode + SgrBlackForeGround + SgrBrightYellowBackGround + ">" + AnsiEscape.SgrClear; 
+		string start = i != relSelected || !base.selected ? VerticalLine + AsciiMode : AsciiMode + SgrBlackForeGround + SgrBrightYellowBackGround + ">" + AnsiEscape.SgrClear; 
                 yield return start + lineCache[scrolledLines + i].line + LineDrawingMode +
                              VerticalLine;
             }

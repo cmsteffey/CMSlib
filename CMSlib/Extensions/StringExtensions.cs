@@ -5,8 +5,8 @@ using System.Text;
 using System.Text.RegularExpressions;
 using CMSlib.ConsoleModule;
 
-namespace CMSlib.Extensions
-{
+namespace CMSlib.Extensions{
+
     public static class StringExtensions
     {
         /// <summary>
@@ -34,6 +34,7 @@ namespace CMSlib.Extensions
 
         public static int VisibleLength(this string str)
         {
+            if (str is null) return 0;
             int returns = 0;
             bool inEsc = false;
             int strLen = str.Length;
@@ -73,8 +74,7 @@ namespace CMSlib.Extensions
 
         public static bool IsVisible(this string str)
         {
-            return Regex.Replace(str, "\u001B(.)[\\d;]*(.)", "", RegexOptions.Compiled
-                ).Any();
+            return str.VisibleLength() > 0;
             
         }
         public static string[] SplitOnLength(this string str, int length)
@@ -244,7 +244,79 @@ namespace CMSlib.Extensions
             return str[at];
         }
 
+        public static System.Collections.Generic.IEnumerable<string> GetPrettyJSON(this string s)
+        {
+            System.Text.StringBuilder curr = new();
+            bool inString = false;
+            short indent = 0;
+            for (int i = 0; i < s.Length; ++i)
+            {
+                char c = s[i];
+                switch (c)
+                {
+                    case ':':
+                        if(inString) goto default;
+                        curr.Append(": ");
+                        break;
+                    case '[':
+                    case '{':
+                        curr.Append(c);
+                        yield return curr.ToString().Indent(indent);
+                        curr.Clear();
+                        ++indent;
+                        break;
+                    case ']':
+                    case '}':
+                        if (i != s.Length - 1 && s[i + 1] == ',')
+                        {
+                            curr.Append(',');
+                            ++i;
+                        }
+                        if (curr.Length > 0)
+                        {
+                            yield return curr.ToString().Indent(indent);
+                            curr.Clear();
+                        }
 
+                        
+                        yield return c.ToString().Indent(--indent);
+                        break;
+                    case '"':
+                        if (i == 0 || s[i - 1] is not '\\')
+                        {
+                            inString = !inString;
+                        }
+
+                        curr.Append('"');
+                        break;
+                    case ',':
+                        if(inString) goto default;
+                        curr.Append(',');
+                        yield return curr.ToString().Indent(indent);
+                        curr.Clear();
+                        break;
+                    case ' ':
+                        if (inString) curr.Append(' ');
+                        break;
+                    default:
+                        curr.Append(c);
+                        break;
+                }
+            }
+
+            yield return curr.ToString();
+        }
+
+        public static string Indent(this string text, int count, int width = 2, int mod = 2, int start = 0){
+                string spaceIndent = new string(' ', width);
+                string dotIndent = $"{AnsiEscape.SgrBlackForeGround}{AnsiEscape.SgrBrightBold}." + new string(' ', width - 1);
+                System.Text.StringBuilder res = new(text.Length + count * width);
+                for(int i = 0; i < count; ++i) res.Append((i - start) % mod == 0 ? dotIndent : spaceIndent);
+                res.Append(AnsiEscape.SgrClear);
+                res.Append(text);
+                return res.ToString();
+        }
+        
     }
-    
 }
+   
