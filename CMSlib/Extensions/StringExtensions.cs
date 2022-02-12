@@ -98,6 +98,10 @@ namespace CMSlib.Extensions{
                     string.Empty;
                 yield break;
             }
+	    if(str.Length < length){
+		yield return str;
+		yield break;
+            }
             bool inEscapeCharacter = false; //whether [i] is in an escape sequence
             int visibleTotal = 0; //total visible characters (non-escape)
             int strStart = 0; //start of current yield

@@ -259,6 +259,11 @@ namespace CMSlib.ConsoleModule
             this.RefreshAll();
         }
 
+	public void Remove(ModulePage page){
+	    lock(dictSync){
+		Pages.Remove(page);
+            }
+        }
         //todo add input for this too
         /// <summary>
         /// Selects the next module - enables scrolling for that module.
@@ -565,7 +570,7 @@ namespace CMSlib.ConsoleModule
                     break;
             }
         }
-
+	
         private void EnterLine(BaseModule selected, bool scrollToBottom)
         {
 

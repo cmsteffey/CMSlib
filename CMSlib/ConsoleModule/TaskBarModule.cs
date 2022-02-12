@@ -63,7 +63,7 @@ namespace CMSlib.ConsoleModule
 
         internal async override Task HandleClickAsync(InputRecord record, ButtonState? before)
         {
-            if (!before.HasValue || before.Value == record.MouseEvent.ButtonState) return;
+            if (before.HasValue && before.Value == record.MouseEvent.ButtonState) return;
             
             List<ModulePage> pages = Parent.Pages;
             

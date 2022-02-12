@@ -144,6 +144,9 @@ namespace CMSlib.ConsoleModule
         {
             return GetEnumerator();
         }
+	public override bool Equals(object? o){
+	    return (o is ModulePage mp) && mp.id == this.id;
+	}
 
     }
 
