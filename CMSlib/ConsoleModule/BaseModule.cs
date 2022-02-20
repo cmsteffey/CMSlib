@@ -100,14 +100,15 @@ namespace CMSlib.ConsoleModule
             KeyEnteredEventArgs result = null;
             CancellationTokenSource waitCancel = new();
             CancellationTokenSource combined = CancellationTokenSource.CreateLinkedTokenSource(waitCancel.Token, cancellationToken);
-
+            TaskCompletionSource tcs = new();
             void Waiter(object _, KeyEnteredEventArgs args)
             {
                 result = args;
                 waitCancel.Cancel();
             }
             ReadKeyKeyEntered += Waiter;
-            combined.Token.WaitHandle.WaitOne();
+            combined.Token.Register(tcs.SetResult);
+            await tcs.Task;
             ReadKeyKeyEntered -= Waiter;
             
             return result;
