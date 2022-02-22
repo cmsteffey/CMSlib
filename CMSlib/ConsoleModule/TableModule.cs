@@ -144,7 +144,7 @@ namespace CMSlib.ConsoleModule
 		    if(!CorrectScroll())
 			WriteOutput();
 		    break;
-		case ConsoleKey.Enter when info.Modifiers.HasFlag(ConsoleModifiers.Control):
+		case ConsoleKey.Enter when info.Modifiers.HasFlag(ConsoleModifiers.Shift):
 		    e = new(){RowObjs = lineCache[selected].rowObjs, RowIndex = selected};
 		    FireRowRightClicked(e);
 		    break;

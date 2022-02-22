@@ -9,6 +9,7 @@ namespace CMSlib.Tables
 {
     public static class ExtensionMethods
     {
+        private const char TableSeparator = '|';//│ VL | B
         /// <summary>
         /// This will return a padded table column with the given width in characters, containing the string. The optional parameters adjust the formatting.
         /// </summary>
@@ -25,21 +26,21 @@ namespace CMSlib.Tables
             int visLen = str.VisibleLength();
             if (visLen > innerWidth)
             {
-                return ellipse ? (leftPipe ? "|" : string.Empty) + str.Ellipse(innerWidth) + (rightPipe ? "|" : string.Empty)
-                    : (leftPipe ? "|" : string.Empty) + str.Substring(0, innerWidth) + (rightPipe ? "|" : string.Empty);
+                return ellipse ? (leftPipe ? TableSeparator : string.Empty) + str.Ellipse(innerWidth) + (rightPipe ? TableSeparator : string.Empty)
+                    : (leftPipe ? TableSeparator : string.Empty) + str.Substring(0, innerWidth) + (rightPipe ? TableSeparator : string.Empty);
             }
             int spaces = innerWidth - visLen;
             if (adjust == ColumnAdjust.Left)
             {
-                return new StringBuilder().Append(leftPipe ? "|" : null).Append(str).Append(' ', spaces).Append(rightPipe ? '|' : null).ToString();
+                return new StringBuilder().Append(leftPipe ? TableSeparator : null).Append(str).Append(' ', spaces).Append(rightPipe ? TableSeparator : null).ToString();
             }
             else if (adjust == ColumnAdjust.Right)
             {
-                return new StringBuilder().Append(leftPipe ? "|" : null).Append(' ', spaces).Append(str).Append(rightPipe ? '|' : null).ToString();
+                return new StringBuilder().Append(leftPipe ? TableSeparator : null).Append(' ', spaces).Append(str).Append(rightPipe ? TableSeparator : null).ToString();
             }
             else
             {
-                return new StringBuilder().Append(leftPipe ? "|" : null).Append(' ', spaces / 2).Append(str).Append(' ', spaces / 2 + spaces % 2).Append(rightPipe ? '|' : null).ToString();
+                return new StringBuilder().Append(leftPipe ? TableSeparator : null).Append(' ', spaces / 2).Append(str).Append(' ', spaces / 2 + spaces % 2).Append(rightPipe ? TableSeparator : null).ToString();
             }
         }
         public enum ColumnAdjust
