@@ -201,9 +201,12 @@ namespace CMSlib.ConsoleModule
         /// <typeparam name="TState"></typeparam>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
+        public class FalseDisposable : System.IDisposable{
+	    public void Dispose(){}
+        }
         public IDisposable BeginScope<TState>(TState state)
         {
-            throw new NotImplementedException();
+            return new FalseDisposable();
         }
         public void MarkRead() => unread = false;
 

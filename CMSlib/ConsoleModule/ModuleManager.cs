@@ -32,45 +32,48 @@ namespace CMSlib.ConsoleModule
         }
 
         ///
-        public ModuleManager(ITerminal terminal)
+        public ModuleManager(ITerminal terminal, bool autoStartInputThread = true)
         {
             _terminal = terminal;
             _terminal.SetupConsole();
-            Console.CancelKeyPress += (_, _) => { _terminal.QuitApp(null); };
+            Console.CancelKeyPress += (_, _) => { lock(writeLock)_terminal.QuitApp(null); };
             _terminal.Write(AnsiEscape.AlternateScreenBuffer);
             _terminal.Write(AnsiEscape.DisableCursorBlink);
             _terminal.Flush();
-            _ = Task.Run(async () =>
+	    if(autoStartInputThread)
+                Task.Run((Func<Task>)RunInputThread);
+        }
+	public Task InlineInputThread() => RunInputThread();
+	private async Task RunInputThread(){
+            try
             {
-                try
+                while (true)
                 {
-                    while (true)
+                    BaseModule selectedModule = SelectedModule;
+                    InputModule inputModule = selectedModule as InputModule;
+                    try
                     {
-                        BaseModule selectedModule = SelectedModule;
-                        InputModule inputModule = selectedModule as InputModule;
-                        try
-                        {
-                            var inputRecord = _terminal.ReadInput();
-                            await HandleInputAsync(inputRecord, selectedModule, _terminal);
-                        }
-                        catch (NoInputException niex)
-                        {
-                            break;
-                        }
-                        catch (Exception exception)
-                        {
-                            inputModule?.AddText(exception.ToString());
-                            inputModule?.WriteOutput();
-                        }
+                        var inputRecord = _terminal.ReadInput();
+                        await HandleInputAsync(inputRecord, selectedModule, _terminal);
+                    }
+                    catch (NoInputException niex)
+                    {
+                        break;
+                    }
+                    catch (Exception exception)
+                    {
+                        inputModule?.AddText(exception.ToString());
+                        inputModule?.WriteOutput();
                     }
                 }
-                catch (Exception e)
-                {
-                    _terminal.QuitApp(e);
-                }
-            });
+            }
+            catch (Exception e)
+            {
+		lock(writeLock)
+                _terminal.QuitApp(e);
+            }
+            
         }
-
         public void Add(ModulePage page)
         {
             lock (dictSync)
@@ -250,6 +253,7 @@ namespace CMSlib.ConsoleModule
 
         void ILoggerFactory.AddProvider(ILoggerProvider provider)
         {
+            
             throw new NotImplementedException();
         }
 
@@ -501,6 +505,7 @@ namespace CMSlib.ConsoleModule
 
                     break;
                 case ConsoleKey.C when mods[Ctrl]:
+		    lock(writeLock)
                     terminal.QuitApp(null);
                     break;
                 case ConsoleKey.RightArrow:

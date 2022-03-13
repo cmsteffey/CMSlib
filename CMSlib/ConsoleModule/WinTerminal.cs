@@ -46,6 +46,7 @@ namespace CMSlib.ConsoleModule
         {
             _writer.Write(AnsiEscape.WindowTitle(title[..Math.Min(256, title.Length)]));
         }
+	
         void ITerminal.Write(string toWrite)
         {
             _writer.Write(toWrite);
