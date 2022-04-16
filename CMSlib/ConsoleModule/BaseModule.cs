@@ -200,7 +200,6 @@ namespace CMSlib.ConsoleModule
         /// <param name="state"></param>
         /// <typeparam name="TState"></typeparam>
         /// <returns></returns>
-        /// <exception cref="NotImplementedException"></exception>
         public class FalseDisposable : System.IDisposable{
 	    public void Dispose(){}
         }

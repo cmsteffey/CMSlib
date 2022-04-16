@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Reflection;
+using System.Diagnostics.CodeAnalysis;
+using static System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes;
 
 namespace CMSlib.Tables
 {
@@ -11,7 +13,7 @@ namespace CMSlib.Tables
     {
         internal Type type;
         internal List<(TableColumn column, ValueGetter getter)> Columns;
-        public TableSection(Type type, params TableColumn[] columns)
+        public TableSection([DynamicallyAccessedMembers(PublicMethods|PublicFields|PublicProperties)]Type type, params TableColumn[] columns)
         {
 
             Columns = new();

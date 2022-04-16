@@ -89,5 +89,17 @@ namespace CMSlib.Extensions
 	    }
 	    return null;
 	}
+	public static uint Sum(this IEnumerable<uint> source)
+        {
+            uint sum = 0;
+            
+                foreach (uint v in source)
+                {
+                    checked { sum += v; }
+                }
+            
+
+            return sum;
+        }
     }
 }

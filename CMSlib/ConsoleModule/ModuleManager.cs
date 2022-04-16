@@ -32,6 +32,7 @@ namespace CMSlib.ConsoleModule
         }
 
         ///
+	public ModuleManager(ITerminal terminal): this(terminal, true){}
         public ModuleManager(ITerminal terminal, bool autoStartInputThread = true)
         {
             _terminal = terminal;
