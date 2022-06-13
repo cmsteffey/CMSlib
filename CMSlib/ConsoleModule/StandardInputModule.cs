@@ -121,7 +121,11 @@ namespace CMSlib.ConsoleModule
         {
             return BoxRenderer.Render(Title, borderCharacter, X, Y, Width, Height, scrolledLines, text, selected, DisplayName, true, unread, inputString, TopDown);
         }
-
+	public override void WriteOutput(bool flush = true){
+	    lock(AddTextLock){
+		base.WriteOutput(flush);
+	    }
+	}
         public override void ScrollUp(int amt)
         {
             if (text.Count == 0) return;

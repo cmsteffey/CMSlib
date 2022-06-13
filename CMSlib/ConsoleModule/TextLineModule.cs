@@ -77,7 +77,7 @@ public class TextLineModule : BaseModule
                 yield return string.Empty;
                 continue;
             }
-
+	
             var line = lines[i];
             if (line is null) goto YR;
             var vislen = line.VisibleLength();
@@ -86,7 +86,7 @@ public class TextLineModule : BaseModule
             else
                 line = line.SplitOnNonEscapeLength(width).FirstOrDefault();
             YR:
-            yield return line ?? string.Empty;
+            yield return AnsiEscape.AsciiMode + (line ?? string.Empty);
         }
     }
 }

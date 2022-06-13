@@ -13,7 +13,6 @@ namespace CMSlib.ConsoleModule
         void ITerminal.SetupConsole()
         {
             _writer = new StreamWriter(Console.OpenStandardOutput());
-            
         }
 
         void ITerminal.Write(string toWrite)

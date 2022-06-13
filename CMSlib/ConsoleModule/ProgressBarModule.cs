@@ -20,8 +20,9 @@ namespace CMSlib.ConsoleModule
         public override void ScrollUp(int amt){}
         public override void ScrollTo(int line){}
 	private static char[] fillers = new char[]{' ','▌'};
-	private const string filler = AnsiEscape.SgrBrightGreenForeGround;
-
+	private object fillerLock = new();
+	private string filler = AnsiEscape.SgrBrightGreenForeGround;
+	public string FillFormat {get {lock(fillerLock) return filler; } set {lock(fillerLock) filler = value;}}
         public ProgressBarModule(string title, int x, int y, int width, int height, long max): base(title, x, y, width, height, LogLevel.None){this.max = max;}
         internal async override Task HandleClickAsync(InputRecord record, ButtonState? before){}
         internal async override Task HandleKeyAsync(ConsoleKeyInfo info){}
@@ -36,7 +37,7 @@ namespace CMSlib.ConsoleModule
 	    Parent.Write(AnsiEscape.DisableCursorVisibility);
 	    for(int i = 0; i < Height - 2; ++i){
 		Parent.SetCursorPosition(this.X+1, this.Y + 1 + i);
-		Parent.Write((filler) + AnsiEscape.SgrBrightBlackBackGround + new string('█',len) + (len == internalWidth ? "" : fillers[currPos%2].ToString()) + (AnsiEscape.SgrClear) + AnsiEscape.SgrBrightBlackBackGround + (len < internalWidth ? new string(' ', internalWidth - len - 1) : "") + AnsiEscape.SgrClear);
+		Parent.Write((FillFormat) + AnsiEscape.SgrBrightBlackBackGround + new string('█',len) + (len == internalWidth ? "" : fillers[currPos%2].ToString()) + (AnsiEscape.SgrClear) + AnsiEscape.SgrBrightBlackBackGround + (len < internalWidth ? new string(' ', internalWidth - len - 1) : "") + AnsiEscape.SgrClear);
 	    }
 	    BaseModule inputModule = Parent.InputModule;
             if (inputModule is null)
@@ -70,7 +71,7 @@ namespace CMSlib.ConsoleModule
 	    int len = (int)(currPos / 2);
 	    yield return sb.Append(AnsiEscape.LineDrawingMode).Append(AnsiEscape.UpperLeftCorner).Append(AnsiEscape.AsciiMode).Append(displayTitleLen > internalWidth ? displayTitle.Ellipse(internalWidth) : displayTitle).Append(AnsiEscape.LineDrawingMode).Append(AnsiEscape.HorizontalLine, Math.Max(0, Width - 2 - displayTitleLen)).Append(AnsiEscape.UpperRightCorner).ToString();
 	    for(int i = 0; i < Height - 2; ++i){
-		yield return sb.Clear().Append(AnsiEscape.LineDrawingMode).Append(AnsiEscape.VerticalLine).Append(AnsiEscape.AsciiMode).Append(filler).Append(AnsiEscape.SgrBrightBlackBackGround).Append('█',len).Append(len == internalWidth ? "" : fillers[currPos%2].ToString()).Append(AnsiEscape.SgrClear).Append(AnsiEscape.SgrBrightBlackBackGround).Append(len < internalWidth ? new string(' ', internalWidth - len - 1) : "").Append(AnsiEscape.SgrClear).Append(AnsiEscape.LineDrawingMode).Append(AnsiEscape.VerticalLine).ToString();
+		yield return sb.Clear().Append(AnsiEscape.LineDrawingMode).Append(AnsiEscape.VerticalLine).Append(AnsiEscape.AsciiMode).Append(FillFormat).Append(AnsiEscape.SgrBrightBlackBackGround).Append('█',len).Append(len == internalWidth ? "" : fillers[currPos%2].ToString()).Append(AnsiEscape.SgrClear).Append(AnsiEscape.SgrBrightBlackBackGround).Append(len < internalWidth ? new string(' ', internalWidth - len - 1) : "").Append(AnsiEscape.SgrClear).Append(AnsiEscape.LineDrawingMode).Append(AnsiEscape.VerticalLine).ToString();
 	    }
 	    yield return sb.Clear().Append(AnsiEscape.LineDrawingMode).Append(AnsiEscape.LowerLeftCorner).Append(AnsiEscape.HorizontalLine, internalWidth).Append(AnsiEscape.LowerRightCorner).ToString();
 

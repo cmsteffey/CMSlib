@@ -14,6 +14,7 @@ namespace CMSlib.ConsoleModule
     {
         public List<ModulePage> Pages { get; } = new();
         internal int selected = 0;
+	public int SelectedPageIndex {get{lock(dictSync) return selected;}}
         internal object writeLock = new();
 
         private readonly object dictSync = new();

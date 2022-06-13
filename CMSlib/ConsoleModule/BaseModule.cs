@@ -17,7 +17,7 @@ namespace CMSlib.ConsoleModule
         public int Y { get; protected init;}
         public int Width { get; protected init;}
         public int Height { get; protected init;}
-        public string Title { get; protected init; }
+        public string Title { get; set; }
         public LogLevel MinimumLogLevel { get; set; }
         public ModuleManager Parent { get; internal set; } = null;
 
@@ -212,7 +212,35 @@ namespace CMSlib.ConsoleModule
         /// <summary>
         /// Refreshes this module, showing the latest output.
         /// </summary>
-        public void WriteOutput(bool flush = true)
+	public virtual void WriteTitle(bool flush = true){
+	    BaseModule inputModule = Parent.InputModule;
+	    lock(this.Parent.writeLock){
+	    if (this.X >= Console.BufferWidth || this.Y >= Console.BufferHeight)
+                    return;
+	    var output = ToOutputLines().GetEnumerator();
+	    output.MoveNext();
+	    Parent.SetCursorPosition(X, Y);
+	    Parent.Write(output.Current);
+            if (inputModule is null)
+            {
+                if(flush)Parent.Flush();
+                return;
+            }
+	    
+	    int inputCursorY = Math.Min(Console.WindowHeight - 2, inputModule.Height + inputModule.Y - 2);
+            int inputCursorX = inputModule.X + 1 + inputModule.lrCursorPos;
+            if (inputCursorY < 0 || inputCursorX < 0)
+            {
+                if(flush)Parent.Flush();
+                return;
+            }
+            Parent.SetCursorPosition(inputCursorX,
+                    inputCursorY);
+            Parent.Write(AnsiEscape.AsciiMode + AnsiEscape.EnableCursorVisibility);
+            if(flush)Parent.Flush();
+	    }
+	}
+        public virtual void WriteOutput(bool flush = true)
         {
             if (this.Parent is null || this.parentPages is null || !this.parentPages.Contains(Parent.SelectedPage.id))
                 return;
