@@ -1,5 +1,6 @@
 # CMSlib
-CMSlib (Console Module System) is a c# library for making graphical user interfaces, all inside a console window!
+CMSlib (Console Module System) is a c# library for making graphical user interfaces, all inside a console window!  
+
 ![An example of CMSlib in production](https://raw.githubusercontent.com/cmsteffey/CMSlib/master/fv.gif)  
 
 
