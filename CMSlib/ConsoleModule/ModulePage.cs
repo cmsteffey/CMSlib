@@ -68,6 +68,7 @@ namespace CMSlib.ConsoleModule
             lock (dictSync)
             {
                 module.Parent = this.parent;
+                module.parentPages.Add(this.id);
                 modules.Add(module.Title, module);
                 dictKeys.Add(module.Title);
                 if (selected == modules.Count - 1)
