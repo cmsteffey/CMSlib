@@ -59,7 +59,16 @@ namespace CMSlib.Tables
         public ValueGetter() { }
         public object Invoke(object item)
         {
-            return fieldGetter?.Invoke(item) ?? otherGetter?.Invoke(item, null) ?? item;
+            if (fieldGetter is not null)
+            {
+                return fieldGetter.Invoke(item);
+            }
+
+            if (otherGetter is not null)
+            {
+                return otherGetter.Invoke(item, null);
+            }
+            return item;
         }
     }
 
