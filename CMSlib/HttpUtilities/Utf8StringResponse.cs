@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using System.Net.Http;
 
-namespace CMSlib
+namespace CMSlib.HttpUtilities
 {
     public class Utf8StringResponse
     {
