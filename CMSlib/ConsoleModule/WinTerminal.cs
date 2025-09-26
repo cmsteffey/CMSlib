@@ -9,8 +9,8 @@ namespace CMSlib.ConsoleModule
     {
         private uint prevIn;
         private uint prevOut;
-	private uint prevInCP;
-	private uint prevOutCP;
+	    private uint prevInCP;
+	    private uint prevOutCP;
         private StreamWriter _writer = null;
         InputRecord? ITerminal.ReadInput()
         {

@@ -12,7 +12,7 @@ namespace CMSlib.ConsoleModule
     {
         protected readonly List<string> text = new();
         protected readonly char? borderCharacter;
-	public bool TopDown {get; init;} = false;
+	    public bool TopDown {get; init;} = false;
         
 
         public LogModule(string title, int x, int y, int width, int height,

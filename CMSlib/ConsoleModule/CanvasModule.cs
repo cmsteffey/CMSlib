@@ -1,7 +1,6 @@
-﻿using CMSlib.ConsoleModule;
-using System;
-using Microsoft.Extensions.Logging.Abstractions;
+﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using CMSlib.Extensions;
 using Microsoft.Extensions.Logging;
 
@@ -72,12 +71,14 @@ namespace CMSlib.ConsoleModule
 
             Parent.Flush();
         }
-        internal override async System.Threading.Tasks.Task HandleClickAsync(InputRecord record, ButtonState? before)
+        internal override System.Threading.Tasks.Task HandleClickAsync(InputRecord record, ButtonState? before)
         {
+            return Task.CompletedTask;
         }
 
-        internal override async System.Threading.Tasks.Task HandleKeyAsync(ConsoleKeyInfo info)
+        internal override System.Threading.Tasks.Task HandleKeyAsync(ConsoleKeyInfo info)
         {
+            return Task.CompletedTask;
         }
 
         public override void AddText(string text)
